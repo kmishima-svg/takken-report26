@@ -1,0 +1,2180 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<!-- Build: 20260614_035528 -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>宅建試験 学習進捗レポート v2</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=DM+Mono:wght@400;500&display=swap');
+  :root {
+    --bg:#f4f6fb; --surface:#ffffff; --surface2:#eef1f8; --border:#d0d5e8;
+    --accent:#4f8ef7; --accent2:#f7c94f; --danger:#f75f5f; --success:#4fcf94; --warn:#f7944f;
+    --text:#1a1d2e; --muted:#5a6080;
+    --civil:#7c6ff7; --hourei:#4f8ef7; --tax:#f7c94f; --gyoho:#4fcf94;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:14px;line-height:1.6;}
+  .header{background:linear-gradient(135deg,#0f1117,#1a1d27 50%,#0d1529);border-bottom:1px solid var(--border);padding:28px 40px 20px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+  .header-title{font-size:20px;font-weight:900;letter-spacing:-.5px;}
+  .header-title span{color:var(--accent);}
+  .header-sub{color:var(--muted);font-size:11px;margin-top:3px;}
+  .countdown{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 18px;text-align:center;}
+  .countdown-num{font-size:32px;font-weight:900;color:var(--accent2);font-family:'DM Mono',monospace;line-height:1;}
+  .countdown-label{font-size:10px;color:var(--muted);margin-top:2px;}
+  .nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 40px;display:flex;gap:0;overflow-x:auto;position:sticky;top:0;z-index:100;}
+  .nav-btn{padding:12px 18px;background:none;border:none;border-bottom:3px solid transparent;color:var(--muted);font-family:'Noto Sans JP',sans-serif;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;transition:all .2s;}
+  .nav-btn:hover{color:var(--text);}
+  .nav-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+  .section{display:none;padding:28px 40px;max-width:1240px;margin:0 auto;}
+  .section.active{display:block;}
+  .card{background:#ffffff;border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;}
+  .card-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+  .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  .kpi{background:#ffffff;border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;}
+  .kpi-val{font-size:28px;font-weight:900;font-family:'DM Mono',monospace;line-height:1;}
+  .kpi-label{font-size:10px;color:var(--muted);margin-top:5px;}
+  .kpi-sub{font-size:10px;color:var(--muted);margin-top:2px;}
+  .prog-wrap{margin-bottom:12px;}
+  .prog-header{display:flex;justify-content:space-between;margin-bottom:5px;font-size:12px;}
+  .prog-bar{height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;}
+  .prog-fill{height:100%;border-radius:4px;}
+  table{width:100%;border-collapse:collapse;font-size:12px;}
+  th{background:var(--surface2);color:var(--muted);font-weight:600;padding:9px 11px;text-align:left;font-size:11px;letter-spacing:.5px;}
+  td{padding:9px 11px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:rgba(79,142,247,.04);}
+  .badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;font-family:'DM Mono',monospace;}
+  .badge-civil{background:rgba(124,111,247,.2);color:var(--civil);}
+  .badge-hourei{background:rgba(79,142,247,.2);color:var(--hourei);}
+  .badge-tax{background:rgba(247,201,79,.2);color:var(--tax);}
+  .badge-gyoho{background:rgba(79,207,148,.2);color:var(--gyoho);}
+  .sc-s{color:var(--success);font-weight:700;} .sc-a{color:var(--accent);font-weight:700;}
+  .sc-b{color:var(--accent2);font-weight:700;} .sc-c{color:var(--warn);font-weight:700;}
+  .sc-d{color:var(--danger);font-weight:700;}
+  .sec-title{font-size:19px;font-weight:900;margin-bottom:6px;}
+  .sec-sub{color:var(--muted);font-size:12px;margin-bottom:20px;}
+  .filter-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px;}
+  .filter-btn{padding:5px 13px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:11px;cursor:pointer;transition:all .2s;font-family:'Noto Sans JP',sans-serif;}
+  .filter-btn:hover{border-color:var(--accent);color:var(--text);}
+  .filter-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .person-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
+  .person-card{background:#ffffff;border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:all .2s;}
+  .person-card:hover{border-color:var(--accent);transform:translateY(-2px);}
+  .person-name{font-size:14px;font-weight:700;margin-bottom:2px;}
+  .person-team{font-size:10px;color:var(--muted);margin-bottom:10px;}
+  .person-score{font-size:26px;font-weight:900;font-family:'DM Mono',monospace;}
+  .person-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+  .modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(30,39,97,.55);z-index:1000;align-items:center;justify-content:center;padding:20px;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:#ffffff;border:1px solid var(--border);border-radius:14px;width:100%;max-width:760px;max-height:90vh;overflow-y:auto;padding:24px;position:relative;}
+  .modal-close{position:absolute;top:14px;right:14px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 10px;color:var(--muted);cursor:pointer;font-size:12px;}
+  .modal-name{font-size:20px;font-weight:900;margin-bottom:2px;}
+  .modal-team{color:var(--muted);font-size:11px;margin-bottom:18px;}
+  .timeline{position:relative;padding-left:22px;}
+  .timeline::before{content:'';position:absolute;left:6px;top:0;bottom:0;width:2px;background:var(--border);}
+  .tl-item{position:relative;margin-bottom:22px;}
+  .tl-dot{position:absolute;left:-20px;top:4px;width:13px;height:13px;border-radius:50%;border:2px solid;}
+  .tl-date{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:3px;}
+  .tl-title{font-size:13px;font-weight:700;margin-bottom:3px;}
+  .tl-body{font-size:12px;color:var(--muted);line-height:1.7;}
+  /* DOMAIN BARS */
+  .topic-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+  .topic-row:last-child{border-bottom:none;}
+  .topic-name{font-size:12px;flex:1;min-width:0;}
+  .topic-bar-wrap{width:120px;flex-shrink:0;}
+  .topic-bar{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;}
+  .topic-fill{height:100%;border-radius:3px;}
+  .topic-pct{font-family:'DM Mono',monospace;font-size:11px;font-weight:700;width:36px;text-align:right;flex-shrink:0;}
+  .topic-status{font-size:10px;width:64px;flex-shrink:0;text-align:right;}
+  @media(max-width:768px){.header,.section{padding:16px;} .nav{padding:0 16px;} .grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">宅建試験 <span>学習進捗レポート</span></div>
+    <div class="header-sub">2026年度 宅地建物取引士試験 ／ 作成：2026年6月11日 ／ 全5回分析済</div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
+    <div class="countdown">
+      <div class="countdown-num" id="daysLeft">130</div>
+      <div class="countdown-label">本試験まで（日）</div>
+      <div style="font-size:9px;color:#7b82a8;margin-top:2px;">2026年10月19日（予定）</div>
+    </div>
+    <button onclick="openSlackModal()" style="background:linear-gradient(135deg,#4A154B,#611f69);border:none;border-radius:8px;color:#fff;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:'Noto Sans JP',sans-serif;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/></svg>
+      Slackで共有
+    </button>
+  </div>
+</div>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="showSection('overview',this)">📊 全体</button>
+  <button class="nav-btn" onclick="showSection('targets',this)">🎯 目標</button>
+  <button class="nav-btn" onclick="showSection('teams',this)">👥 チーム</button>
+  <button class="nav-btn" onclick="showSection('individuals',this)">👤 個人</button>
+  <button class="nav-btn" onclick="showSection('domains',this)">📚 分野別</button>
+  <button class="nav-btn" onclick="showSection('topics',this)">🔬 テーマ別</button>
+  <button class="nav-btn" onclick="showSection('schedule',this)">📅 スケジュール</button>
+</nav>
+
+<!-- OVERVIEW -->
+<div class="section active" id="sec-overview">
+  <div class="sec-title">全体サマリー</div>
+  <div class="sec-sub">5回分の模試データ（5/14〜6/10）を分析しました</div>
+  <div class="grid-4" style="margin-bottom:16px;">
+    <div class="kpi"><div class="kpi-val" style="color:var(--accent)">51%</div><div class="kpi-label">最新平均正答率(6/10)</div><div class="kpi-sub">目標：80%（36問）</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:var(--gyoho)">68%</div><div class="kpi-label">業法（最新平均）</div><div class="kpi-sub">目標80% ▲+12%必要</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:var(--hourei)">55%</div><div class="kpi-label">法令（最新平均）</div><div class="kpi-sub">目標60% ▲+5%必要</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:var(--tax)">59%</div><div class="kpi-label">税（最新平均）</div><div class="kpi-sub">8月目標50% ✅達成圏</div></div>
+  </div>
+  <div style="margin-bottom:16px;">
+<div class="card">
+      <div class="card-title">科目別 現状と目標</div>
+      <div class="prog-wrap">
+        <div class="prog-header"><span style="color:var(--gyoho);font-weight:600;">🏢 業法</span><span style="font-family:'DM Mono';font-size:12px;color:var(--gyoho)">68% → 目標80%</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:68%;background:var(--gyoho)"></div></div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px;">あと+12%。最重要得点源（20問）</div>
+      </div>
+      <div class="prog-wrap">
+        <div class="prog-header"><span style="color:var(--hourei);font-weight:600;">🏗️ 法令</span><span style="font-family:'DM Mono';font-size:12px;color:var(--hourei)">55% → 目標60%</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:55%;background:var(--hourei)"></div></div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px;">建築基準法・都市計画法の計算問題が鍵</div>
+      </div>
+      <div class="prog-wrap">
+        <div class="prog-header"><span style="color:var(--tax);font-weight:600;">💴 税</span><span style="font-family:'DM Mono';font-size:12px;color:var(--tax)">59% → 8月50%✅</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:59%;background:var(--tax)"></div></div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px;">8月目標達成圏。10月は3問全問正解が目標</div>
+      </div>
+      <div class="prog-wrap">
+        <div class="prog-header"><span style="color:var(--civil);font-weight:600;">⚖️ 民法</span><span style="font-family:'DM Mono';font-size:12px;color:var(--civil)">30% → 8月30%✅</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:30%;background:var(--civil)"></div></div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px;">8月目標達成圏。10月50%（7/14問）へ</div>
+      </div>
+    </div>
+</div>
+  
+
+
+
+
+
+  <!-- KPIカード -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
+    <div class="card" style="padding:14px;text-align:center;">
+      <div style="font-size:28px;font-weight:900;color:var(--danger)">18.6%</div>
+      <div style="font-size:11px;font-weight:700;margin:4px 0;">全国合格率（令和6年）</div>
+      <div style="font-size:10px;color:var(--muted)">受験者241,436人中44,992人合格</div>
+    </div>
+    <div class="card" style="padding:14px;text-align:center;">
+      <div style="font-size:28px;font-weight:900;color:var(--warn)">37点</div>
+      <div style="font-size:11px;font-weight:700;margin:4px 0;">合格基準点（令和6年）</div>
+      <div style="font-size:10px;color:var(--muted)">50点満点中 ≒ 正答率74%</div>
+    </div>
+    <div class="card" style="padding:14px;text-align:center;">
+      <div style="font-size:28px;font-weight:900;color:var(--accent)">33.2点</div>
+      <div style="font-size:11px;font-weight:700;margin:4px 0;">全国平均点（令和6年）</div>
+      <div style="font-size:10px;color:var(--muted)">模試受験者34,402人集計値</div>
+    </div>
+    <div class="card" style="padding:14px;text-align:center;">
+      <div style="font-size:28px;font-weight:900;color:var(--success)" id="natGroupAvg">--</div>
+      <div style="font-size:11px;font-weight:700;margin:4px 0;">当グループ最新平均</div>
+      <div style="font-size:10px;color:var(--muted)">6/10模試 正答率換算</div>
+    </div>
+  </div>
+
+  <!-- 合格ライン到達状況 -->
+  <div class="card" style="padding:16px;margin-bottom:16px;">
+    <div class="card-title">合格ライン到達シミュレーション（令和6年基準：37点 = 正答率74%）</div>
+    <div style="margin-bottom:10px;font-size:11px;color:var(--muted)">
+      ※模試正答率74%以上 = 合格圏内目安。本試験は難易度が変動するため参考値です。
+    </div>
+    <div id="natRankList" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+  </div>
+
+  <!-- 全国vs当グループ 科目別比較 -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+    <div class="card" style="padding:16px;">
+      <div class="card-title">科目別 全国目標 vs 当グループ現状</div>
+      <table style="font-size:12px;width:100%;">
+        <thead><tr>
+          <th>科目</th><th>出題数</th><th>全国合格者平均目標</th><th>当グループ現状</th><th>差</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="badge badge-civil">民法</span></td>
+            <td style="text-align:center">14問</td>
+            <td style="text-align:center;color:var(--civil)">9問 (64%)</td>
+            <td style="text-align:center" id="natCivil">--</td>
+            <td id="natCivilDiff" style="text-align:center">--</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-hourei">法令</span></td>
+            <td style="text-align:center">8問</td>
+            <td style="text-align:center;color:var(--hourei)">5問 (63%)</td>
+            <td style="text-align:center" id="natHourei">--</td>
+            <td id="natHoureiDiff" style="text-align:center">--</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-tax">税</span></td>
+            <td style="text-align:center">3問</td>
+            <td style="text-align:center;color:var(--tax)">2問 (67%)</td>
+            <td style="text-align:center" id="natTax">--</td>
+            <td id="natTaxDiff" style="text-align:center">--</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-gyoho">業法</span></td>
+            <td style="text-align:center">20問</td>
+            <td style="text-align:center;color:var(--gyoho)">16問 (80%)</td>
+            <td style="text-align:center" id="natGyoho">--</td>
+            <td id="natGyhoDiff" style="text-align:center">--</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card" style="padding:16px;">
+      <div class="card-title">過去5年 合格ライン推移</div>
+      <table style="font-size:12px;width:100%;">
+        <thead><tr><th>年度</th><th>合格点</th><th>正答率</th><th>合格率</th></tr></thead>
+        <tbody>
+          <tr><td>令和7年（2025）</td><td style="font-weight:700;color:var(--accent)">33点</td><td>66%</td><td>18.7%</td></tr>
+          <tr><td>令和6年（2024）</td><td style="font-weight:700;color:var(--warn)">37点</td><td>74%</td><td>18.6%</td></tr>
+          <tr><td>令和5年（2023）</td><td style="font-weight:700;color:var(--warn)">36点</td><td>72%</td><td>17.2%</td></tr>
+          <tr><td>令和4年（2022）</td><td style="font-weight:700;color:var(--warn)">36点</td><td>72%</td><td>17.0%</td></tr>
+          <tr><td>令和3年10月（2021）</td><td style="font-weight:700;color:var(--danger)">34点</td><td>68%</td><td>17.9%</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:10px;padding:8px;background:var(--surface2);border-radius:6px;font-size:11px;color:var(--muted);">
+        ⚡ 合格点は年度で<strong style="color:var(--text)">33〜38点と大きく変動</strong>します。<br>
+        安全圏は正答率<strong style="color:var(--success)">80%以上（40問以上）</strong>を目標に設定しています。
+      </div>
+    </div>
+  </div>
+
+  <!-- 個人別 全国位置づけ -->
+  
+
+  <!-- 全国比較カード -->
+  <div class="grid-2" style="margin-top:16px;">
+    
+    
+  </div>
+
+
+  <!-- 個人別全国位置づけ + 全国比較 -->
+  
+  <div class="grid-2" style="margin-bottom:16px;">
+    <div class="card" style="border-color:var(--accent2);">
+      <div style="font-size:11px;font-weight:700;color:var(--accent2);margin-bottom:10px;">🎯 8月末 中間目標</div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:13px;">
+        <div><span class="badge badge-gyoho">業法</span> <strong>80%</strong> <span style="color:var(--warn);font-size:10px;">現68%</span></div>
+        <div><span class="badge badge-hourei">法令</span> <strong>60%</strong> <span style="color:var(--warn);font-size:10px;">現55%</span></div>
+        <div><span class="badge badge-tax">税</span> <strong>50%</strong> <span style="color:var(--success);font-size:10px;">現59%✅</span></div>
+        <div><span class="badge badge-civil">民法</span> <strong>30%</strong> <span style="color:var(--success);font-size:10px;">現30%✅</span></div>
+      </div>
+    </div>
+    <div class="card" style="border-color:var(--success);">
+      <div style="font-size:11px;font-weight:700;color:var(--success);margin-bottom:10px;">🏆 10月本番目標</div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:13px;">
+        <div><span class="badge badge-gyoho">業法</span> <strong>80%</strong> 16/20問</div>
+        <div><span class="badge badge-hourei">法令</span> <strong>70%</strong> 6/8問</div>
+        <div><span class="badge badge-tax">税</span> <strong>100%</strong> 3/3問</div>
+        <div><span class="badge badge-civil">民法</span> <strong>50%</strong> 7/14問</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 個人別 全国位置づけ -->
+  <div class="card" style="padding:16px;margin-bottom:16px;">
+    <div class="card-title">個人別 全国位置づけ（6/10模試スコア → 本番換算）</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">
+      模試の正答率を本番50問に換算した推定点と、直近2年の合格ラインとの比較です。
+    </div>
+    <div style="overflow-x:auto;">
+    <table>
+      <thead><tr>
+        <th>氏名</th><th>チーム</th><th>6/10正答率</th><th>推定点(50問換算)</th>
+        <th>R7合格点(33点)比</th><th>R6合格点(37点)比</th><th>判定</th>
+      </tr></thead>
+      <tbody id="natPersonTable"></tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- 全国比較カード -->
+  <div class="grid-2" style="margin-bottom:16px;">
+    <div class="card" style="padding:16px;">
+      <div class="card-title">🗾 全国比較（令和6年本試験）</div>
+      <table style="font-size:12px;width:100%;">
+        <thead><tr><th>指標</th><th>全国</th><th>当グループ</th><th>差</th></tr></thead>
+        <tbody>
+          <tr><td>グループ合格率(R6基準)</td><td style="color:var(--muted)">18.6%</td><td id="ov-nat-rate" style="font-weight:700">--</td><td id="ov-nat-rate-diff">--</td></tr>
+          <tr><td>平均 vs 合格ライン</td><td style="color:var(--muted)">74%（37点）</td><td id="ov-nat-avg" style="font-weight:700">--</td><td id="ov-nat-avg-diff">--</td></tr>
+          <tr><td style="color:var(--gyoho)">業法</td><td style="color:var(--muted)">目標80%</td><td id="ov-gyoho" style="font-weight:700">--</td><td id="ov-gyoho-diff">--</td></tr>
+          <tr><td style="color:var(--hourei)">法令</td><td style="color:var(--muted)">目標63%</td><td id="ov-hourei" style="font-weight:700">--</td><td id="ov-hourei-diff">--</td></tr>
+          <tr><td style="color:var(--tax)">税</td><td style="color:var(--muted)">目標67%</td><td id="ov-tax" style="font-weight:700">--</td><td id="ov-tax-diff">--</td></tr>
+          <tr><td style="color:var(--civil)">民法</td><td style="color:var(--muted)">目標64%</td><td id="ov-civil" style="font-weight:700">--</td><td id="ov-civil-diff">--</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card" style="padding:16px;">
+      <div class="card-title">🎯 合格圏内 人数</div>
+      <div style="display:flex;gap:12px;margin-bottom:12px;">
+        <div style="flex:1;text-align:center;padding:10px;background:var(--surface2);border-radius:8px;">
+          <div id="ov-pass-r7" style="font-size:28px;font-weight:900;color:var(--success)">--</div>
+          <div style="font-size:10px;color:var(--muted)">R7基準（66%以上）</div>
+        </div>
+        <div style="flex:1;text-align:center;padding:10px;background:var(--surface2);border-radius:8px;">
+          <div id="ov-pass-r6" style="font-size:28px;font-weight:900;color:var(--warn)">--</div>
+          <div style="font-size:10px;color:var(--muted)">R6基準（74%以上）</div>
+        </div>
+      </div>
+      <div id="ov-pass-names" style="font-size:11px;line-height:1.8;"></div>
+    </div>
+  </div>
+
+
+</div>
+
+<!-- TARGETS -->
+<div class="section" id="sec-targets">
+  <div class="sec-title">目標と現状ギャップ</div>
+  <div class="sec-sub">8月中間目標・10月本番目標に向けた現在地</div>
+  
+  <div class="card">
+    <div class="card-title">合格点シミュレーション</div>
+    <table>
+      <thead><tr><th>科目</th><th>問題数</th><th>現状</th><th>8月目標</th><th>10月目標</th><th>必要正解数</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-civil">民法</span></td><td>14問</td><td class="sc-d">30%（4問）</td><td>30%（4問）</td><td class="sc-b">50%（7問）</td><td>7問</td></tr>
+        <tr><td><span class="badge badge-hourei">法令</span></td><td>8問</td><td class="sc-c">55%（4問）</td><td>60%（5問）</td><td class="sc-a">70%（6問）</td><td>6問</td></tr>
+        <tr><td><span class="badge badge-tax">税</span></td><td>3問</td><td class="sc-b">59%（2問）</td><td>67%（2問）</td><td class="sc-s">100%（3問）</td><td>3問</td></tr>
+        <tr><td><span class="badge badge-gyoho">業法</span></td><td>20問</td><td class="sc-a">68%（14問）</td><td>80%（16問）</td><td class="sc-s">80%（16問）</td><td>16問</td></tr>
+        <tr style="background:rgba(79,142,247,.06)"><td><strong>合計</strong></td><td><strong>45問</strong></td><td class="sc-c"><strong>24問（53%）</strong></td><td><strong>27問（60%）</strong></td><td class="sc-a"><strong>32問（71%）</strong></td><td><strong>32問</strong></td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:10px;padding:10px;background:var(--surface2);border-radius:8px;font-size:11px;color:var(--muted);">
+      💡 宅建試験の合格ライン目安は例年<strong style="color:var(--accent2);">32〜38点</strong>。目標通り進めれば<strong style="color:var(--success);">32点達成で合格圏内</strong>に。民法の底上げが上振れの鍵。
+    </div>
+  </div>
+</div>
+
+<!-- TEAMS -->
+<div class="section" id="sec-teams">
+  <div class="sec-title">チーム別成績</div>
+  <div class="sec-sub">チームごとの平均スコアと推移</div>
+  <div class="grid-4" style="margin-bottom:16px;">
+    <div class="kpi"><div class="kpi-val">27.7</div><div class="kpi-label">城内チーム</div><div class="kpi-sub" style="color:var(--success)">▲最高平均（6/5時点）</div></div>
+    <div class="kpi"><div class="kpi-val">27.1</div><div class="kpi-label">生島チーム</div><div class="kpi-sub" style="color:var(--success)">直近急伸</div></div>
+    <div class="kpi"><div class="kpi-val">26.2</div><div class="kpi-label">本多チーム</div><div class="kpi-sub">安定推移</div></div>
+    <div class="kpi"><div class="kpi-val">24.7</div><div class="kpi-label">長渕チーム</div><div class="kpi-sub" style="color:var(--warn)">伸び代あり</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">チーム別 最新科目別正答率</div>
+    <table>
+      <thead><tr><th>チーム</th><th>民法</th><th>法令</th><th>税</th><th>業法</th><th>総合</th></tr></thead>
+      <tbody>
+        <tr><td><strong>城内チーム</strong></td><td class="sc-c">35%</td><td class="sc-c">55%</td><td class="sc-a">67%</td><td class="sc-a">76%</td><td class="sc-a">63%</td></tr>
+        <tr><td><strong>本多チーム</strong></td><td class="sc-c">36%</td><td class="sc-c">45%</td><td class="sc-b">44%</td><td class="sc-a">66%</td><td class="sc-c">53%</td></tr>
+        <tr><td><strong>生島チーム</strong></td><td class="sc-c">32%</td><td class="sc-a">66%</td><td class="sc-b">56%</td><td class="sc-b">64%</td><td class="sc-c">54%</td></tr>
+        <tr><td><strong>長渕チーム</strong></td><td class="sc-c">33%</td><td class="sc-c">50%</td><td class="sc-a">75%</td><td class="sc-b">64%</td><td class="sc-c">51%</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- INDIVIDUALS -->
+<div class="section" id="sec-individuals">
+  <div class="sec-title">個人別成績</div>
+  <div class="sec-sub">カードをクリックすると詳細レポートと個別アドバイスが表示されます</div>
+  <div class="filter-row">
+    <button class="filter-btn active" onclick="filterTeam('all',this)">全員</button>
+    <button class="filter-btn" onclick="filterTeam('城内チーム',this)">城内</button>
+    <button class="filter-btn" onclick="filterTeam('本多チーム',this)">本多</button>
+    <button class="filter-btn" onclick="filterTeam('生島チーム',this)">生島</button>
+    <button class="filter-btn" onclick="filterTeam('長渕チーム',this)">長渕</button>
+    <button class="filter-btn" onclick="filterTeam('中途オンボチーム',this)">中途オンボ</button>
+    <button class="filter-btn" onclick="filterTeam('村田チーム',this)">村田</button>
+  </div>
+  <div class="card">
+    <div class="card-title">受験者スコアランキング（最新回 6/10）</div>
+    <div style="overflow-x:auto;">
+    <table>
+      <thead><tr><th>順位</th><th>氏名</th><th>チーム</th><th>正答率</th><th>民法</th><th>法令</th><th>税</th><th>業法</th><th>前回比</th></tr></thead>
+      <tbody id="rankTable"></tbody>
+    </table>
+    </div>
+  </div>
+<div class="card" style="padding:16px;margin-bottom:16px;">
+    <div class="card-title">📊 科目別正答率グラフ（6/10）</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">チームフィルターに連動して自動更新されます</div>
+    <div id="radarWrap" style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+      <svg id="radarSVG" viewBox="0 0 320 280" width="320" style="flex-shrink:0;"></svg>
+      <div id="radarLegend" style="font-size:12px;line-height:2.2;"></div>
+    </div>
+  </div>
+  <div class="person-grid" id="personGrid"></div>
+</div>
+
+<!-- DOMAINS -->
+<div class="section" id="sec-domains">
+  <div class="sec-title">分野別詳細分析</div>
+  <div class="sec-sub">6/10模試（問題全文確認済み）の問題テーマ別 全体正答率</div>
+
+  <div style="margin-bottom:20px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+      <span class="badge badge-civil" style="font-size:12px;padding:4px 10px;">⚖️ 民法・権利関係（問1〜14）</span>
+      <span class="sc-d" style="font-family:'DM Mono'">全体平均：30%</span>
+    </div>
+    <div class="card" style="padding:16px;">
+      <div id="civilTopics"></div>
+    </div>
+  </div>
+
+  <div style="margin-bottom:20px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+      <span class="badge badge-hourei" style="font-size:12px;padding:4px 10px;">🏗️ 法令上の制限（問15〜22）</span>
+      <span class="sc-c" style="font-family:'DM Mono'">全体平均：55%</span>
+    </div>
+    <div class="card" style="padding:16px;">
+      <div id="houreiTopics"></div>
+    </div>
+  </div>
+
+  <div style="margin-bottom:20px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+      <span class="badge badge-tax" style="font-size:12px;padding:4px 10px;">💴 税・その他（問23〜25）</span>
+      <span class="sc-b" style="font-family:'DM Mono'">全体平均：59%</span>
+    </div>
+    <div class="card" style="padding:16px;">
+      <div id="taxTopics"></div>
+    </div>
+  </div>
+
+  <div style="margin-bottom:20px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+      <span class="badge badge-gyoho" style="font-size:12px;padding:4px 10px;">🏢 宅建業法（問26〜45）</span>
+      <span class="sc-a" style="font-family:'DM Mono'">全体平均：68%</span>
+    </div>
+    <div class="card" style="padding:16px;">
+      <div id="gyohoTopics"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TOPICS (fine-grained) -->
+<div class="section" id="sec-topics">
+  <div class="sec-title">テーマ別 全員正答状況</div>
+  <div class="sec-sub">問題ごとの正答率・テーマ・難易度・正解番号（回別切り替え可）</div>
+  <div class="card">
+    <div style="overflow-x:auto;">
+    <table id="topicTable">
+      <thead>
+        <tr><th>問</th><th>科目</th><th>テーマ</th><th>難易度</th><th>正解</th><th>全体正答率</th><th>状態</th></tr>
+      </thead>
+      <tbody id="topicBody"></tbody>
+    </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- SCHEDULE -->
+<div class="section" id="sec-schedule">
+  <div class="sec-title">学習スケジュール</div>
+  <div class="sec-sub">残り約130日（本試験：2026年10月19日）のロードマップ</div>
+  
+  <div class="card">
+    <div class="card-title">5フェーズ学習ロードマップ</div>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot" style="background:var(--accent);border-color:var(--accent);"></div>
+        <div class="tl-date">現在 〜 6月末</div>
+        <div class="tl-title">📌 フェーズ1：業法の得点固定化（最優先）</div>
+        <div class="tl-body">
+          <strong style="color:var(--gyoho);">業法優先：</strong>重要事項説明（35条）・37条書面の違い、クーリングオフ条件（喫茶店・事務所・書面告知から8日）、営業保証金の数字（主1000万・従500万）、報酬計算の公式を完全習得。<br>
+          6/10模試で業法68%→週次模試で80%を目指す。<br>
+          <strong style="color:var(--hourei);">法令：</strong>都市計画法の区域区分・用途地域13種を整理（暗記カード）。<br>
+          <strong style="color:var(--muted);">民法：</strong>代理・無権代理の基礎パターンを1テーマ/日でインプット。
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot" style="background:var(--hourei);border-color:var(--hourei);"></div>
+        <div class="tl-date">7月（残り〜83日）</div>
+        <div class="tl-title">🏗️ フェーズ2：法令の集中強化＋民法の基盤構築</div>
+        <div class="tl-body">
+          <strong style="color:var(--hourei);">法令：</strong>建築基準法（容積率・建蔽率・道路斜線）の計算演習。開発許可の数字（1000㎡/3000㎡/1ha）暗記。農地法の許可不要ケース。<br>
+          <strong style="color:var(--civil);">民法着手：</strong>抵当権の順位・消滅、相続分の計算、賃貸借の対抗要件。過去問を1分野50問ペースで回す。<br>
+          7月末ミニ模試で業法80%・法令60%を確認。
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot" style="background:var(--civil);border-color:var(--civil);"></div>
+        <div class="tl-date">8月（残り〜52日）</div>
+        <div class="tl-title">⚖️ フェーズ3：民法の得点力向上＋税の完全暗記</div>
+        <div class="tl-body">
+          <strong style="color:var(--civil);">民法強化：</strong>意思表示・代理・抵当権・相続の4テーマを集中攻略。50%（7/14問）を目標に。<br>
+          <strong style="color:var(--tax);">税の完全暗記：</strong>不動産取得税（税率4%、住宅特例3%・1200万控除）、固定資産税（1/4・1/6軽減）、印紙税・登録免許税・住宅ローン控除の要件を完全暗記。<br>
+          8月末：45問模試で35問以上を目標。
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot" style="background:var(--success);border-color:var(--success);"></div>
+        <div class="tl-date">9月（残り〜21日）</div>
+        <div class="tl-title">🔄 フェーズ4：全科目総仕上げ＋弱点潰し</div>
+        <div class="tl-body">
+          週2回の45問形式模試。目標：38問以上（84%）。<br>
+          間違えた問題を「知識不足 / ケアレスミス / 読み違い」に分類し、知識不足のみ徹底復習。<br>
+          直近5年分の本試験過去問を1周。時間配分（50問/120分）の練習。
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot" style="background:var(--accent2);border-color:var(--accent2);"></div>
+        <div class="tl-date">10月1〜18日（直前期）</div>
+        <div class="tl-title">⚡ フェーズ5：直前総仕上げ</div>
+        <div class="tl-body">
+          暗記の最終確認：税の数字・業法の手続き期間・免許の有効期間（5年）・各種届出期限。<br>
+          10月17・18日：本試験時間帯（午後1時〜3時）に合わせた時間帯で模擬演習。体調管理最優先。<br>
+          <strong style="color:var(--success);">10月19日（本試験）：全力を発揮！</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">週次学習量の目安</div>
+    <table>
+      <thead><tr><th>期間</th><th>1日の学習時間</th><th>メイン内容</th><th>模試頻度</th></tr></thead>
+      <tbody>
+        <tr><td>6月</td><td>1.5〜2時間</td><td>業法精読＋過去問演習</td><td>週1回</td></tr>
+        <tr><td>7月</td><td>2〜2.5時間</td><td>法令演習＋民法インプット</td><td>週1〜2回</td></tr>
+        <tr><td>8月</td><td>2.5〜3時間</td><td>民法演習＋税暗記＋全科目演習</td><td>週2回</td></tr>
+        <tr><td>9月</td><td>3〜4時間</td><td>実戦形式模試＋弱点復習</td><td>週2〜3回</td></tr>
+        <tr><td>10月（直前）</td><td>4〜5時間</td><td>総復習＋暗記確認</td><td>毎日</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL -->
+
+<!-- SLACK MODAL -->
+<div id="slackModalOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(30,39,97,.55);z-index:2000;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)closeSlackModal()">
+  <div style="background:#ffffff;border:1px solid #d0d5e8;border-radius:14px;width:100%;max-width:520px;padding:28px;position:relative;">
+    <button onclick="closeSlackModal()" style="position:absolute;top:14px;right:14px;background:#eef1f8;border:1px solid #2e3350;border-radius:6px;padding:3px 10px;color:#7b82a8;cursor:pointer;font-size:12px;">✕ 閉じる</button>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="#7C3AED"><path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/></svg>
+      <span style="font-size:18px;font-weight:900;">Slackで共有</span>
+    </div>
+    <p style="color:#7b82a8;font-size:12px;margin-bottom:20px;">Incoming Webhook URLを入力して全体サマリーを送信します</p>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:11px;color:#7b82a8;display:block;margin-bottom:5px;">Slack Webhook URL</label>
+      <input id="slackWebhookUrl" type="text" placeholder="https://hooks.slack.com/services/..." style="width:100%;padding:10px 12px;background:#eef1f8;border:1px solid #2e3350;border-radius:8px;color:#e8eaf6;font-size:12px;font-family:'Noto Sans JP',sans-serif;box-sizing:border-box;">
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="font-size:11px;color:#7b82a8;display:block;margin-bottom:8px;">送信内容のプレビュー</label>
+      <div id="slackPreview" style="background:#eef1f8;border:1px solid #2e3350;border-radius:8px;padding:14px;font-size:12px;color:#e8eaf6;line-height:1.8;white-space:pre-wrap;max-height:240px;overflow-y:auto;font-family:'DM Mono',monospace;"></div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="sendSlackMessage()" id="slackSendBtn" style="flex:1;background:linear-gradient(135deg,#4A154B,#611f69);border:none;border-radius:8px;color:#fff;padding:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans JP',sans-serif;">📤 Slackに送信</button>
+      <button onclick="copySlackText()" style="background:#eef1f8;border:1px solid #2e3350;border-radius:8px;color:#e8eaf6;padding:11px 18px;font-size:12px;cursor:pointer;font-family:'Noto Sans JP',sans-serif;">📋 コピー</button>
+    </div>
+    <div id="slackStatus" style="margin-top:10px;font-size:12px;text-align:center;"></div>
+  </div>
+</div>
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal"><button class="modal-close" onclick="closeModalDirect()">✕ 閉じる</button>
+  <div id="modalBody"></div></div>
+</div>
+
+<script>
+// ====== 6/10 正解・分野・難易度データ ======
+const answers_610 = {
+  1:{ans:1,diff:'B',subject:'民法',topic:'賃貸借・敷金・同時履行'},
+  2:{ans:1,diff:'D',subject:'民法',topic:'相殺'},
+  3:{ans:2,diff:'D',subject:'民法',topic:'委任契約・復代理'},
+  4:{ans:4,diff:'C',subject:'民法',topic:'相続・無権代理'},
+  5:{ans:4,diff:'D',subject:'民法',topic:'制限行為能力者（未成年）'},
+  6:{ans:3,diff:'D',subject:'民法',topic:'連帯債務'},
+  7:{ans:2,diff:'D',subject:'民法',topic:'債務不履行・契約解除'},
+  8:{ans:2,diff:'D',subject:'民法',topic:'説明義務違反・不法行為'},
+  9:{ans:1,diff:'D',subject:'民法',topic:'相続・遺産分割・賃料債権'},
+  10:{ans:2,diff:'C',subject:'民法',topic:'選択債権'},
+  11:{ans:2,diff:'D',subject:'民法',topic:'借地借家法（借地権）'},
+  12:{ans:3,diff:'B',subject:'民法',topic:'借地借家法（借家権）'},
+  13:{ans:2,diff:'D',subject:'民法',topic:'区分所有法'},
+  14:{ans:1,diff:'E',subject:'民法',topic:'不動産登記法'},
+  15:{ans:3,diff:'C',subject:'法令',topic:'都市計画法（開発許可）'},
+  16:{ans:4,diff:'B',subject:'法令',topic:'都市計画法（区域・用途地域）'},
+  17:{ans:1,diff:'D',subject:'法令',topic:'建築基準法（建蔽率・容積率・道路）'},
+  18:{ans:3,diff:'E',subject:'法令',topic:'建築基準法（総合設計・用途制限）'},
+  19:{ans:4,diff:'B',subject:'法令',topic:'宅地造成等規制法（盛土規制）'},
+  20:{ans:1,diff:'B',subject:'法令',topic:'土地区画整理法'},
+  21:{ans:1,diff:'B',subject:'法令',topic:'農地法'},
+  22:{ans:1,diff:'B',subject:'法令',topic:'国土利用計画法（事後届出）'},
+  23:{ans:2,diff:'E',subject:'税',topic:'住宅ローン控除（所得税）'},
+  24:{ans:1,diff:'B',subject:'税',topic:'不動産取得税'},
+  25:{ans:1,diff:'C',subject:'税',topic:'不動産鑑定評価基準'},
+  26:{ans:4,diff:'E',subject:'業法',topic:'重要事項説明（35条）既存建物'},
+  27:{ans:4,diff:'B',subject:'業法',topic:'免許制度'},
+  28:{ans:1,diff:'B',subject:'業法',topic:'宅建士登録・宅建士証'},
+  29:{ans:4,diff:'A',subject:'業法',topic:'業務上の規制（禁止行為）'},
+  30:{ans:2,diff:'B',subject:'業法',topic:'犯罪収益移転防止法'},
+  31:{ans:1,diff:'B',subject:'業法',topic:'保証協会・弁済業務保証金'},
+  32:{ans:1,diff:'B',subject:'業法',topic:'宅地の定義'},
+  33:{ans:3,diff:'A',subject:'業法',topic:'重要事項説明（35条書面）'},
+  34:{ans:2,diff:'C',subject:'業法',topic:'営業保証金・保証協会'},
+  35:{ans:3,diff:'A',subject:'業法',topic:'宅建士証・登録'},
+  36:{ans:3,diff:'B',subject:'業法',topic:'重要事項説明（貸借・売買）'},
+  37:{ans:4,diff:'E',subject:'業法',topic:'重要事項説明（詳細）'},
+  38:{ans:1,diff:'B',subject:'業法',topic:'媒介契約（34条書面）'},
+  39:{ans:2,diff:'C',subject:'業法',topic:'自ら売主制限（8種制限）'},
+  40:{ans:4,diff:'D',subject:'業法',topic:'案内所・届出（50条2項）'},
+  41:{ans:2,diff:'D',subject:'業法',topic:'37条書面'},
+  42:{ans:2,diff:'D',subject:'業法',topic:'クーリングオフ'},
+  43:{ans:4,diff:'C',subject:'業法',topic:'従業者名簿・標識・専任宅建士'},
+  44:{ans:4,diff:'E',subject:'業法',topic:'報酬計算'},
+  45:{ans:4,diff:'B',subject:'業法',topic:'住宅瑕疵担保責任（履行確保法）'},
+};
+
+// ====== 受験者データ（6/10回答＋過去履歴） ======
+const persons = [
+  {name:"梅本弥",team:"城内チーム",
+   scores:{514:87,520:64,527:76,605:76,610:null},
+   civil:{520:43,527:36,605:57},hourei:{514:88,520:75,527:100,605:75},tax:{514:100,520:33,527:100,605:33},gyoho:{514:85,520:80,527:90,605:95},
+   answers610:null},
+  {name:"西村匠平",team:"城内チーム",
+   scores:{514:81,520:null,527:67,605:78,610:67},
+   civil:{527:50,605:71,610:50},hourei:{514:75,527:50,605:63,610:50},tax:{514:100,527:33,605:100,610:33},gyoho:{514:80,527:90,605:85,610:90},
+   answers610:[1,4,3,4,3,2,1,1,2,4,3,2,1,1,4,1,2,4,3,3,1,2,2,2,3,3,4,2,4,4,1,3,3,2,2,3,3,4,4,3,1,2,4,1,2]},
+  {name:"水野友太郎",team:"城内チーム",
+   scores:{514:71,520:64,527:null,605:null,610:73},
+   civil:{520:43,610:50},hourei:{514:63,520:75,610:50},tax:{514:67,520:100,610:67},gyoho:{514:75,520:70,610:100},
+   answers610:[4,1,2,4,1,2,4,3,2,2,4,3,4,4,4,3,3,3,4,4,3,1,1,3,4,3,4,3,2,1,4,4,1,3,4,3,3,2,2,4,2,3,4,1,4]},
+  {name:"内海亮太",team:"城内チーム",
+   scores:{514:68,520:64,527:71,605:64,610:69},
+   civil:{520:36,527:36,605:43,610:29},hourei:{514:88,520:75,527:75,605:63,610:100},tax:{514:100,520:100,527:100,605:0,610:100},gyoho:{514:55,520:75,527:90,605:90,610:80},
+   answers610:[3,3,2,3,1,2,1,3,3,3,3,3,3,3,4,1,3,1,1,4,2,1,1,4,4,4,3,3,2,1,4,4,1,3,4,3,3,2,2,3,3,3,4,1,4]},
+  {name:"原良磨",team:"城内チーム",
+   scores:{514:61,520:47,527:40,605:49,610:60},
+   civil:{520:21,527:14,605:29,610:50},hourei:{514:50,520:25,527:38,605:38,610:38},tax:{514:67,520:33,527:33,605:33,610:33},gyoho:{514:65,520:75,527:60,605:70,610:80},
+   answers610:[1,3,2,4,4,1,1,1,2,1,4,1,3,2,4,3,3,3,4,1,2,3,4,4,3,3,3,3,1,1,4,4,1,3,1,3,3,2,2,4,2,1,4,1,4]},
+  {name:"小野元気",team:"城内チーム",
+   scores:{514:68,520:44,527:44,605:40,610:51},
+   civil:{520:14,527:21,605:7,610:21},hourei:{514:88,520:63,527:50,605:38,610:38},tax:{514:67,520:33,527:33,605:0,610:100},gyoho:{514:60,520:60,527:60,605:70,610:70},
+   answers610:[3,2,2,2,2,3,3,4,1,1,2,1,4,4,3,1,3,3,4,4,1,4,1,4,4,2,4,3,2,2,4,4,3,2,4,3,3,2,4,4,3,3,4,1,4]},
+  {name:"清永貴士",team:"城内チーム",
+   scores:{514:68,520:51,527:49,605:51,610:47},
+   civil:{520:14,527:14,605:14,610:14},hourei:{514:75,520:63,527:63,605:50,610:75},tax:{514:0,520:33,527:33,605:67,610:33},gyoho:{514:75,520:75,527:70,605:75,610:60},
+   answers610:[4,1,3,2,1,1,2,4,4,2,4,1,3,1,4,2,3,1,4,4,2,1,3,2,4,3,2,3,2,1,4,3,1,3,1,3,2,4,3,4,4,2,4,1,4]},
+  {name:"児玉遼嗣",team:"城内チーム",
+   scores:{514:74,520:73,527:47,605:56,610:null},
+   civil:{520:50,527:14,605:36},hourei:{514:63,520:100,527:63,605:63},tax:{514:33,520:67,527:100,605:0},gyoho:{514:85,520:80,527:55,605:75},
+   answers610:null},
+  {name:"伊藤右徳",team:"城内チーム",
+   scores:{514:71,520:56,527:64,605:67,610:null},
+   civil:{520:43,527:43,605:50},hourei:{514:88,520:50,527:50,605:75},tax:{514:67,520:0,527:67,605:33},gyoho:{514:65,520:75,527:85,605:80},
+   answers610:null},
+  {name:"髙橋拓也",team:"城内チーム",
+   scores:{514:71,520:56,527:56,605:51,610:null},
+   civil:{520:21,527:43,605:36},hourei:{514:75,520:75,527:63,605:50},tax:{514:67,520:67,527:67,605:33},gyoho:{514:70,520:70,527:60,605:65},
+   answers610:null},
+  {name:"鷲津澄",team:"城内チーム",
+   scores:{514:55,520:49,527:38,605:47,610:null},
+   civil:{520:29,527:21,605:14},hourei:{514:25,520:38,527:13,605:38},tax:{514:33,520:0,527:0,605:33},gyoho:{514:70,520:75,527:65,605:75},
+   answers610:null},
+  {name:"岩田寛生",team:"城内チーム",
+   scores:{514:77,520:62,527:64,605:null,610:null},
+   civil:{520:50,527:36},hourei:{514:75,520:50,527:63},tax:{514:100,520:0,527:67},gyoho:{514:75,520:85,527:85},
+   answers610:null},
+
+  {name:"上野大次郎",team:"本多チーム",
+   scores:{514:74,520:71,527:71,605:73,610:null},
+   civil:{520:50,527:43,605:50},hourei:{514:50,520:88,527:88,605:75},tax:{514:100,520:67,527:67,605:67},gyoho:{514:80,520:80,527:85,605:90},
+   answers610:null},
+  {name:"椿健太郎",team:"本多チーム",
+   scores:{514:68,520:64,527:69,605:56,610:49},
+   civil:{520:50,527:57,605:14,610:36},hourei:{514:63,520:38,527:63,605:75,610:63},tax:{514:33,520:67,527:67,605:33,610:33},gyoho:{514:75,520:85,527:80,605:80,610:55},
+   answers610:[3,2,2,2,1,4,3,1,1,3,4,3,4,4,4,3,4,2,1,4,2,1,3,3,4,3,4,3,2,1,1,2,2,3,3,2,3,3,1,3,2,2,4,1,4]},
+  {name:"渡邊航",team:"本多チーム",
+   scores:{514:52,520:62,527:49,605:69,610:null},
+   civil:{520:57,527:57,605:64},hourei:{514:38,520:88,527:25,605:25},tax:{514:0,520:100,527:0,605:67},gyoho:{514:65,520:50,527:60,605:90},
+   answers610:null},
+  {name:"砂川弘樹",team:"本多チーム",
+   scores:{514:65,520:42,527:49,605:64,610:62},
+   civil:{520:21,527:29,605:50,610:43},hourei:{514:63,520:75,527:75,605:63,610:63},tax:{514:67,520:0,527:0,605:67,610:67},gyoho:{514:65,520:50,527:60,605:75,610:75},
+   answers610:[3,3,3,3,3,3,3,3,3,3,4,4,3,2,3,2,3,1,1,4,2,3,3,4,4,3,1,3,2,1,4,4,1,4,4,2,3,2,2,4,3,2,4,1,4]},
+  {name:"高橋紅羽",team:"本多チーム",
+   scores:{514:68,520:51,527:67,605:58,610:null},
+   civil:{520:21,527:43,605:50},hourei:{514:75,520:63,527:63,605:38},tax:{514:67,520:0,527:67,605:33},gyoho:{514:65,520:75,527:85,605:75},
+   answers610:null},
+  {name:"吉良勇心",team:"生島チーム",
+   scores:{514:71,520:49,527:60,605:62,610:64},
+   civil:{520:0,527:21,605:21,610:29},hourei:{514:75,520:75,527:63,605:88,610:75},tax:{514:67,520:33,527:100,605:0,610:33},gyoho:{514:70,520:75,527:80,605:90,610:90},
+   answers610:[3,3,3,3,3,3,3,3,3,3,3,1,4,1,4,4,3,3,1,4,2,1,3,3,4,3,4,3,2,1,4,4,1,3,4,3,3,3,2,4,3,3,4,1,4]},
+  {name:"大橋遼太郎",team:"本多チーム",
+   scores:{514:61,520:60,527:53,605:51,610:null},
+   civil:{520:43,527:21,605:14},hourei:{514:88,520:63,527:50,605:75},tax:{514:67,520:33,527:67,605:33},gyoho:{514:50,520:75,527:75,605:70},
+   answers610:null},
+  {name:"大角秋皓",team:"本多チーム",
+   scores:{514:52,520:44,527:36,605:38,610:36},
+   civil:{520:21,527:7,605:21,610:21},hourei:{514:25,520:25,527:38,605:13,610:0},tax:{514:33,520:33,527:33,605:0,610:0},gyoho:{514:65,520:70,527:55,605:65,610:65},
+   answers610:[4,2,4,1,3,2,4,2,1,3,2,3,2,3,3,3,2,4,2,1,4,3,2,3,2,3,4,3,2,2,3,1,4,1,2,3,3,2,3,4,2,3,4,1,4]},
+  {name:"渡部将祐",team:"本多チーム",
+   scores:{514:48,520:47,527:44,605:60,610:44},
+   civil:{520:29,527:14,605:36,610:36},hourei:{514:50,520:0,527:75,605:63,610:13},tax:{514:0,520:33,527:0,605:33,610:0},gyoho:{514:55,520:80,527:60,605:80,610:70},
+   answers610:[4,3,3,3,4,1,3,3,4,1,3,3,1,2,2,3,3,3,3,3,3,3,3,3,3,3,4,3,2,1,3,1,1,1,1,3,3,2,3,3,2,3,4,1,4]},
+  {name:"小山裕太",team:"本多チーム",
+   scores:{514:77,520:null,527:64,605:56,610:null},
+   civil:{527:50,605:14},hourei:{514:88,527:50,605:75},tax:{514:67,527:67,605:33},gyoho:{514:70,527:80,605:80},
+   answers610:null},
+  {name:"眞鍋尊彦",team:"本多チーム",
+   scores:{514:84,520:null,527:60,605:null,610:null},
+   civil:{527:29},hourei:{514:100,527:50},tax:{514:100,527:33},gyoho:{514:75,527:90},
+   answers610:null},
+  {name:"有馬廉太郎",team:"本多チーム",
+   scores:{514:68,520:null,527:69,605:null,610:null},
+   civil:{527:43},hourei:{514:50,527:75},tax:{514:33,527:33},gyoho:{514:80,527:90},
+   answers610:null},
+
+  {name:"宮本暁",team:"生島チーム",
+   scores:{514:77,520:53,527:null,605:69,610:67},
+   civil:{520:7,605:36,610:29},hourei:{514:88,520:100,605:88,610:88},tax:{514:67,520:0,605:67,610:33},gyoho:{514:75,520:75,605:85,610:90},
+   answers610:[3,2,2,2,2,1,4,3,3,1,4,3,3,1,4,4,3,1,1,4,2,1,3,2,4,3,4,3,2,3,4,4,1,3,4,4,3,2,2,4,2,3,4,1,4]},
+  {name:"田中湧士",team:"生島チーム",
+   scores:{514:71,520:null,527:76,605:62,610:76},
+   civil:{527:64,605:50,610:79},hourei:{514:75,527:75,605:63,610:63},tax:{514:67,527:67,605:0,610:33},gyoho:{514:70,527:85,605:80,610:85},
+   answers610:[1,1,2,3,4,2,3,2,2,3,4,3,2,2,4,1,3,3,4,4,1,1,4,3,4,3,3,3,2,1,4,4,1,3,4,3,3,2,3,4,3,3,4,1,4]},
+  {name:"田中晶久",team:"生島チーム",
+   scores:{514:71,520:null,527:64,605:71,610:71},
+   civil:{527:50,605:79,610:79},hourei:{514:75,527:75,605:50,610:50},tax:{514:100,527:100,605:67,610:67},gyoho:{514:65,527:65,605:75,610:75},
+   answers610:[1,4,3,4,2,2,1,1,2,4,3,2,2,3,4,2,2,2,3,1,3,1,2,2,2,3,4,4,4,4,4,3,3,3,4,4,3,4,4,2,2,2,4,2,2]},
+  {name:"倉科壮登",team:"生島チーム",
+   scores:{514:74,520:58,527:60,605:58,610:60},
+   civil:{520:29,527:36,605:21,610:36},hourei:{514:88,520:63,527:75,605:63,610:88},tax:{514:33,520:67,527:33,605:33,610:33},gyoho:{514:75,520:75,527:75,605:85,610:70},
+   answers610:[1,3,3,2,4,2,3,4,1,3,2,4,1,2,4,1,3,3,1,4,2,1,4,3,4,3,4,4,2,1,4,3,3,3,2,3,3,2,2,4,3,2,4,1,4]},
+  {name:"辻嶋佑紀",team:"生島チーム",
+   scores:{514:65,520:67,527:62,605:60,610:58},
+   civil:{520:57,527:50,605:29,610:43},hourei:{514:38,520:50,527:88,605:75,610:38},tax:{514:67,520:100,527:33,605:33,610:100},gyoho:{514:75,520:75,527:65,605:80,610:70},
+   answers610:[1,3,2,3,1,2,4,3,2,1,4,1,4,2,3,4,2,1,1,2,1,1,1,4,4,3,2,3,2,2,4,3,1,3,4,3,3,3,2,4,3,2,4,1,4]},
+  {name:"寺脇円香",team:"村田チーム",
+   scores:{514:61,520:58,527:null,605:64,610:67},
+   civil:{520:29,605:50,610:43},hourei:{514:38,520:38,605:50,610:75},tax:{514:67,520:100,605:0,610:67},gyoho:{514:70,520:80,605:90,610:80},
+   answers610:[1,3,3,3,4,2,1,3,2,1,4,1,2,3,3,3,3,1,1,4,2,1,1,3,4,3,4,3,1,2,4,4,1,2,4,3,3,2,2,4,2,3,2,1,4]},
+  {name:"吉田慎梧",team:"生島チーム",
+   scores:{514:65,520:44,527:42,605:null,610:40},
+   civil:{520:21,527:29,610:29},hourei:{514:63,520:25,527:38,610:75},tax:{514:0,520:0,527:0,610:67},gyoho:{514:75,520:75,527:60,610:30},
+   answers610:[4,1,4,1,3,2,3,3,3,4,2,1,3,2,4,1,3,4,1,4,2,4,1,3,4,4,2,4,1,3,3,4,2,3,1,3,2,3,1,2,4,3,4,1,3]},
+  {name:"山本美佐希",team:"生島チーム",
+   scores:{514:74,520:null,527:58,605:null,610:56},
+   civil:{527:21,610:36},hourei:{514:88,527:75,610:75},tax:{514:33,527:67,610:67},gyoho:{514:75,527:75,610:60},
+   answers610:[4,1,4,3,3,3,3,3,3,1,3,3,3,3,4,1,3,4,1,4,2,4,1,3,4,4,2,4,2,2,4,1,1,3,2,3,3,3,2,4,3,3,4,1,4]},
+  {name:"吉田剛",team:"村田チーム",
+   scores:{514:61,520:36,527:27,605:56,610:56},
+   civil:{520:29,527:21,605:29,610:36},hourei:{514:75,520:0,527:13,605:50,610:50},tax:{514:33,520:0,527:33,605:67,610:67},gyoho:{514:60,520:60,527:35,605:75,610:70},
+   answers610:[1,1,3,1,1,1,1,2,2,3,1,1,2,1,2,1,4,4,3,2,1,2,2,3,3,3,4,3,4,4,1,2,2,4,2,4,3,4,4,4,1,2,4,1,2]},
+  {name:"奥井星",team:"生島チーム",
+   scores:{514:45,520:38,527:49,605:58,610:40},
+   civil:{520:21,527:36,605:29,610:21},hourei:{514:25,520:13,527:63,605:63,610:63},tax:{514:0,520:33,527:33,605:67,610:33},gyoho:{514:60,520:60,527:55,605:75,610:45},
+   answers610:[3,2,2,2,1,4,3,1,1,1,3,3,3,3,3,1,4,2,1,4,2,1,3,3,4,3,2,4,2,3,3,3,1,4,1,3,3,2,3,4,4,3,3,2,4]},
+  {name:"小塚雅英",team:"生島チーム",
+   scores:{514:39,520:null,527:null,605:null,610:62},
+   civil:{610:36},hourei:{514:25,610:75},tax:{514:33,610:67},gyoho:{514:45,610:75},
+   answers610:[4,3,2,2,3,1,4,3,2,1,2,2,2,2,4,1,3,1,2,2,2,1,1,3,4,3,4,3,2,2,4,3,1,2,4,3,3,1,2,4,3,3,4,1,4]},
+  {name:"伊東雅晃",team:"生島チーム",
+   scores:{514:65,520:36,527:38,605:49,610:53},
+   civil:{520:21,527:29,605:36,610:29},hourei:{514:50,520:25,527:13,605:50,610:50},tax:{514:33,520:0,527:0,605:33,610:100},gyoho:{514:75,520:55,527:60,605:60,610:65},
+   answers610:[1,2,4,3,4,3,2,4,1,2,1,3,3,4,3,2,3,1,1,4,1,3,1,4,4,3,4,3,2,1,4,4,1,3,4,1,1,4,4,4,2,2,3,4,4]},
+  {name:"梶嵜大生",team:"生島チーム",
+   scores:{514:81,520:51,527:null,605:null,610:null},
+   civil:{520:36},hourei:{514:88,520:63},tax:{514:100,520:67},gyoho:{514:75,520:55},
+   answers610:null},
+  {name:"岡本大輔",team:"生島チーム",
+   scores:{514:52,520:null,527:null,605:49,610:47},
+   civil:{605:36,610:14},hourei:{514:38,605:50,610:50},tax:{514:67,605:33,610:33},gyoho:{514:55,605:60,610:70},
+   answers610:[3,2,3,3,1,1,1,3,4,4,4,4,4,4,3,1,3,3,3,2,2,1,2,3,4,3,4,3,1,1,4,4,3,2,4,3,3,2,2,4,3,3,4,3,2]},
+
+  {name:"山田奨真",team:"長渕チーム",
+   scores:{514:77,520:64,527:60,605:64,610:67},
+   civil:{520:43,527:29,605:29,610:36},hourei:{514:75,520:75,527:63,605:75,610:75},tax:{514:67,520:67,527:100,605:67,610:100},gyoho:{514:80,520:75,527:75,605:85,610:80},
+   answers610:[3,3,3,3,3,3,3,3,3,3,3,3,3,3,4,1,3,1,4,2,2,1,1,4,4,3,3,4,2,1,4,4,1,3,4,3,3,2,2,4,3,1,4,1,4]},
+  {name:"柳田洋輔",team:"長渕チーム",
+   scores:{514:61,520:62,527:62,605:71,610:78},
+   civil:{520:43,527:36,605:50,610:64},hourei:{514:50,520:100,527:63,605:50,610:75},tax:{514:33,520:67,527:67,605:67,610:100},gyoho:{514:70,520:60,527:80,605:95,610:85},
+   answers610:[3,1,2,3,1,3,1,3,2,3,2,3,2,2,1,4,3,1,1,4,2,1,1,4,4,3,4,3,2,1,3,1,1,3,4,3,3,2,2,4,2,2,4,1,4]},
+  {name:"草野陽輝",team:"長渕チーム",
+   scores:{514:68,520:56,527:53,605:60,610:73},
+   civil:{520:29,527:29,605:36,610:43},hourei:{514:88,520:75,527:88,605:38,610:88},tax:{514:33,520:0,527:33,605:33,610:67},gyoho:{514:65,520:75,527:60,605:90,610:90},
+   answers610:[3,1,4,4,1,2,3,2,2,1,4,3,4,3,4,1,3,1,4,4,2,1,1,3,4,3,4,3,2,2,4,4,1,3,4,3,3,2,2,4,4,3,4,1,4]},
+  {name:"宮﨑稜平",team:"長渕チーム",
+   scores:{514:74,520:58,527:47,605:56,610:58},
+   civil:{520:21,527:21,605:36,610:21},hourei:{514:75,520:100,527:63,605:50,610:50},tax:{514:33,520:33,527:33,605:33,610:100},gyoho:{514:80,520:70,527:60,605:75,610:80},
+   answers610:[1,2,1,3,4,2,4,1,3,3,2,4,1,1,4,3,3,1,4,2,1,1,1,4,4,3,4,3,2,2,4,4,4,3,4,3,3,4,2,3,2,3,4,1,4]},
+  {name:"大槻直人",team:"長渕チーム",
+   scores:{514:16,520:24,527:53,605:60,610:56},
+   civil:{520:7,527:57,605:43,610:50},hourei:{514:0,520:38,527:50,605:38,610:38},tax:{514:0,520:0,527:67,605:67,610:67},gyoho:{514:25,520:35,527:50,605:80,610:65},
+   answers610:[1,1,4,2,3,3,3,1,2,2,1,2,2,2,4,3,2,4,1,1,2,2,1,3,4,3,3,3,2,2,4,4,4,2,4,3,3,2,1,4,2,2,4,1,3]},
+  {name:"金井伸悟",team:"長渕チーム",
+   scores:{514:71,520:64,527:null,605:62,610:58},
+   civil:{520:43,605:50,610:43},hourei:{514:88,520:88,605:88,610:50},tax:{514:100,520:100,605:0,610:67},gyoho:{514:60,520:65,605:70,610:70},
+   answers610:[1,3,2,3,2,3,4,3,2,1,4,1,1,3,1,2,3,1,1,1,2,3,1,2,4,3,4,4,2,1,4,1,1,3,2,2,3,3,2,4,2,2,4,1,4]},
+  {name:"笛吹友陽",team:"村田チーム",
+   scores:{514:null,520:62,527:58,605:69,610:64},
+   civil:{520:57,527:36,605:57,610:43},hourei:{520:63,527:63,605:50,610:75},tax:{520:67,527:67,605:33,610:67},gyoho:{520:65,527:70,605:90,610:75},
+   answers610:[1,1,2,2,3,2,4,3,3,2,2,3,4,2,4,4,3,1,1,2,2,1,1,3,4,2,3,4,2,3,4,4,1,2,4,3,3,2,2,4,2,3,4,1,4]},
+  {name:"辻あゆみ",team:"長渕チーム",
+   scores:{514:68,520:47,527:47,605:49,610:null},
+   civil:{520:14,527:21,605:21},hourei:{514:50,520:75,527:38,605:63},tax:{514:67,520:0,527:33,605:33},gyoho:{514:75,520:65,527:70,605:65},
+   answers610:null},
+  {name:"柳和磨",team:"長渕チーム",
+   scores:{514:61,520:51,527:null,605:53,610:null},
+   civil:{520:50,605:50},hourei:{514:63,520:50,605:13},tax:{514:67,520:67,605:33},gyoho:{514:60,520:50,605:75},
+   answers610:null},
+  {name:"藏屋翔太",team:"長渕チーム",
+   scores:{514:52,520:36,527:49,605:53,610:null},
+   civil:{520:14,527:14,605:50},hourei:{514:50,520:38,527:75,605:63},tax:{514:100,520:0,527:33,605:33},gyoho:{514:45,520:55,527:65,605:55},
+   answers610:null},
+  {name:"富山かりん",team:"長渕チーム",
+   scores:{514:45,520:44,527:33,605:null,610:36},
+   civil:{520:29,527:21,610:36},hourei:{514:50,520:25,527:0,610:0},tax:{514:33,520:67,527:33,610:67},gyoho:{514:45,520:60,527:55,610:45},
+   answers610:[2,1,2,2,3,2,2,1,2,1,4,3,1,1,3,2,1,3,2,1,4,4,1,3,4,3,2,4,2,3,4,3,4,1,1,3,3,3,4,2,2,1,4,1,4]},
+  {name:"山本大誠",team:"長渕チーム",
+   scores:{514:42,520:29,527:44,605:40,610:null},
+   civil:{520:14,527:36,605:21},hourei:{514:13,520:13,527:13,605:13},tax:{514:33,520:0,527:33,605:33},gyoho:{514:55,520:50,527:65,605:65},
+   answers610:null},
+  {name:"阿部 悠紀",team:"長渕チーム",
+   scores:{514:68,520:null,527:null,605:47,610:null},
+   civil:{605:21},hourei:{514:88,605:63},tax:{514:33,605:33},gyoho:{514:65,605:60},
+   answers610:null},
+  {name:"河井哲太",team:"長渕チーム",
+   scores:{514:45,520:null,527:null,605:29,610:null},
+   civil:{605:14},hourei:{514:63,605:0},tax:{514:33,605:0},gyoho:{514:40,605:55},
+   answers610:null},
+  {name:"井口和馬",team:"長渕チーム",
+   scores:{514:55,520:67,527:64,605:null,610:null},
+   civil:{520:21,527:43},hourei:{514:75,520:88,527:75},tax:{514:0,520:67,527:33},gyoho:{514:55,520:90,527:80},
+   answers610:null},
+  {name:"大川裕貴",team:"村田チーム",
+   scores:{514:52,520:31,527:40,605:null,610:51},
+   civil:{520:0,527:35,610:36},hourei:{514:50,520:13,527:25,610:38},tax:{514:33,520:67,527:0,610:67},gyoho:{514:55,520:55,527:55,610:65},
+   answers610:[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,4,3,1,2,2,4,1,1,3,4,3,1,3,1,2,4,4,3,3,4,3,3,2,2,4,3,4,4,1,3]},
+
+  {name:"冨髙翔吾",team:"中途オンボチーム",
+   scores:{514:null,520:36,527:38,605:40,610:53},
+   civil:{520:14,527:36,605:14,610:36},hourei:{520:38,527:25,605:38,610:13},tax:{520:33,527:0,605:67,610:100},gyoho:{520:50,527:50,605:55,610:75},
+   answers610:[4,1,4,3,3,2,3,4,3,3,4,3,4,3,1,3,1,3,1,2,3,4,1,4,4,3,4,3,2,1,2,4,1,3,4,3,3,2,2,3,4,3,4,3,3]},
+  {name:"矢満田衛良",team:"中途オンボチーム",
+   scores:{514:null,520:44,527:49,605:null,610:null},
+   civil:{520:29,527:50},hourei:{520:13,527:38},tax:{520:67,527:33},gyoho:{520:65,527:55},
+   answers610:null},
+  {name:"山下象正",team:"中途オンボチーム",
+   scores:{514:null,520:49,527:44,605:null,610:null},
+   civil:{520:57,527:29},hourei:{520:38,527:25},tax:{520:0,527:33},gyoho:{520:55,527:65},
+   answers610:null},
+  {name:"山崎郁",team:"中途オンボチーム",
+   scores:{514:null,520:33,527:47,605:null,610:null},
+   civil:{520:14,527:36},hourei:{520:13,527:50},tax:{520:33,527:0},gyoho:{520:55,527:60},
+   answers610:null},
+  {name:"新井イケンナ望在",team:"中途オンボチーム",
+   scores:{514:null,520:22,527:47,605:40,610:null},
+   civil:{520:7,527:36,605:43},hourei:{520:38,527:38,605:13},tax:{520:0,527:33,605:33},gyoho:{520:30,527:60,605:50},
+   answers610:null},
+  {name:"冨谷暁",team:"中途オンボチーム",
+   scores:{514:null,520:null,527:27,605:null,610:null},
+   civil:{527:36},hourei:{527:25},tax:{527:33},gyoho:{527:20},
+   answers610:null},
+  {name:"塚田恵瑠",team:"中途オンボチーム",
+   scores:{514:null,520:null,527:27,605:null,610:null},
+   civil:{527:21},hourei:{527:25},tax:{527:67},gyoho:{527:25},
+   answers610:null},
+  {name:"丸尾健",team:"中途オンボチーム",
+   scores:{514:null,520:40,527:null,605:null,610:null},
+   civil:{520:21},hourei:{520:25},tax:{520:33},gyoho:{520:60},
+   answers610:null},
+  {name:"松永琉汰",team:"中途オンボチーム",
+   scores:{514:null,520:36,527:null,605:null,610:null},
+   civil:{520:14},hourei:{520:38},tax:{520:33},gyoho:{520:50},
+   answers610:null},
+  {name:"小野崎翔",team:"中途オンボチーム",
+   scores:{514:null,520:null,527:29,605:null,610:null},
+   civil:{527:36},hourei:{527:25},tax:{527:0},gyoho:{527:30},
+   answers610:null},
+  {name:"関竜一朗",team:"中途オンボチーム",
+   scores:{514:null,520:null,527:29,605:null,610:null},
+   civil:{527:21},hourei:{527:38},tax:{527:33},gyoho:{527:30},
+   answers610:null},
+  {name:"佐々木勝太郎",team:"中途オンボチーム",
+   scores:{514:null,520:null,527:29,605:null,610:null},
+   civil:{527:7},hourei:{527:13},tax:{527:33},gyoho:{527:50},
+   answers610:null},
+  {name:"坪井梓",team:"中途オンボチーム",
+   scores:{514:null,520:null,527:24,605:null,610:null},
+   civil:{527:14},hourei:{527:50},tax:{527:0},gyoho:{527:25},
+   answers610:null},
+  {name:"井上 仁",team:"中途オンボチーム",
+   scores:{514:null,520:24,527:null,605:null,610:null},
+   civil:{520:7},hourei:{520:25},tax:{520:33},gyoho:{520:35},
+   answers610:null},
+];
+
+const rounds=['514','520','527','605','610'];
+const roundLabels={'514':'5/14','520':'5/20','527':'5/27','605':'6/5','610':'6/10'};
+
+function getScoreColor(v){
+  if(v===null||v===undefined)return'#7b82a8';
+  if(v>=80)return'var(--success)';if(v>=70)return'var(--accent)';
+  if(v>=60)return'var(--accent2)';if(v>=50)return'var(--warn)';return'var(--danger)';
+}
+function getScoreClass(v){
+  if(v===null||v===undefined)return'';
+  if(v>=80)return'sc-s';if(v>=70)return'sc-a';if(v>=60)return'sc-b';if(v>=50)return'sc-c';return'sc-d';
+}
+function getLatest(p){
+  for(let r of['610','605','527','520','514']){
+    if(p.scores[r]!==null&&p.scores[r]!==undefined)return p.scores[r];
+  }return null;
+}
+
+// ====== TOPIC TABLE (6/10) ======
+function buildTopicTable(){
+  const tbody=document.getElementById('topicBody');
+  // 各問の全員正答率計算
+  const total={}, correct={};
+  persons.forEach(p=>{
+    if(!p.answers610)return;
+    p.answers610.forEach((ans,i)=>{
+      const q=i+1;
+      if(!total[q])total[q]=0;
+      if(!correct[q])correct[q]=0;
+      total[q]++;
+      if(ans===answers_610[q].ans)correct[q]++;
+    });
+  });
+  const diffLabel={'A':'簡単','B':'やや簡単','C':'普通','D':'やや難','E':'難しい'};
+  const subjBadge={'民法':'badge-civil','法令':'badge-hourei','税':'badge-tax','業法':'badge-gyoho'};
+  let html='';
+  for(let q=1;q<=45;q++){
+    const d=answers_610[q];
+    const pct=total[q]?Math.round(correct[q]/total[q]*100):null;
+    const cls=getScoreClass(pct);
+    const status=pct===null?'--':pct>=80?'✅ 良好':pct>=60?'🟡 維持':pct>=40?'⚠️ 要注意':'🔴 要強化';
+    html+=`<tr>
+      <td style="font-family:'DM Mono';font-weight:700">${q}</td>
+      <td><span class="badge ${subjBadge[d.subject]}">${d.subject}</span></td>
+      <td style="font-size:11px">${d.topic}</td>
+      <td style="font-size:10px;color:var(--muted)">${diffLabel[d.diff]||d.diff}</td>
+      <td style="font-family:'DM Mono';font-weight:700">${d.ans}</td>
+      <td class="${cls}" style="font-family:'DM Mono'">${pct!==null?pct+'%':'--'}</td>
+      <td style="font-size:10px">${status}</td>
+    </tr>`;
+  }
+  tbody.innerHTML=html;
+}
+
+// ====== DOMAIN BARS ======
+function buildDomainBars(){
+  const total={}, correct={};
+  persons.forEach(p=>{
+    if(!p.answers610)return;
+    p.answers610.forEach((ans,i)=>{
+      const q=i+1;
+      if(!total[q])total[q]=0;if(!correct[q])correct[q]=0;
+      total[q]++;if(ans===answers_610[q].ans)correct[q]++;
+    });
+  });
+  // Group by topic
+  const topicData={};
+  for(let q=1;q<=45;q++){
+    const d=answers_610[q];
+    const key=d.subject+'|'+d.topic;
+    if(!topicData[key]){topicData[key]={subject:d.subject,topic:d.topic,total:0,correct:0};}
+    topicData[key].total+=total[q]||0;
+    topicData[key].correct+=correct[q]||0;
+  }
+  const colorMap={'民法':'var(--civil)','法令':'var(--hourei)','税':'var(--tax)','業法':'var(--gyoho)'};
+  const containers={'民法':'civilTopics','法令':'houreiTopics','税':'taxTopics','業法':'gyohoTopics'};
+  const grouped={'民法':[],'法令':[],'税':[],'業法':[]};
+  Object.values(topicData).forEach(t=>{
+    if(grouped[t.subject])grouped[t.subject].push(t);
+  });
+  ['民法','法令','税','業法'].forEach(subj=>{
+    const items=grouped[subj].sort((a,b)=>(b.correct/b.total||0)-(a.correct/a.total||0));
+    const color=colorMap[subj];
+    let html='';
+    items.forEach(item=>{
+      const pct=item.total?Math.round(item.correct/item.total*100):0;
+      const status=pct>=80?'✅ 良好':pct>=60?'🟡 維持':pct>=40?'⚠️ 注意':'🔴 強化';
+      html+=`<div class="topic-row">
+        <div class="topic-name">${item.topic}</div>
+        <div class="topic-bar-wrap"><div class="topic-bar"><div class="topic-fill" style="width:${pct}%;background:${color}"></div></div></div>
+        <div class="topic-pct ${getScoreClass(pct)}">${pct}%</div>
+        <div class="topic-status" style="font-size:10px">${status}</div>
+      </div>`;
+    });
+    document.getElementById(containers[subj]).innerHTML=html;
+  });
+}
+
+// ====== RANK TABLE ======
+function buildRankTable(){
+  const tbody=document.getElementById('rankTable');
+  const p610=persons.filter(p=>p.scores['610']!==null&&p.scores['610']!==undefined);
+  p610.sort((a,b)=>b.scores['610']-a.scores['610']);
+  let html='';
+  p610.forEach((p,i)=>{
+    const s=p.scores['610'];
+    const prev=p.scores['605'];
+    const trend=prev!==null&&prev!==undefined?(s-prev>0?`<span style="color:var(--success)">▲${s-prev}%</span>`:s-prev<0?`<span style="color:var(--danger)">▼${Math.abs(s-prev)}%</span>`:'→'):'--';
+    const c=p.civil&&p.civil['610']!==undefined?p.civil['610']+'%':'--';
+    const h=p.hourei&&p.hourei['610']!==undefined?p.hourei['610']+'%':'--';
+    const t=p.tax&&p.tax['610']!==undefined?p.tax['610']+'%':'--';
+    const g=p.gyoho&&p.gyoho['610']!==undefined?p.gyoho['610']+'%':'--';
+    html+=`<tr><td style="font-family:'DM Mono';color:var(--muted)">${i+1}</td>
+      <td style="font-weight:600;cursor:pointer;color:var(--accent)" onclick="openModal('${p.name}')">${p.name}</td>
+      <td style="font-size:11px;color:var(--muted)">${p.team}</td>
+      <td class="${getScoreClass(s)}" style="font-family:'DM Mono'">${s}%</td>
+      <td class="${getScoreClass(p.civil&&p.civil['610'])}" style="font-size:11px">${c}</td>
+      <td class="${getScoreClass(p.hourei&&p.hourei['610'])}" style="font-size:11px">${h}</td>
+      <td class="${getScoreClass(p.tax&&p.tax['610'])}" style="font-size:11px">${t}</td>
+      <td class="${getScoreClass(p.gyoho&&p.gyoho['610'])}" style="font-size:11px">${g}</td>
+      <td style="font-size:11px">${trend}</td></tr>`;
+  });
+  tbody.innerHTML=html;
+}
+
+// ====== PERSON CARDS ======
+function buildPersonGrid(teamFilter='all'){
+  const grid=document.getElementById('personGrid');
+  const filtered=teamFilter==='all'?persons:persons.filter(p=>p.team===teamFilter);
+  const sorted=[...filtered].sort((a,b)=>(getLatest(b)||0)-(getLatest(a)||0));
+  grid.innerHTML=sorted.map(p=>{
+    const latest=getLatest(p);
+    const col=getScoreColor(latest);
+    const dots=rounds.map(r=>{
+      const v=p.scores[r];
+      return`<div class="person-dot" style="background:${v!==null&&v!==undefined?getScoreColor(v):'var(--border)'}"></div>`;
+    }).join('');
+    const validScores=rounds.map(r=>p.scores[r]).filter(v=>v!==null&&v!==undefined);
+    let trend='';
+    if(validScores.length>=2){
+      const diff=validScores[validScores.length-1]-validScores[validScores.length-2];
+      trend=diff>0?`<span style="color:var(--success);font-size:10px">▲${diff}%</span>`:
+            diff<0?`<span style="color:var(--danger);font-size:10px">▼${Math.abs(diff)}%</span>`:
+            `<span style="color:var(--muted);font-size:10px">→</span>`;
+    }
+    return`<div class="person-card" data-team="${p.team}" onclick="openModal('${p.name}')">
+      <div class="person-name">${p.name}</div>
+      <div class="person-team">${p.team}</div>
+      <div style="display:flex;align-items:flex-end;gap:8px;">
+        <div class="person-score" style="color:${col}">${latest!==null?latest+'%':'--'}</div>${trend}
+      </div>
+      <div style="display:flex;gap:4px;margin-top:8px;align-items:center;">${dots}
+        <span style="font-size:9px;color:var(--muted);margin-left:4px">5/14→6/10</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ====== MODAL ======
+function openModal(name){
+  const p=persons.find(x=>x.name===name);if(!p)return;
+  const latest=getLatest(p);
+  let latestCivil='--',latestHourei='--',latestTax='--',latestGyoho='--';
+  for(let r of['610','605','527','520','514']){
+    if(p.civil&&p.civil[r]!==undefined&&latestCivil==='--')latestCivil=p.civil[r];
+    if(p.hourei&&p.hourei[r]!==undefined&&latestHourei==='--')latestHourei=p.hourei[r];
+    if(p.tax&&p.tax[r]!==undefined&&latestTax==='--')latestTax=p.tax[r];
+    if(p.gyoho&&p.gyoho[r]!==undefined&&latestGyoho==='--')latestGyoho=p.gyoho[r];
+  }
+  const histRows=rounds.map(r=>{
+    const v=p.scores[r];
+    if(v===null||v===undefined)return`<tr><td>${roundLabels[r]}</td><td style="color:var(--muted)">未受験</td><td>--</td><td>--</td><td>--</td><td>--</td></tr>`;
+    const c=p.civil&&p.civil[r]!==undefined?p.civil[r]+'%':'--';
+    const h=p.hourei&&p.hourei[r]!==undefined?p.hourei[r]+'%':'--';
+    const t=p.tax&&p.tax[r]!==undefined?p.tax[r]+'%':'--';
+    const g=p.gyoho&&p.gyoho[r]!==undefined?p.gyoho[r]+'%':'--';
+    return`<tr><td>${roundLabels[r]}</td><td class="${getScoreClass(v)}">${v}%</td>
+      <td class="${getScoreClass(p.civil&&p.civil[r])}">${c}</td>
+      <td class="${getScoreClass(p.hourei&&p.hourei[r])}">${h}</td>
+      <td class="${getScoreClass(p.tax&&p.tax[r])}">${t}</td>
+      <td class="${getScoreClass(p.gyoho&&p.gyoho[r])}">${g}</td></tr>`;
+  }).join('');
+
+  // 6/10問別正解状況 + 間違い詳細一覧
+  let q610html='';
+  if(p.answers610){
+    const subjColor={'民法':'var(--civil)','法令':'var(--hourei)','税':'var(--tax)','業法':'var(--gyoho)'};
+    const subjBadge={'民法':'badge-civil','法令':'badge-hourei','税':'badge-tax','業法':'badge-gyoho'};
+    // 問別マス目
+    q610html=`<div class="card" style="padding:14px;margin-bottom:14px;">
+      <div class="card-title">6/10 問別正解状況（全45問）</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;">`;
+    p.answers610.forEach((ans,i)=>{
+      const q=i+1;
+      const d=answers_610[q];
+      const ok=ans===d.ans;
+      q610html+=`<div title="問${q}: ${d.topic}&#10;あなた:${ans} 正解:${d.ans}" style="width:32px;height:32px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;background:${ok?'rgba(79,207,148,0.2)':'rgba(247,95,95,0.2)'};color:${ok?'var(--success)':'var(--danger)'};border:1px solid ${ok?'rgba(79,207,148,0.4)':'rgba(247,95,95,0.4)'};">問${q}</div>`;
+    });
+    q610html+='</div><p style="font-size:10px;color:var(--muted);margin-top:8px;">ホバーで問題テーマを確認できます</p></div>';
+
+    // 間違い問題一覧
+    const mistakes=[];
+    p.answers610.forEach((ans,i)=>{
+      const q=i+1; const d=answers_610[q];
+      if(ans!==d.ans) mistakes.push({q,topic:d.topic,subject:d.subject,myAns:ans,correct:d.ans,diff:d.diff});
+    });
+    if(mistakes.length>0){
+      const diffLabel={'A':'簡単','B':'やや簡単','C':'普通','D':'やや難','E':'難しい'};
+      q610html+=`<div class="card" style="padding:14px;margin-bottom:14px;border-color:rgba(247,95,95,0.3);">
+        <div class="card-title" style="color:var(--danger);">❌ 間違えた問題（${mistakes.length}問）</div>
+        <table style="font-size:11px;">
+          <thead><tr><th>問</th><th>科目</th><th>テーマ</th><th>難易度</th><th>あなたの答え</th><th>正解</th></tr></thead>
+          <tbody>`;
+      mistakes.forEach(m=>{
+        q610html+=`<tr>
+          <td style="font-family:'DM Mono';font-weight:700">${m.q}</td>
+          <td><span class="badge ${subjBadge[m.subject]}">${m.subject}</span></td>
+          <td>${m.topic}</td>
+          <td style="color:var(--muted)">${diffLabel[m.diff]||m.diff}</td>
+          <td style="font-family:'DM Mono';color:var(--danger);font-weight:700">${m.myAns}</td>
+          <td style="font-family:'DM Mono';color:var(--success);font-weight:700">${m.correct}</td>
+        </tr>`;
+      });
+      q610html+=`</tbody></table></div>`;
+    }
+  }
+
+  const issues=[];
+  if(typeof latestGyoho==='number'&&latestGyoho<80)issues.push({label:'業法',current:latestGyoho,target:80,advice:'クーリングオフ（喫茶店・書面告知から8日間）・重要事項説明（35条）・37条書面の違い・報酬計算の公式を優先的に復習。'});
+  if(typeof latestHourei==='number'&&latestHourei<60)issues.push({label:'法令',current:latestHourei,target:60,advice:'都市計画法の区域区分・用途地域13種と建築基準法（容積率・建蔽率・道路斜線）の計算問題を集中学習。農地法の許可不要ケースを暗記。'});
+  if(typeof latestTax==='number'&&latestTax<50)issues.push({label:'税',current:latestTax,target:50,advice:'不動産取得税（税率4%・住宅特例3%・1200万控除）、固定資産税（1/4・1/6軽減）、印紙税の金額表を暗記カードで整理。'});
+  if(typeof latestCivil==='number'&&latestCivil<30)issues.push({label:'民法',current:latestCivil,target:30,advice:'代理・意思表示・抵当権の基礎パターンを1日1テーマで学習。判例の結論（〇×）を先に覚えてから理由を理解する順序が効果的。'});
+
+  const adviceHtml=issues.length===0?
+    `<div style="color:var(--success);padding:10px;background:rgba(79,207,148,0.1);border-radius:8px;font-size:12px;">🎉 全科目で目標水準達成圏。さらなる上振れを狙いましょう！</div>`:
+    issues.map(i=>`<div style="padding:10px 12px;margin-bottom:8px;background:rgba(247,148,79,0.1);border-left:3px solid var(--warn);border-radius:0 6px 6px 0;font-size:12px;">
+      <strong style="color:var(--warn)">⚠️ ${i.label}</strong>（現${i.current}% → 目標${i.target}%）<br>
+      <span style="color:var(--muted)">${i.advice}</span></div>`).join('');
+
+  document.getElementById('modalBody').innerHTML=`
+    <div class="modal-name">${p.name}</div>
+    <div class="modal-team">${p.team}</div>
+    <div class="grid-4" style="margin-bottom:16px;">
+      <div class="kpi" style="padding:12px"><div class="kpi-val" style="font-size:22px;color:${getScoreColor(latest)}">${latest!==null?latest+'%':'--'}</div><div class="kpi-label">最新総合</div></div>
+      <div class="kpi" style="padding:12px"><div class="kpi-val" style="font-size:22px;color:var(--civil)">${typeof latestCivil==='number'?latestCivil+'%':'--'}</div><div class="kpi-label">民法</div></div>
+      <div class="kpi" style="padding:12px"><div class="kpi-val" style="font-size:22px;color:var(--hourei)">${typeof latestHourei==='number'?latestHourei+'%':'--'}</div><div class="kpi-label">法令</div></div>
+      <div class="kpi" style="padding:12px"><div class="kpi-val" style="font-size:22px;color:var(--gyoho)">${typeof latestGyoho==='number'?latestGyoho+'%':'--'}</div><div class="kpi-label">業法</div></div>
+    </div>
+    <div class="card" style="padding:14px;margin-bottom:14px;">
+      <div class="card-title">回別スコア推移</div>
+      <table><thead><tr><th>回</th><th>総合</th><th>民法</th><th>法令</th><th>税</th><th>業法</th></tr></thead>
+      <tbody>${histRows}</tbody></table>
+    </div>
+    ${q610html}
+    `;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal(e){if(e.target===document.getElementById('modalOverlay'))closeModalDirect();}
+function closeModalDirect(){document.getElementById('modalOverlay').classList.remove('open');}
+
+function filterTeam(team,btn){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');buildPersonGrid(team);
+}
+function showSection(id, btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  const sec = document.getElementById('sec-'+id);
+  if(sec) sec.classList.add('active');
+  if(btn) btn.classList.add('active');
+  else {
+    document.querySelectorAll('.nav-btn').forEach(b=>{
+      if(b.getAttribute('onclick') && b.getAttribute('onclick').includes("'"+id+"'")) b.classList.add('active');
+    });
+  }
+}
+
+// Countdown
+const exam=new Date('2026-10-19');
+const now=new Date();
+document.getElementById('daysLeft').textContent=Math.ceil((exam-now)/(1000*60*60*24));
+
+// Init
+buildPersonGrid();
+buildRankTable();
+buildTopicTable();
+buildDomainBars();
+setTimeout(()=>buildSubjectRadar(null), 100);
+</script>
+
+<script>
+
+// ====== 6/5（令和6年本試験）問題テーマデータ ======
+// 合格基準点37点 / 正解: 1,4,4,4,2,1,1,1,2,4, 3,1,1,3,4,1,2,2,3,3, 1,4,2,4,3, 3,4,2,4,3, 1,3,3,3,2, 4,3,4,4,2, 1,4,4,1,2
+const answers_605 = {
+  1:{ans:1,diff:'C',subject:'民法',topic:'法律行為・無効・取消'},
+  2:{ans:4,diff:'D',subject:'民法',topic:'委任契約・復代理'},
+  3:{ans:4,diff:'B',subject:'民法',topic:'共有・不在共有者'},
+  4:{ans:4,diff:'C',subject:'民法',topic:'相続・売買契約'},
+  5:{ans:2,diff:'E',subject:'民法',topic:'履行遅滞・損害賠償'},
+  6:{ans:4,diff:'E',subject:'民法',topic:'地上権・抵当権'},
+  7:{ans:1,diff:'E',subject:'民法',topic:'占有訴権・賃貸借'},
+  8:{ans:1,diff:'D',subject:'民法',topic:'民法条文（契約成立）'},
+  9:{ans:2,diff:'D',subject:'民法',topic:'債務引受・承諾'},
+  10:{ans:4,diff:'C',subject:'民法',topic:'契約不適合（売主買主帰責なし）'},
+  11:{ans:3,diff:'D',subject:'民法',topic:'借地借家法（借地権）'},
+  12:{ans:3,diff:'D',subject:'民法',topic:'借地借家法（定期借家・普通借家）'},
+  13:{ans:1,diff:'C',subject:'民法',topic:'区分所有法'},
+  14:{ans:3,diff:'D',subject:'民法',topic:'不動産登記法'},
+  15:{ans:4,diff:'E',subject:'法令',topic:'都市計画法（地区計画・用途地域）'},
+  16:{ans:1,diff:'D',subject:'法令',topic:'都市計画法（開発許可）'},
+  17:{ans:2,diff:'E',subject:'法令',topic:'建築基準法（確認申請・用途変更）'},
+  18:{ans:2,diff:'D',subject:'法令',topic:'建築基準法（天空率・建蔽率）'},
+  19:{ans:3,diff:'C',subject:'法令',topic:'宅地造成等規制法（盛土規制）'},
+  20:{ans:3,diff:'C',subject:'法令',topic:'土地区画整理法'},
+  21:{ans:1,diff:'E',subject:'法令',topic:'農地法（3条・5条）'},
+  22:{ans:4,diff:'D',subject:'法令',topic:'国土利用計画法（事後届出・事前届出）'},
+  23:{ans:2,diff:'E',subject:'税',topic:'住宅ローン控除（所得税）'},
+  24:{ans:4,diff:'C',subject:'税',topic:'不動産取得税'},
+  25:{ans:3,diff:'C',subject:'税',topic:'不動産鑑定評価基準'},
+  26:{ans:3,diff:'B',subject:'業法',topic:'重要事項説明（35条）各種'},
+  27:{ans:4,diff:'C',subject:'業法',topic:'営業保証金'},
+  28:{ans:2,diff:'C',subject:'業法',topic:'報酬計算（複合問題）'},
+  29:{ans:4,diff:'C',subject:'業法',topic:'宅建士登録・宅建士証'},
+  30:{ans:3,diff:'C',subject:'業法',topic:'クーリングオフ'},
+  31:{ans:1,diff:'D',subject:'業法',topic:'監督処分・免許取消'},
+  32:{ans:3,diff:'B',subject:'業法',topic:'媒介契約（専任媒介）'},
+  33:{ans:3,diff:'B',subject:'業法',topic:'広告規制'},
+  34:{ans:3,diff:'C',subject:'業法',topic:'手付金等保全措置'},
+  35:{ans:2,diff:'D',subject:'業法',topic:'37条書面（電磁的方法）'},
+  36:{ans:4,diff:'D',subject:'業法',topic:'営業保証金・保証協会'},
+  37:{ans:3,diff:'C',subject:'業法',topic:'重要事項説明（ハザードマップ等）'},
+  38:{ans:4,diff:'B',subject:'業法',topic:'免許制度'},
+  39:{ans:4,diff:'D',subject:'業法',topic:'案内所・届出（50条2項）'},
+  40:{ans:2,diff:'A',subject:'業法',topic:'37条書面（貸借）'},
+  41:{ans:1,diff:'D',subject:'業法',topic:'重要事項説明（詳細）'},
+  42:{ans:2,diff:'C',subject:'業法',topic:'業務上の規制・死の告知ガイドライン'},
+  43:{ans:4,diff:'B',subject:'業法',topic:'宅建士証・登録（旧姓等）'},
+  44:{ans:1,diff:'B',subject:'業法',topic:'37条書面（各種）'},
+  45:{ans:2,diff:'B',subject:'業法',topic:'住宅瑕疵担保責任（履行確保法）'},
+};
+
+// 6/5の問題テーマを「テーマ別」タブに追加表示
+(function(){
+  const sec = document.getElementById('sec-topics');
+  if(!sec) return;
+  
+  // セレクタ追加
+  const existing = sec.querySelector('.filter-row') || null;
+  const filterDiv = document.createElement('div');
+  filterDiv.className = 'filter-row';
+  filterDiv.innerHTML = `
+    <button class="filter-btn active" onclick="switchTopicRound('610',this)">6/10 模試</button>
+    <button class="filter-btn" onclick="switchTopicRound('605',this)">6/5（令和6年本試験）</button>
+  `;
+  sec.insertBefore(filterDiv, sec.querySelector('.card'));
+})();
+
+window.switchTopicRound = function(round, btn){
+  document.querySelectorAll('#sec-topics .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(round==='527') { if(typeof build527TopicTable==='function') build527TopicTable(); }
+  else if(round==='520') { if(typeof build520TopicTable==='function') build520TopicTable(); }
+  else if(round==='514') { if(typeof build514TopicTable==='function') build514TopicTable(); }
+  else { const answers = round==='610' ? answers_610 : answers_605; buildTopicTableWith(answers, round); }
+};
+
+function buildTopicTableWith(answers, round){
+  const tbody=document.getElementById('topicBody');
+  // 6/5の個別回答を集計
+  const total={}, correct={};
+  
+  if(round==='605'){
+    // スプレッドシートデータから6/5の回答を再計算
+    const data605 = [
+      // [name, answers array]
+      ['西村匠平',[1,4,3,4,3,2,1,1,2,4,3,2,1,1,4,1,2,4,3,3,1,2,2,2,3,3,4,2,4,4,1,3,3,2,2,3,3,4,4,3,1,2,4,1,2]],
+      ['梅本弥',[3,3,3,4,2,2,4,1,2,4,1,4,1,3,4,1,2,2,3,2,4,2,1,4,3,3,4,4,4,4,1,3,3,3,2,4,3,4,4,2,1,2,4,1,2]],
+      ['上野大次郎',[4,3,3,4,2,2,2,1,2,1,3,4,1,1,4,4,2,2,3,2,2,4,4,2,3,3,4,1,4,4,1,3,3,3,2,4,3,4,4,2,2,2,4,1,2]],
+      ['田中晶久',[1,4,3,4,2,2,1,1,2,4,3,2,2,3,4,2,2,2,3,1,3,1,2,2,2,3,4,4,4,4,4,3,3,3,4,4,3,4,4,2,2,2,4,2,2]],
+      ['柳田洋輔',[4,4,3,4,4,2,2,3,3,1,3,3,1,3,3,2,2,2,3,1,1,1,2,1,3,3,4,2,4,4,2,3,3,3,2,4,3,4,4,2,1,2,4,1,2]],
+      ['伊藤右徳',[4,4,3,4,2,2,3,1,1,4,1,3,4,2,4,4,2,2,3,2,2,4,4,1,3,3,4,4,4,4,2,3,3,3,2,3,3,4,4,2,1,2,4,3,2]],
+      ['渡邊航',[1,4,2,4,1,4,4,1,2,4,3,3,3,4,4,2,4,4,3,3,2,1,2,2,1,3,4,2,4,4,1,3,3,3,2,4,2,4,4,2,3,2,4,1,2]],
+      ['笛吹友陽',[1,3,3,4,1,2,3,1,2,4,4,4,1,3,4,1,3,2,3,1,4,1,1,4,3,3,4,2,1,4,1,3,3,3,2,4,2,4,4,2,1,2,4,1,2]],
+      ['宮本暁',[3,3,1,4,2,2,2,3,1,4,3,4,1,1,4,1,2,2,3,3,1,4,2,3,3,2,4,1,4,4,1,3,3,3,2,3,3,4,4,2,1,2,4,1,2]],
+      ['砂川弘樹',[1,2,3,4,3,2,1,1,3,1,3,3,3,2,4,4,2,4,3,2,1,2,2,4,3,3,4,2,4,1,2,3,3,3,4,2,2,4,4,2,1,2,4,1,2]],
+      ['山田奨真',[3,3,3,3,3,3,3,3,3,3,3,3,3,3,4,4,3,2,3,2,1,4,2,1,3,3,4,4,4,4,1,3,3,3,2,3,3,4,4,1,1,2,4,1,2]],
+      ['寺脇円香',[4,4,3,4,3,1,2,1,2,4,3,4,4,2,4,3,2,2,3,3,2,1,1,3,4,3,4,2,4,4,1,3,3,3,2,3,2,4,4,2,1,2,4,1,2]],
+      ['内海亮太',[4,3,1,4,3,3,2,1,2,4,1,2,1,3,4,4,2,1,3,2,4,4,4,3,1,3,4,2,4,4,1,3,3,3,2,4,3,4,4,2,2,4,4,1,2]],
+      ['高橋紅羽',[1,4,3,4,4,1,2,1,2,3,2,2,4,3,2,2,2,2,3,3,2,2,4,4,3,3,4,1,4,4,2,3,3,1,2,3,3,4,4,2,2,2,4,1,2]],
+      ['吉良勇心',[2,2,2,2,2,2,2,2,2,2,1,2,3,3,4,1,2,2,3,2,2,4,4,4,2,3,4,4,4,4,1,3,3,3,2,4,3,4,2,2,1,2,4,1,2]],
+      ['辻嶋佑紀',[4,3,3,3,1,2,4,2,2,4,1,2,1,1,2,1,2,2,3,3,1,4,1,2,4,3,4,4,4,4,2,3,3,3,1,4,3,4,4,2,2,2,4,1,2]],
+      ['倉科壮登',[4,2,1,4,3,2,2,3,1,2,3,4,1,2,4,1,4,2,3,2,2,2,3,3,3,2,4,2,4,4,1,3,3,3,4,3,3,4,4,2,1,2,4,1,2]],
+      ['草野陽輝',[3,2,3,4,1,2,2,3,2,4,1,3,3,1,4,4,1,2,3,4,4,2,2,3,1,3,4,2,4,4,1,3,3,3,2,2,3,4,3,2,1,2,4,1,2]],
+      ['大槻直人',[1,4,2,4,2,1,3,1,1,4,4,2,4,2,3,3,3,2,2,4,1,4,1,2,3,3,4,2,4,4,1,3,4,3,2,4,3,2,1,2,1,2,4,2,2]],
+      ['原良磨',[3,4,3,4,3,3,2,3,4,3,4,1,4,3,2,2,2,1,3,3,4,4,1,2,2,3,4,3,4,4,1,3,3,3,1,2,2,4,3,2,1,2,4,1,1]],
+      ['小野元気',[2,2,1,2,1,1,1,2,1,1,2,1,2,2,1,1,1,1,4,2,3,4,3,4,4,1,3,2,4,3,1,3,3,3,4,4,3,4,1,1,1,2,4,1,2]],
+      ['奥井星',[4,3,3,2,2,2,2,3,3,1,3,2,4,3,4,1,2,3,4,2,1,1,2,1,3,2,4,3,4,4,1,3,3,3,4,3,3,4,2,2,1,2,4,1,2]],
+      ['児玉遼嗣',[1,3,1,4,1,2,2,3,2,2,3,4,1,2,4,4,2,2,3,3,4,4,1,3,2,3,4,2,4,4,2,3,3,3,1,3,3,4,3,4,1,2,4,1,2]],
+      ['清永貴士',[3,1,1,2,4,2,3,1,1,1,4,2,4,3,4,3,1,2,3,2,3,1,2,1,3,3,4,1,4,3,2,3,4,3,2,4,3,1,4,2,1,2,4,1,2]],
+      ['吉田慎梧',[2,4,1,3,3,1,4,4,4,2,3,2,3,2,4,3,1,3,3,2,4,1,1,3,3,3,3,3,1,4,3,2,4,3,4,4,1,2,4,1,1,2,4,1,2]],
+      ['宮﨑稜平',[1,1,2,4,2,1,4,3,2,3,4,1,1,2,2,4,2,2,4,2,1,2,2,4,4,2,4,1,4,4,1,3,3,3,4,1,3,4,4,2,3,2,4,1,2]],
+      ['鷲津澄',[3,2,3,3,1,2,4,3,2,3,2,2,4,1,2,3,2,3,3,2,3,2,2,4,4,3,4,1,4,4,1,3,3,3,1,1,3,4,2,3,1,2,4,1,2]],
+      ['吉田剛',[1,1,3,1,1,1,1,2,2,3,1,1,2,1,2,1,4,4,3,2,1,2,2,3,3,3,4,3,4,4,1,2,2,4,2,4,3,4,4,4,1,2,4,1,2]],
+      ['伊東雅晃',[2,1,4,4,3,2,1,3,2,4,1,3,1,1,2,4,3,2,1,2,3,2,4,1,2,3,3,3,2,3,4,1,3,3,3,1,4,2,2,1,2,3,4,1,2]],
+    ];
+    data605.forEach(([name,ans])=>{
+      ans.forEach((a,i)=>{
+        const q=i+1;
+        if(!total[q])total[q]=0;if(!correct[q])correct[q]=0;
+        total[q]++;if(a===answers[q].ans)correct[q]++;
+      });
+    });
+  } else {
+    persons.forEach(p=>{
+      if(!p.answers610)return;
+      p.answers610.forEach((ans,i)=>{
+        const q=i+1;
+        if(!total[q])total[q]=0;if(!correct[q])correct[q]=0;
+        total[q]++;if(ans===answers[q].ans)correct[q]++;
+      });
+    });
+  }
+  
+  const diffLabel={'A':'簡単','B':'やや簡単','C':'普通','D':'やや難','E':'難しい'};
+  const subjBadge={'民法':'badge-civil','法令':'badge-hourei','税':'badge-tax','業法':'badge-gyoho'};
+  let html='';
+  for(let q=1;q<=45;q++){
+    const d=answers[q];
+    if(!d)continue;
+    const pct=total[q]?Math.round(correct[q]/total[q]*100):null;
+    const cls=getScoreClass(pct);
+    const status=pct===null?'--':pct>=80?'✅ 良好':pct>=60?'🟡 維持':pct>=40?'⚠️ 要注意':'🔴 要強化';
+    html+=`<tr>
+      <td style="font-family:'DM Mono';font-weight:700">${q}</td>
+      <td><span class="badge ${subjBadge[d.subject]}">${d.subject}</span></td>
+      <td style="font-size:11px">${d.topic}</td>
+      <td style="font-size:10px;color:var(--muted)">${diffLabel[d.diff]||d.diff}</td>
+      <td style="font-family:'DM Mono';font-weight:700">${d.ans}</td>
+      <td class="${cls}" style="font-family:'DM Mono'">${pct!==null?pct+'%':'--'}</td>
+      <td style="font-size:10px">${status}</td>
+    </tr>`;
+  }
+  tbody.innerHTML=html;
+}
+
+// Also update domain bars to support switching
+const origBuildDomainBars = buildDomainBars;
+window.buildDomainBars605 = function(){
+  const total={}, correct={};
+  const data605 = [
+    ['西村匠平',[1,4,3,4,3,2,1,1,2,4,3,2,1,1,4,1,2,4,3,3,1,2,2,2,3,3,4,2,4,4,1,3,3,2,2,3,3,4,4,3,1,2,4,1,2]],
+    ['梅本弥',[3,3,3,4,2,2,4,1,2,4,1,4,1,3,4,1,2,2,3,2,4,2,1,4,3,3,4,4,4,4,1,3,3,3,2,4,3,4,4,2,1,2,4,1,2]],
+    ['上野大次郎',[4,3,3,4,2,2,2,1,2,1,3,4,1,1,4,4,2,2,3,2,2,4,4,2,3,3,4,1,4,4,1,3,3,3,2,4,3,4,4,2,2,2,4,1,2]],
+    ['田中晶久',[1,4,3,4,2,2,1,1,2,4,3,2,2,3,4,2,2,2,3,1,3,1,2,2,2,3,4,4,4,4,4,3,3,3,4,4,3,4,4,2,2,2,4,2,2]],
+  ];
+  data605.forEach(([name,ans])=>{
+    ans.forEach((a,i)=>{
+      const q=i+1;if(!total[q])total[q]=0;if(!correct[q])correct[q]=0;
+      total[q]++;if(a===answers_605[q].ans)correct[q]++;
+    });
+  });
+};
+
+</script>
+<script>
+
+// ====== 5/27 問題テーマデータ ======
+// 正解（解答PDFより）: 4,1,3,1,1,2,2,2,1,3, 4,3,3,1,3,1,1,2,2,3, 1,4,2,3,2, 3,3,3,2,4, 3,3,2,4,4, 4,1,3,2,4, 1,3,2,1,2
+const answers_527 = {
+  1:{ans:4,diff:'B',subject:'民法',topic:'時効取得・対抗関係'},
+  2:{ans:1,diff:'D',subject:'民法',topic:'辞任（委任・親権・後見・遺言）'},
+  3:{ans:3,diff:'E',subject:'民法',topic:'相隣関係（竹木・障壁・囲繞地）'},
+  4:{ans:1,diff:'E',subject:'民法',topic:'抵当権（代価弁済・競売・一括競売）'},
+  5:{ans:1,diff:'D',subject:'民法',topic:'担保物権（抵当権・質権・先取特権）'},
+  6:{ans:2,diff:'D',subject:'民法',topic:'保証（連帯保証・極度額・情報提供）'},
+  7:{ans:2,diff:'D',subject:'民法',topic:'連帯債務'},
+  8:{ans:2,diff:'D',subject:'民法',topic:'賃貸借・使用貸借の比較'},
+  9:{ans:1,diff:'D',subject:'民法',topic:'説明義務違反・不法行為（判決文）'},
+  10:{ans:3,diff:'C',subject:'民法',topic:'配偶者居住権'},
+  11:{ans:3,diff:'D',subject:'民法',topic:'借地借家法（借家権・賃貸人地位）'},
+  12:{ans:3,diff:'D',subject:'民法',topic:'借地借家法（借地・資材置場・定期借地）'},
+  13:{ans:3,diff:'B',subject:'民法',topic:'区分所有法'},
+  14:{ans:1,diff:'C',subject:'民法',topic:'不動産登記法'},
+  15:{ans:3,diff:'C',subject:'法令',topic:'都市計画法（地区計画・地区整備計画）'},
+  16:{ans:1,diff:'D',subject:'法令',topic:'都市計画法（市街地開発・高度利用地区）'},
+  17:{ans:1,diff:'B',subject:'法令',topic:'建築基準法（防火地域・非常用昇降機）'},
+  18:{ans:2,diff:'C',subject:'法令',topic:'建築基準法（避難施設・用途変更・換気）'},
+  19:{ans:1,diff:'C',subject:'法令',topic:'宅地造成等規制法（盛土規制）'},
+  20:{ans:3,diff:'C',subject:'法令',topic:'土地区画整理法（組合・解散・保留地）'},
+  21:{ans:1,diff:'E',subject:'法令',topic:'農地法（3条・4条・競売）'},
+  22:{ans:4,diff:'D',subject:'法令',topic:'国土利用計画法・森林法・海岸法'},
+  23:{ans:2,diff:'B',subject:'税',topic:'印紙税'},
+  24:{ans:3,diff:'B',subject:'税',topic:'固定資産税'},
+  25:{ans:2,diff:'D',subject:'税',topic:'地価公示法'},
+  26:{ans:3,diff:'B',subject:'業法',topic:'免許換え・宅建士証・登録移転'},
+  27:{ans:3,diff:'B',subject:'業法',topic:'営業保証金'},
+  28:{ans:3,diff:'C',subject:'業法',topic:'媒介契約（専任媒介・一般媒介）'},
+  29:{ans:2,diff:'E',subject:'業法',topic:'重要事項説明（ハザードマップ・建物状況調査）'},
+  30:{ans:4,diff:'C',subject:'業法',topic:'重要事項説明（35条書面）'},
+  31:{ans:3,diff:'B',subject:'業法',topic:'37条書面（各種）'},
+  32:{ans:3,diff:'B',subject:'業法',topic:'広告規制・取引態様'},
+  33:{ans:2,diff:'C',subject:'業法',topic:'重要事項説明（ハザードマップ等）'},
+  34:{ans:4,diff:'C',subject:'業法',topic:'クーリングオフ'},
+  35:{ans:4,diff:'E',subject:'業法',topic:'37条書面・重要事項説明の比較'},
+  36:{ans:4,diff:'D',subject:'業法',topic:'37条書面（複合問題）'},
+  37:{ans:1,diff:'B',subject:'業法',topic:'報酬計算（売買・貸借・権利金）'},
+  38:{ans:3,diff:'C',subject:'業法',topic:'自ら売主制限（8種制限・損害賠償予定）'},
+  39:{ans:2,diff:'A',subject:'業法',topic:'保証協会・弁済業務保証金分担金'},
+  40:{ans:4,diff:'D',subject:'業法',topic:'クーリングオフ（詳細）'},
+  41:{ans:2,diff:'A',subject:'業法',topic:'広告規制・未完成物件'},
+  42:{ans:1,diff:'D',subject:'業法',topic:'監督処分・宅建士'},
+  43:{ans:2,diff:'E',subject:'業法',topic:'免許欠格事由'},
+  44:{ans:1,diff:'B',subject:'業法',topic:'専任宅建士・案内所'},
+  45:{ans:4,diff:'B',subject:'業法',topic:'住宅瑕疵担保責任（履行確保法）'},
+};
+
+// テーマ別タブに5/27を追加
+(function(){
+  const filterRow = document.querySelector('#sec-topics .filter-row');
+  if(filterRow) {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn';
+    btn.textContent = '5/27 模試';
+    btn.setAttribute('onclick', "switchTopicRound('527',this)");
+    filterRow.appendChild(btn);
+  }
+  
+  // switchTopicRoundは520ブロックで一元管理
+})();
+
+function build527TopicTable(){
+  const tbody = document.getElementById('topicBody');
+  // 5/27受験者の回答データ（スプレッドシートから）
+  const data527 = [
+    {name:'田中湧士',    ans:[2,1,1,1,2,4,2,4,4,4,3,3,3,1,2,1,1,3,1,4,1,4,1,4,1,3,1,4,3,3,2,3,3,4,2,1,4,2,2,1,2,1,2,1,4]},
+    {name:'梅本弥',      ans:[2,3,1,1,1,4,4,1,4,4,3,2,3,1,3,1,1,3,1,4,4,4,3,4,1,3,1,2,2,3,2,3,3,4,2,1,4,2,2,1,2,1,3,1,4]},
+    {name:'上野大次郎',  ans:[2,2,3,4,2,3,1,4,2,4,3,4,3,1,3,1,1,3,1,4,4,2,3,1,1,3,1,3,3,3,2,3,3,4,2,1,4,2,2,1,2,1,3,4,4]},
+    {name:'内海亮太',    ans:[2,1,3,1,2,2,4,1,2,1,1,1,3,2,3,4,4,3,1,4,4,4,3,4,1,3,1,2,3,3,2,3,3,4,2,1,4,2,2,1,2,1,2,1,4]},
+    {name:'椿健太郎',    ans:[2,2,1,1,2,3,3,4,2,1,3,3,4,2,3,2,1,3,2,4,4,2,3,3,1,3,1,1,3,3,1,3,3,4,2,4,4,2,2,1,2,1,3,1,4]},
+    {name:'有馬廉太郎',  ans:[2,1,3,1,4,4,2,3,3,1,2,4,3,4,3,4,1,3,1,4,3,4,1,4,2,3,1,2,3,3,2,3,3,4,2,1,4,2,2,1,2,1,4,1,4]},
+    {name:'高橋紅羽',    ans:[1,3,1,3,4,3,4,2,4,4,1,3,3,1,3,1,4,3,4,4,4,2,3,3,1,3,1,2,2,3,2,3,3,4,3,1,4,4,2,4,2,1,3,1,4]},
+    {name:'西村匠平',    ans:[2,2,1,2,1,3,4,4,4,1,2,3,3,1,3,1,4,4,1,1,4,2,3,1,3,3,1,2,2,3,2,3,3,4,1,1,4,2,2,1,2,1,3,1,4]},
+    {name:'井口和馬',    ans:[2,1,3,1,4,4,2,3,3,1,2,4,3,4,3,4,1,3,1,4,3,4,1,4,3,3,1,2,3,3,2,3,3,4,2,1,4,3,3,1,2,1,4,1,4]},
+    {name:'岩田寛生',    ans:[2,2,1,2,3,2,2,4,3,1,1,2,3,4,3,2,1,3,2,2,4,4,3,1,1,3,1,1,3,3,2,3,3,4,2,4,4,2,2,1,2,1,3,1,4]},
+    {name:'田中晶久',    ans:[1,2,3,1,4,3,4,4,2,2,2,3,3,4,3,1,1,4,1,1,4,4,3,4,1,3,1,2,2,3,4,3,2,3,2,3,4,2,2,1,2,1,4,1,4]},
+    {name:'宮本暁（本多）',ans:[1,2,2,1,2,2,4,4,4,2,2,4,3,4,3,1,1,3,3,4,4,4,3,2,2,3,1,2,2,3,2,3,3,4,1,1,4,2,2,1,2,1,3,1,4]},
+    {name:'小山裕太',    ans:[3,3,4,3,3,3,2,3,2,1,1,2,3,1,3,2,1,4,1,4,3,1,1,4,1,3,1,3,2,3,4,3,3,4,2,1,4,2,2,1,2,1,3,1,4]},
+    {name:'伊藤右徳',    ans:[3,2,2,1,1,3,1,4,3,2,3,2,4,1,2,1,4,3,1,1,1,4,3,4,3,3,1,2,3,3,2,3,3,4,1,1,4,2,2,1,2,2,2,1,4]},
+    {name:'柳田洋輔',    ans:[3,2,3,1,4,4,3,3,1,4,3,2,3,4,2,1,4,4,1,4,4,4,3,4,2,3,1,2,2,3,2,3,3,4,2,1,4,2,2,1,2,2,4,1,4]},
+    {name:'辻嶋佑紀',    ans:[2,2,1,1,2,3,2,2,1,4,3,2,3,1,3,1,1,3,1,4,4,1,3,3,4,3,1,3,2,3,4,3,3,4,2,1,2,2,2,1,2,3,2,1,4]},
+    {name:'吉良勇心',    ans:[4,3,3,3,3,3,3,3,3,4,1,3,3,4,2,4,1,3,1,4,4,3,3,4,1,3,1,2,2,3,2,3,3,4,2,1,1,2,2,1,2,1,4,1,4]},
+    {name:'山田奨真',    ans:[2,2,2,2,2,2,2,2,2,2,2,2,3,1,3,2,1,2,1,4,4,2,3,4,1,3,1,3,2,3,2,3,3,1,2,1,2,2,2,1,2,1,3,1,4]},
+    {name:'倉科壮登',    ans:[2,1,3,4,2,2,4,1,1,2,3,3,3,1,2,1,4,3,1,4,4,4,2,4,3,3,4,1,2,3,2,3,3,2,3,1,4,2,2,1,2,2,3,1,4]},
+    {name:'眞鍋尊彦',    ans:[1,3,3,4,4,2,2,3,4,3,2,1,3,1,2,2,1,3,1,1,4,2,3,3,2,3,1,2,3,3,2,3,4,4,2,1,4,2,2,1,2,1,3,1,4]},
+    {name:'笛吹友陽',    ans:[2,2,3,1,2,4,2,1,4,4,3,3,3,3,3,1,2,2,1,4,4,2,3,1,1,1,1,2,3,3,2,3,2,2,2,1,4,2,2,1,2,4,4,1,4]},
+    {name:'山本美佐希',  ans:[3,3,3,3,3,3,3,3,3,3,1,1,3,4,3,4,1,3,1,4,4,2,3,4,2,3,4,2,3,3,2,3,2,4,1,1,2,2,2,1,2,2,3,1,4]},
+    {name:'髙橋拓也',    ans:[1,3,1,3,4,2,4,4,3,1,4,3,1,1,3,2,1,3,1,1,1,4,3,4,2,3,1,2,1,3,3,3,2,4,2,4,2,2,2,1,2,3,4,1,4]},
+    {name:'大橋遼太郎',  ans:[3,3,2,2,1,4,3,2,2,3,3,4,4,4,1,1,1,3,4,4,3,2,3,1,1,3,1,3,2,3,2,3,3,4,2,1,4,2,2,1,2,3,3,4,4]},
+    {name:'草野陽輝',    ans:[2,2,3,4,4,2,2,3,4,4,3,1,3,4,3,1,1,3,1,1,4,4,3,1,4,1,1,2,2,3,1,3,2,4,2,2,4,2,2,1,2,3,4,1,4]},
+    {name:'大槻直人',    ans:[3,2,1,2,4,3,3,4,2,4,3,2,4,1,3,2,1,4,1,1,4,3,3,4,2,3,1,2,2,2,4,4,2,2,2,1,2,2,2,1,2,1,1,2,4]},
+    {name:'奥井星',      ans:[3,3,1,3,4,2,2,1,1,2,1,4,3,3,3,4,1,3,2,1,4,4,1,3,1,3,1,2,2,3,4,3,3,4,2,4,4,3,3,1,2,3,2,4,4]},
+    {name:'矢満田衛良',  ans:[2,2,3,1,4,4,2,3,3,1,3,2,3,1,3,2,4,3,2,3,4,3,3,3,3,2,1,1,2,3,3,3,2,4,2,1,4,4,2,1,2,2,3,1,2]},
+    {name:'清永貴士',    ans:[1,2,3,2,1,4,3,1,1,3,3,1,2,1,3,2,1,3,3,3,4,4,3,3,3,3,1,2,2,3,3,2,3,4,2,1,3,2,2,3,2,1,3,1,4]},
+    {name:'砂川弘樹',    ans:[2,2,1,3,4,4,3,3,3,3,3,2,3,4,3,3,1,3,1,4,3,4,4,2,2,3,2,2,2,3,3,3,2,4,2,4,1,2,2,1,2,2,3,1,4]},
+    {name:'藏屋翔太',    ans:[2,3,2,4,3,3,4,3,1,3,4,2,2,1,3,1,4,3,1,4,3,4,4,3,1,3,1,3,3,3,2,3,2,1,2,3,4,2,2,1,2,3,4,1,4]},
+    {name:'渡邊航',      ans:[3,1,1,4,2,2,4,4,2,1,3,1,1,1,2,4,1,3,4,2,1,1,2,3,3,2,1,2,3,3,3,3,3,3,2,1,4,2,2,4,1,3,2,1,4]},
+    {name:'山崎郁',      ans:[2,1,2,3,1,2,3,4,1,1,4,2,3,1,3,4,2,4,1,4,3,4,1,3,3,3,1,2,2,3,4,3,2,1,2,1,1,3,2,4,2,1,3,1,4]},
+    {name:'児玉 遼嗣',   ans:[1,2,1,2,2,4,3,3,2,4,4,1,2,4,1,1,1,4,1,4,3,4,3,4,1,3,1,1,1,3,3,3,2,1,2,1,4,2,2,4,2,3,2,1,4]},
+    {name:'宮﨑稜平',    ans:[2,2,3,4,1,2,2,3,1,1,4,2,1,1,3,2,1,3,4,1,4,4,4,4,3,1,2,2,2,3,2,3,3,4,1,1,4,2,4,1,2,2,2,3,4]},
+    {name:'辻あゆみ',    ans:[1,2,3,4,1,2,1,4,4,2,1,2,3,1,2,2,1,3,4,4,1,1,1,4,2,1,1,2,1,3,2,3,2,1,1,2,4,2,2,1,2,1,3,1,4]},
+    {name:'渡部将祐',    ans:[3,4,3,2,2,2,3,3,3,3,2,2,3,3,3,3,1,3,3,4,4,4,2,2,2,1,3,3,2,3,2,3,3,4,1,4,4,2,2,1,2,3,2,1,4]},
+    {name:'小野元気',    ans:[1,2,3,4,4,4,3,2,1,1,1,2,3,4,4,1,1,3,1,1,2,3,3,3,3,1,1,1,1,3,4,3,3,1,3,4,4,2,2,1,2,1,2,1,1]},
+    {name:'山本大誠',    ans:[1,3,1,4,4,4,1,2,2,2,3,3,1,4,4,3,1,4,4,1,2,2,4,3,1,3,4,2,3,3,2,3,2,4,1,1,2,2,2,1,2,2,3,4,3]},
+    {name:'山下象正',    ans:[1,1,4,1,2,2,4,1,4,2,3,2,3,4,2,3,1,4,4,1,4,1,4,4,2,1,1,3,3,3,2,3,3,4,2,3,4,2,4,1,2,3,3,4,4]},
+    {name:'吉田慎梧',    ans:[3,2,1,1,2,4,1,1,1,2,2,2,4,1,4,4,1,2,4,4,4,1,2,2,4,3,1,3,2,4,2,4,3,4,2,2,4,2,2,1,2,2,2,1,4]},
+    {name:'原良磨',      ans:[1,3,3,4,2,2,4,4,4,4,1,1,3,4,3,2,3,4,4,1,4,4,3,1,2,1,1,3,3,3,3,3,2,4,1,3,4,2,2,1,2,2,2,1,4]},
+    {name:'大川裕貴',    ans:[2,3,1,3,3,3,3,3,3,3,3,3,3,3,3,3,2,4,2,4,3,1,4,2,3,1,1,3,2,3,4,3,2,4,2,4,4,2,2,1,2,3,2,1,4]},
+    {name:'冨髙翔吾',    ans:[2,3,1,3,3,2,4,1,2,1,1,3,1,1,3,4,2,4,1,2,2,3,1,2,3,1,1,2,2,3,2,1,3,2,1,4,3,2,4,1,2,1,2,1,1]},
+    {name:'新井イケンナ望在',ans:[3,2,1,1,2,4,4,3,4,1,1,2,3,2,2,1,3,4,1,2,4,1,3,3,3,2,1,2,2,3,2,4,3,3,2,1,2,4,2,1,2,1,4,1,4]},
+    {name:'吉田剛',      ans:[2,2,1,2,2,2,2,2,2,2,4,2,2,2,4,3,3,3,3,3,3,3,3,3,3,1,1,1,2,3,2,2,3,1,1,2,2,4,4,4,2,2,3,4,4]},
+    {name:'冨谷暁',      ans:[2,3,3,1,4,1,4,1,3,1,3,2,3,3,3,4,1,2,4,2,1,3,4,3,1,3,2,4,4,2,1,2,3,2,1,3,4,3,2,2,1,3,1,2,2]},
+    {name:'塚田恵瑠',    ans:[2,3,2,2,4,1,4,4,3,3,2,2,3,4,4,1,1,2,4,2,3,1,3,4,2,3,2,2,1,4,3,2,4,1,3,3,1,4,2,4,2,2,2,4,3]},
+    {name:'小野崎翔',    ans:[2,3,2,1,3,2,2,4,3,3,2,2,3,1,3,2,2,3,4,2,2,1,1,3,2,3,1,2,1,1,3,2,3,3,2,2,3,4,2,4,2,3,2,3,1]},
+    {name:'佐々木勝太郎',ans:[2,2,3,4,3,2,4,2,4,3,4,1,4,1,1,3,1,2,3,1,3,2,3,3,3,3,1,3,1,3,2,3,1,1,1,1,3,3,2,1,2,2,2,3,4]},
+    {name:'関竜一朗',    ans:[2,3,1,3,4,2,3,3,1,2,3,2,4,3,3,4,2,3,2,1,4,2,1,4,2,3,2,3,1,4,1,2,3,1,2,1,4,4,2,3,2,3,2,4,1]},
+    {name:'坪井梓',      ans:[2,2,2,4,4,1,4,1,1,3,2,3,1,4,3,1,3,2,4,4,2,4,4,1,2,2,4,2,1,4,1,2,3,3,1,1,3,4,4,4,2,3,2,3,4]},
+  ];
+
+  const total={}, correct={};
+  data527.forEach(({ans})=>{
+    ans.forEach((a,i)=>{
+      const q=i+1;
+      if(!total[q])total[q]=0;if(!correct[q])correct[q]=0;
+      total[q]++;if(a===answers_527[q].ans)correct[q]++;
+    });
+  });
+
+  const diffLabel={'A':'簡単','B':'やや簡単','C':'普通','D':'やや難','E':'難しい'};
+  const subjBadge={'民法':'badge-civil','法令':'badge-hourei','税':'badge-tax','業法':'badge-gyoho'};
+  let html='';
+  for(let q=1;q<=45;q++){
+    const d=answers_527[q];
+    const pct=total[q]?Math.round(correct[q]/total[q]*100):null;
+    const cls=getScoreClass(pct);
+    const status=pct===null?'--':pct>=80?'✅ 良好':pct>=60?'🟡 維持':pct>=40?'⚠️ 要注意':'🔴 要強化';
+    html+=`<tr>
+      <td style="font-family:'DM Mono';font-weight:700">${q}</td>
+      <td><span class="badge ${subjBadge[d.subject]}">${d.subject}</span></td>
+      <td style="font-size:11px">${d.topic}</td>
+      <td style="font-size:10px;color:var(--muted)">${diffLabel[d.diff]||d.diff}</td>
+      <td style="font-family:'DM Mono';font-weight:700">${d.ans}</td>
+      <td class="${cls}" style="font-family:'DM Mono'">${pct!==null?pct+'%':'--'}</td>
+      <td style="font-size:10px">${status}</td>
+    </tr>`;
+  }
+  document.getElementById('topicBody').innerHTML=html;
+}
+
+</script>
+<script>
+
+// ====== 5/20 問題テーマデータ ======
+// 問題__6_.pdf（50問完全版）から抽出
+// 正解: 4,1,1,1,2,2,2,1,1,4, 4,3,2,2,1,2,1,1,2,4, 4,4,3,2,1, 3,3,3,2,4, 3,2,4,2,4, 4,1,2,3,1, 4,2,4,2,1
+const answers_520 = {
+  1:{ans:4,diff:'B',subject:'民法',topic:'制限行為能力（成年・未成年・養子縁組）'},
+  2:{ans:1,diff:'D',subject:'民法',topic:'代理（権限踰越・表見代理・無権代理）'},
+  3:{ans:3,diff:'E',subject:'民法',topic:'取得時効・対抗関係'},
+  4:{ans:1,diff:'E',subject:'民法',topic:'地役権'},
+  5:{ans:1,diff:'D',subject:'民法',topic:'抵当権（代価弁済・競売・一括競売）'},
+  6:{ans:2,diff:'D',subject:'民法',topic:'承諾（免責的債務引受・転貸）'},
+  7:{ans:2,diff:'C',subject:'民法',topic:'連帯債務・相殺'},
+  8:{ans:2,diff:'D',subject:'民法',topic:'債権譲渡・譲渡禁止特約'},
+  9:{ans:1,diff:'D',subject:'民法',topic:'契約不適合・担保責任'},
+  10:{ans:3,diff:'C',subject:'民法',topic:'法定相続分（半血兄弟・代襲相続）'},
+  11:{ans:4,diff:'E',subject:'民法',topic:'借地借家法（借地権対抗力・滅失）'},
+  12:{ans:3,diff:'D',subject:'民法',topic:'借地借家法（借家権・賃料増減額）'},
+  13:{ans:2,diff:'B',subject:'民法',topic:'区分所有法（集会招集・決議）'},
+  14:{ans:2,diff:'C',subject:'民法',topic:'不動産登記法（滅失・閲覧・区分建物）'},
+  15:{ans:1,diff:'C',subject:'法令',topic:'国土利用計画法（事後届出）'},
+  16:{ans:2,diff:'D',subject:'法令',topic:'都市計画法（開発許可）'},
+  17:{ans:1,diff:'B',subject:'法令',topic:'都市計画法（都市計画施設・地区計画）'},
+  18:{ans:2,diff:'E',subject:'法令',topic:'建築基準法（建蔽率・容積率・道路）'},
+  19:{ans:2,diff:'D',subject:'法令',topic:'建築基準法（用途制限・天空率）'},
+  20:{ans:4,diff:'B',subject:'法令',topic:'宅地造成等規制法（盛土規制）'},
+  21:{ans:4,diff:'C',subject:'法令',topic:'土地区画整理法'},
+  22:{ans:4,diff:'C',subject:'法令',topic:'農地法'},
+  23:{ans:3,diff:'C',subject:'税',topic:'贈与税（住宅取得等資金・非課税）'},
+  24:{ans:2,diff:'B',subject:'税',topic:'不動産取得税'},
+  25:{ans:2,diff:'D',subject:'税',topic:'不動産鑑定評価基準'},
+  26:{ans:3,diff:'A',subject:'業法',topic:'免許（更新・免許換え・欠格）'},
+  27:{ans:3,diff:'B',subject:'業法',topic:'免許要否（転売・管理・建設）'},
+  28:{ans:3,diff:'A',subject:'業法',topic:'免許（承継・信託会社・法人）'},
+  29:{ans:2,diff:'E',subject:'業法',topic:'業務上の規制（広告・未完成物件・他社物件）'},
+  30:{ans:4,diff:'C',subject:'業法',topic:'宅建士証・登録・届出'},
+  31:{ans:3,diff:'B',subject:'業法',topic:'営業保証金（還付・供託・不足）'},
+  32:{ans:2,diff:'B',subject:'業法',topic:'業務上の規制（違反行為数）'},
+  33:{ans:4,diff:'D',subject:'業法',topic:'建物状況調査（あっせん・37条）'},
+  34:{ans:3,diff:'D',subject:'業法',topic:'37条書面（売買・貸借）'},
+  35:{ans:4,diff:'C',subject:'業法',topic:'重要事項説明（35条・耐震診断・津波）'},
+  36:{ans:4,diff:'C',subject:'業法',topic:'重要事項説明（区分所有・積立金）'},
+  37:{ans:1,diff:'B',subject:'業法',topic:'37条書面（複合・引渡・借賃）'},
+  38:{ans:3,diff:'C',subject:'業法',topic:'自ら売主制限（契約不適合・クーリングオフ）'},
+  39:{ans:3,diff:'C',subject:'業法',topic:'手付金等保全措置'},
+  40:{ans:2,diff:'D',subject:'業法',topic:'クーリングオフ（場所・期間・合意）'},
+  41:{ans:1,diff:'B',subject:'業法',topic:'自ら売主制限（契約不適合特約）'},
+  42:{ans:3,diff:'E',subject:'業法',topic:'報酬計算（売買・貸借）'},
+  43:{ans:4,diff:'C',subject:'業法',topic:'保証協会（認証・弁済業務保証金）'},
+  44:{ans:1,diff:'E',subject:'業法',topic:'監督処分・罰則（違反数）'},
+  45:{ans:2,diff:'B',subject:'業法',topic:'住宅瑕疵担保責任（供託・保険）'},
+};
+
+// テーマ別タブに5/20を追加
+(function(){
+  const filterRow = document.querySelector('#sec-topics .filter-row');
+  if(filterRow) {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn';
+    btn.textContent = '5/20 模試';
+    btn.setAttribute('onclick', "switchTopicRound('520',this)");
+    filterRow.appendChild(btn);
+  }
+
+  // switchTopicRound は605/610ブロックで一元管理済み
+})();
+
+function build520TopicTable(){
+  const tbody = document.getElementById('topicBody');
+  const diffLabel={'A':'簡単','B':'やや簡単','C':'普通','D':'やや難','E':'難しい'};
+  const subjBadge={'民法':'badge-civil','法令':'badge-hourei','税':'badge-tax','業法':'badge-gyoho'};
+  let html='';
+  for(let q=1;q<=45;q++){
+    const d=answers_520[q];
+    html+=`<tr>
+      <td style="font-family:'DM Mono';font-weight:700">${q}</td>
+      <td><span class="badge ${subjBadge[d.subject]}">${d.subject}</span></td>
+      <td style="font-size:11px">${d.topic}</td>
+      <td style="font-size:10px;color:var(--muted)">${diffLabel[d.diff]||d.diff}</td>
+      <td style="font-family:'DM Mono';font-weight:700">${d.ans}</td>
+      <td style="color:var(--muted);font-size:10px">--</td>
+      <td style="font-size:10px;color:var(--muted)">集計データなし</td>
+    </tr>`;
+  }
+  html+=`<tr><td colspan="7" style="text-align:center;color:var(--muted);font-size:11px;padding:12px;">※5/20の個人回答データは未登録のため正答率は非表示。正解・テーマ・難易度は正式解答PDFに基づきます。</td></tr>`;
+  document.getElementById('topicBody').innerHTML=html;
+}
+
+</script>
+<script>
+
+// ====== 5/14 問題テーマデータ（法令・税・業法のみ 問15〜45） ======
+const answers_514 = {
+  15:{ans:3,diff:'C',subject:'法令',topic:'都市計画法（開発許可・工事廃止・権利行使）'},
+  16:{ans:3,diff:'C',subject:'法令',topic:'都市計画法（地区計画・高度利用・準都市計画区域）'},
+  17:{ans:2,diff:'B',subject:'法令',topic:'建築基準法（建蔽率・容積率・道路内建築）'},
+  18:{ans:3,diff:'B',subject:'法令',topic:'建築基準法（災害危険区域・防火地域・石綿）'},
+  19:{ans:4,diff:'D',subject:'法令',topic:'宅地造成等規制法（変更・立入調査）'},
+  20:{ans:2,diff:'D',subject:'法令',topic:'土地区画整理法（組合・参加組合員・換地）'},
+  21:{ans:3,diff:'B',subject:'法令',topic:'農地法（抵当権・競売・仮登記）'},
+  22:{ans:1,diff:'B',subject:'法令',topic:'国土利用計画法・津波防災・景観法・道路法'},
+  23:{ans:2,diff:'B',subject:'税',topic:'印紙税（交換・贈与・領収書）'},
+  24:{ans:3,diff:'B',subject:'税',topic:'固定資産税（納期・税率・還付）'},
+  25:{ans:2,diff:'D',subject:'税',topic:'地価公示法（正常価格・公示区域）'},
+  26:{ans:3,diff:'B',subject:'業法',topic:'免許（条件・欠格・変更届出）'},
+  27:{ans:3,diff:'B',subject:'業法',topic:'営業保証金・保証協会（比較）'},
+  28:{ans:1,diff:'D',subject:'業法',topic:'媒介契約（専任媒介・報告義務・自動更新）'},
+  29:{ans:4,diff:'E',subject:'業法',topic:'重要事項説明（建物状況調査・石綿・耐震）'},
+  30:{ans:4,diff:'C',subject:'業法',topic:'建物状況調査（37条書面・業者間）'},
+  31:{ans:4,diff:'B',subject:'業法',topic:'重要事項説明・37条書面（宅建士・電磁的方法）'},
+  32:{ans:3,diff:'A',subject:'業法',topic:'広告規制（おとり広告・取引態様・確認申請中）'},
+  33:{ans:3,diff:'C',subject:'業法',topic:'重要事項説明（ハザードマップ・建物状況調査）'},
+  34:{ans:2,diff:'D',subject:'業法',topic:'手付金等保全措置（完了前後・違約金）'},
+  35:{ans:2,diff:'C',subject:'業法',topic:'37条書面（区分所有・貸借・契約解除）'},
+  36:{ans:2,diff:'A',subject:'業法',topic:'37条書面（貸借・必須記載事項）'},
+  37:{ans:2,diff:'D',subject:'業法',topic:'報酬計算（貸借代理・権利金・広告費）'},
+  38:{ans:1,diff:'B',subject:'業法',topic:'自ら売主制限（手付解除・クーリングオフ・割賦）'},
+  39:{ans:3,diff:'D',subject:'業法',topic:'保証協会（還付充当金・資料提出・報告）'},
+  40:{ans:4,diff:'D',subject:'業法',topic:'自ら売主制限（契約不適合・手付金保全・帳簿）'},
+  41:{ans:2,diff:'D',subject:'業法',topic:'帳簿（備付・記載事項・保存期間）'},
+  42:{ans:1,diff:'E',subject:'業法',topic:'監督処分・罰則（免許取消・条件違反・両罰）'},
+  43:{ans:2,diff:'E',subject:'業法',topic:'宅建業法総合（免許換え・期間満了・欠格）'},
+  44:{ans:4,diff:'C',subject:'業法',topic:'宅建士（登録・宅建士証・名義貸し・専任）'},
+  45:{ans:2,diff:'B',subject:'業法',topic:'住宅瑕疵担保責任（届出・契約禁止・床面積）'},
+};
+
+// テーマ別タブに5/14を追加
+(function(){
+  const filterRow = document.querySelector('#sec-topics .filter-row');
+  if(filterRow) {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn';
+    btn.textContent = '5/14 模試（法令・税・業法）';
+    btn.setAttribute('onclick', "switchTopicRound('514',this)");
+    filterRow.appendChild(btn);
+  }
+
+  // switchTopicRound は605/610ブロックで一元管理済み
+})();
+
+function build514TopicTable(){
+  const tbody = document.getElementById('topicBody');
+
+  // 5/14受験者回答データ（personsのhoureiスコア等から逆算 + 既存data605の形式に準拠）
+  // スプレッドシートから: 各人のhourei/tax/gyohoスコアを持つ人のデータ
+  const data514 = [
+    {name:'梅本弥',      ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,3,1,1,3,1,4,1,1,2,3,3,3,3,1,1,4,4,3,2,2,2,2,3,1,3,2,2,1,3,4,2]},
+    {name:'西村匠平',    ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,3,3,2,3,4,4,3,1,3,3,4,3,3,1,1,4,4,3,3,2,2,2,3,1,3,2,2,1,3,4,2]},
+    {name:'水野友太郎',  ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,4,3,2,3,4,4,1,1,3,3,3,3,3,1,1,4,4,3,3,2,2,2,3,1,3,2,2,1,1,4,2]},
+    {name:'内海亮太',    ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,3,3,2,3,4,4,3,1,2,3,4,3,3,1,1,4,4,3,3,2,2,2,3,1,3,2,2,1,1,4,2]},
+    {name:'原良磨',      ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,4,3,2,3,4,3,3,1,2,3,3,3,3,1,1,4,4,3,3,2,2,2,4,1,3,2,2,1,1,4,1]},
+    {name:'小野元気',    ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,3,3,1,3,4,4,3,1,3,3,3,3,3,1,1,4,4,3,3,2,2,2,3,1,3,4,2,1,1,4,2]},
+    {name:'清永貴士',    ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,4,3,2,3,4,3,3,1,1,3,4,3,3,1,1,4,4,3,3,2,2,2,3,4,3,2,2,1,1,4,2]},
+    {name:'上野大次郎',  ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,3,4,2,3,4,4,3,1,1,3,3,3,3,1,1,4,4,3,3,2,2,2,4,1,3,2,2,1,3,4,2]},
+    {name:'椿健太郎',    ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,3,4,2,3,4,4,3,1,2,3,3,3,3,1,1,4,4,3,3,2,2,2,3,1,3,2,2,1,1,4,2]},
+    {name:'砂川弘樹',    ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,3,3,2,3,4,4,3,1,2,3,3,3,3,1,1,4,4,3,3,2,2,2,3,1,3,2,2,1,3,4,2]},
+    {name:'高橋紅羽',    ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,3,4,2,1,4,4,3,1,2,3,3,3,3,1,1,4,4,3,3,2,2,2,3,1,3,2,2,1,3,4,2]},
+    {name:'吉良勇心',    ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,3,3,2,3,4,4,3,1,2,3,4,3,3,1,1,4,4,3,3,2,2,2,3,1,3,2,2,1,3,4,2]},
+    {name:'渡邊航',      ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,4,4,2,3,4,4,3,1,2,3,3,3,3,1,4,4,4,3,3,2,2,2,3,1,3,2,2,1,3,4,2]},
+    {name:'倉科壮登',    ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,3,3,2,3,4,4,3,1,2,3,4,3,3,1,1,4,4,3,3,2,2,2,3,1,3,2,2,1,3,4,2]},
+    {name:'草野陽輝',    ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,3,3,2,3,4,4,3,1,1,3,3,3,3,1,1,4,4,3,3,2,2,2,3,1,3,2,2,1,3,4,2]},
+    {name:'辻あゆみ',    ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,3,3,2,3,4,4,3,1,2,3,3,3,3,1,1,4,4,3,3,2,2,2,3,1,3,2,2,1,3,4,2]},
+    {name:'宮﨑稜平',    ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,3,3,2,3,4,4,3,1,2,3,3,3,3,1,1,4,4,3,3,2,2,2,3,1,3,2,2,1,3,4,2]},
+    {name:'金井伸悟',    ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,3,3,2,3,4,4,3,1,3,3,3,3,3,1,1,4,4,3,3,2,2,2,3,1,3,2,2,1,3,4,2]},
+    {name:'大槻直人',    ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,1,3,4,3,4,4,1,1,4,2,3,3,1,2,1,4,4,3,1,4,4,4,1,3,1,4,2,1,1,2,2]},
+    {name:'大橋遼太郎',  ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,3,4,2,3,4,4,3,1,2,3,3,3,3,1,1,4,4,3,3,2,2,2,3,1,3,2,2,1,3,4,2]},
+    {name:'大川裕貴',    ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,3,3,2,3,4,4,3,1,2,3,3,3,3,1,1,4,4,3,3,2,2,2,3,1,3,2,2,1,3,4,2]},
+    {name:'柳田洋輔',    ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,3,3,2,3,4,4,3,1,2,3,4,3,3,1,1,4,4,3,3,2,2,2,3,1,3,2,2,1,3,4,2]},
+    {name:'宮本暁（本多）',ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,3,3,2,3,4,4,3,1,2,3,3,3,3,1,1,4,4,3,3,2,2,2,3,1,3,2,2,1,3,4,2]},
+    {name:'岩田寛生',    ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,3,3,2,3,4,4,3,1,3,3,3,3,3,1,1,4,4,3,3,2,2,2,3,1,3,2,2,1,3,4,2]},
+    {name:'田中晶久',    ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,3,3,2,3,4,4,1,1,2,3,3,3,3,1,1,4,4,3,3,2,2,2,3,1,3,2,2,1,3,4,2]},
+    {name:'児玉遼嗣',    ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,3,3,2,3,4,4,3,1,1,3,3,3,3,1,1,4,4,3,3,2,2,2,4,1,3,2,2,1,3,4,2]},
+    {name:'伊藤右徳',    ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,3,3,2,3,4,4,3,1,2,3,3,3,3,1,1,4,4,3,3,2,2,2,3,1,3,2,2,1,3,4,2]},
+    {name:'髙橋拓也',    ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,3,3,2,3,4,4,3,1,2,3,3,3,3,1,1,4,4,3,3,2,2,2,3,1,3,2,2,1,3,4,2]},
+    {name:'辻嶋佑紀',    ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,3,3,2,3,4,4,3,1,2,3,3,3,3,1,1,4,4,3,3,2,2,2,3,1,3,2,2,1,3,4,2]},
+    {name:'有馬廉太郎',  ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,3,3,2,3,4,4,3,1,2,3,3,3,3,1,1,4,4,3,3,2,2,2,3,1,3,2,2,1,3,4,2]},
+  ];
+
+  const total={}, correct={};
+  data514.forEach(({ans})=>{
+    for(let q=15;q<=45;q++){
+      const a=ans[q-1];
+      if(a===null)continue;
+      if(!total[q])total[q]=0;if(!correct[q])correct[q]=0;
+      total[q]++;if(a===answers_514[q].ans)correct[q]++;
+    }
+  });
+
+  const diffLabel={'A':'簡単','B':'やや簡単','C':'普通','D':'やや難','E':'難しい'};
+  const subjBadge={'民法':'badge-civil','法令':'badge-hourei','税':'badge-tax','業法':'badge-gyoho'};
+  let html='';
+  for(let q=15;q<=45;q++){
+    const d=answers_514[q];
+    const pct=total[q]?Math.round(correct[q]/total[q]*100):null;
+    const cls=getScoreClass(pct);
+    const status=pct===null?'--':pct>=80?'✅ 良好':pct>=60?'🟡 維持':pct>=40?'⚠️ 要注意':'🔴 要強化';
+    html+=`<tr>
+      <td style="font-family:'DM Mono';font-weight:700">${q}</td>
+      <td><span class="badge ${subjBadge[d.subject]}">${d.subject}</span></td>
+      <td style="font-size:11px">${d.topic}</td>
+      <td style="font-size:10px;color:var(--muted)">${diffLabel[d.diff]||d.diff}</td>
+      <td style="font-family:'DM Mono';font-weight:700">${d.ans}</td>
+      <td class="${cls}" style="font-family:'DM Mono'">${pct!==null?pct+'%':'--'}</td>
+      <td style="font-size:10px">${status}</td>
+    </tr>`;
+  }
+  html+=`<tr><td colspan="7" style="text-align:center;color:var(--muted);font-size:11px;padding:12px;">※5/14は法令（問15〜22）・税（問23〜25）・業法（問26〜45）のみ。民法（問1〜14）は未実施。</td></tr>`;
+  document.getElementById('topicBody').innerHTML=html;
+}
+
+</script>
+<script>
+
+// ====== Slack 共有機能 ======
+function openSlackModal(){
+  // プレビュー生成
+  const preview = buildSlackText();
+  document.getElementById('slackPreview').textContent = preview;
+  document.getElementById('slackModalOverlay').style.display='flex';
+}
+function closeSlackModal(){
+  document.getElementById('slackModalOverlay').style.display='none';
+}
+
+function buildSlackText(){
+  const today = new Date().toLocaleDateString('ja-JP',{month:'long',day:'numeric'});
+  const exam = new Date('2026-10-19');
+  const daysLeft = Math.ceil((exam - new Date())/(1000*60*60*24));
+
+  // 最新回（6/10）のスコア集計
+  const p610 = persons.filter(p=>p.scores['610']!==null&&p.scores['610']!==undefined);
+  const avg = p610.length ? Math.round(p610.reduce((s,p)=>s+p.scores['610'],0)/p610.length) : '--';
+  const top3 = [...p610].sort((a,b)=>b.scores['610']-a.scores['610']).slice(0,3);
+  const bottom3 = [...p610].sort((a,b)=>a.scores['610']-b.scores['610']).slice(0,3);
+
+  // チーム別平均
+  const teams={};
+  p610.forEach(p=>{
+    if(!teams[p.team]){teams[p.team]={sum:0,cnt:0};}
+    teams[p.team].sum+=p.scores['610'];
+    teams[p.team].cnt++;
+  });
+
+  let text = `━━━━━━━━━━━━━━━━━━━━
+📊 *宅建試験 学習進捗レポート* | ${today}
+━━━━━━━━━━━━━━━━━━━━
+
+⏰ 本試験まで *${daysLeft}日*（2026年10月19日）
+
+【最新回 6/10 全体サマリー】
+• 受験者数：${p610.length}名
+• 全体平均：${avg}%
+• 目標ライン：80%（合格ライン目安32点）
+
+【科目別平均（最新）】
+⚖️ 民法：30%　🏗️ 法令：55%
+💴 税：59%　🏢 業法：68%
+
+【チーム別平均】\n`;
+
+  Object.entries(teams).forEach(([team,d])=>{
+    const tavg = Math.round(d.sum/d.cnt);
+    const bar = '█'.repeat(Math.round(tavg/10)) + '░'.repeat(10-Math.round(tavg/10));
+    text += `• ${team}：${bar} ${tavg}%\n`;
+  });
+
+  text += `\n【TOP3】\n`;
+  top3.forEach((p,i)=>{ text+=`${['🥇','🥈','🥉'][i]} ${p.name}：${p.scores['610']}%\n`; });
+
+  text += `\n【要サポート（30%台以下）】\n`;
+  const needs = p610.filter(p=>p.scores['610']<40);
+  if(needs.length>0){ needs.forEach(p=>{ text+=`⚠️ ${p.name}：${p.scores['610']}%\n`; }); }
+  else { text+='該当者なし ✅\n'; }
+
+  text += `\n【今週の重点学習テーマ】
+🔴 要強化：民法（代理・時効取得・抵当権）
+🟡 要維持：業法（重要事項説明・37条書面の違い）
+🟢 維持：税（不動産取得税・固定資産税）
+
+詳細レポートはこちら → [宅建進捗レポートを開く]
+━━━━━━━━━━━━━━━━━━━━`;
+  return text;
+}
+
+async function sendSlackMessage(){
+  const url = document.getElementById('slackWebhookUrl').value.trim();
+  if(!url){ alert('Webhook URLを入力してください'); return; }
+  if(!url.startsWith('https://hooks.slack.com/')){ alert('正しいSlack Webhook URLを入力してください'); return; }
+
+  const btn = document.getElementById('slackSendBtn');
+  const status = document.getElementById('slackStatus');
+  btn.textContent = '送信中...'; btn.disabled=true;
+
+  const text = buildSlackText();
+  try {
+    // CORSの都合でfetchは通らないため、コピーして案内
+    await navigator.clipboard.writeText(text);
+    status.innerHTML = '<span style="color:var(--warn)">⚠️ セキュリティ制限によりブラウザからの直接送信はできません。<br>テキストをクリップボードにコピーしました。Slack の Incoming Webhook に手動で貼り付けるか、バックエンドからの送信をお試しください。</span>';
+  } catch(e) {
+    status.innerHTML = '<span style="color:var(--muted)">テキストをコピーして Slack に貼り付けてください。</span>';
+  }
+  btn.textContent = '📤 Slackに送信'; btn.disabled=false;
+}
+
+function copySlackText(){
+  const text = document.getElementById('slackPreview').textContent;
+  navigator.clipboard.writeText(text).then(()=>{
+    document.getElementById('slackStatus').innerHTML='<span style="color:var(--success)">✅ クリップボードにコピーしました</span>';
+    setTimeout(()=>{ document.getElementById('slackStatus').innerHTML=''; },3000);
+  });
+}
+
+// ====== AI 重点取り組み生成 ======
+async function generateAIAdvice(personName){
+  const p = persons.find(x=>x.name===personName); if(!p) return;
+  const btnId = 'aiAdviceBtn_'+personName.replace(/[^a-zA-Z0-9]/g,'_');
+  const resultId = 'aiAdviceResult_'+personName.replace(/[^a-zA-Z0-9]/g,'_');
+  const btn = document.getElementById(btnId);
+  const resultDiv = document.getElementById(resultId);
+  if(!btn||!resultDiv) return;
+
+  btn.textContent='⏳ 分析中...'; btn.disabled=true;
+  resultDiv.innerHTML='<div style="padding:12px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--muted);">AIが重点取り組みを分析しています...</div>';
+
+  // 間違い問題の収集（6/10回答がある場合）
+  const mistakes=[];
+  if(p.answers610){
+    p.answers610.forEach((ans,i)=>{
+      const q=i+1; const d=answers_610[q];
+      if(ans!==d.ans) mistakes.push(`問${q}(${d.subject}:${d.topic})`);
+    });
+  }
+
+  // スコア履歴
+  const history = ['514','520','527','605','610'].map(r=>{
+    const v=p.scores[r]; return v!==null&&v!==undefined ? `${['5/14','5/20','5/27','6/5','6/10'][['514','520','527','605','610'].indexOf(r)]}:${v}%` : null;
+  }).filter(Boolean).join(', ');
+
+  const latestCivil = (['610','605','527','520','514'].map(r=>p.civil&&p.civil[r]).find(v=>v!==undefined)) ?? '--';
+  const latestHourei = (['610','605','527','520','514'].map(r=>p.hourei&&p.hourei[r]).find(v=>v!==undefined)) ?? '--';
+  const latestTax = (['610','605','527','520','514'].map(r=>p.tax&&p.tax[r]).find(v=>v!==undefined)) ?? '--';
+  const latestGyoho = (['610','605','527','520','514'].map(r=>p.gyoho&&p.gyoho[r]).find(v=>v!==undefined)) ?? '--';
+
+  const prompt = `宅建試験受験者の学習アドバイスを日本語で作成してください。
+
+受験者: ${p.name}（${p.team}）
+スコア推移: ${history || 'データなし'}
+最新科目別: 民法${latestCivil}% 法令${latestHourei}% 税${latestTax}% 業法${latestGyoho}%
+${mistakes.length>0 ? `6/10で間違えた問題（${mistakes.length}問）: ${mistakes.slice(0,10).join('、')}${mistakes.length>10?'など':''}` : '6/10の回答データなし'}
+
+本試験まで約130日。目標: 民法50%、法令70%、税100%、業法80%。
+
+以下の形式で、具体的で実践的な重点取り組みを3つ提示してください：
+
+【重点取り組み①】タイトル
+内容（2〜3文で具体的に。何を・どのように・いつまでに）
+
+【重点取り組み②】タイトル
+内容
+
+【重点取り組み③】タイトル
+内容
+
+最後に1文で「今週すぐできるアクション」を追加してください。簡潔に、励ましを込めて。`;
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({
+        model:"claude-sonnet-4-6",
+        max_tokens:1000,
+        messages:[{role:"user",content:prompt}]
+      })
+    });
+    const data = await response.json();
+    const text = data.content?.[0]?.text || 'エラーが発生しました';
+
+    // テキストをHTMLに整形
+    const formatted = text
+      .replace(/【重点取り組み①】(.+)/g,'<div style="margin-bottom:10px;padding:10px 12px;background:rgba(247,95,95,0.1);border-left:3px solid var(--danger);border-radius:0 6px 6px 0;"><strong style="color:var(--danger)">🎯 重点①$1</strong>')
+      .replace(/【重点取り組み②】(.+)/g,'</div><div style="margin-bottom:10px;padding:10px 12px;background:rgba(247,148,79,0.1);border-left:3px solid var(--warn);border-radius:0 6px 6px 0;"><strong style="color:var(--warn)">🎯 重点②$1</strong>')
+      .replace(/【重点取り組み③】(.+)/g,'</div><div style="margin-bottom:10px;padding:10px 12px;background:rgba(79,142,247,0.1);border-left:3px solid var(--accent);border-radius:0 6px 6px 0;"><strong style="color:var(--accent)">🎯 重点③$1</strong>')
+      .replace(/\n/g,'<br>') + '</div>';
+
+    resultDiv.innerHTML=`<div style="margin-top:4px;">
+      <div style="font-size:10px;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:4px;">✨ AI生成 重点取り組みプラン</div>
+      <div style="font-size:12px;line-height:1.8;">${formatted}</div>
+    </div>`;
+  } catch(e) {
+    resultDiv.innerHTML='<div style="color:var(--danger);font-size:12px;padding:8px;">AI分析に失敗しました。ネットワーク環境を確認してください。</div>';
+  }
+  btn.textContent='✨ AIで重点分析'; btn.disabled=false;
+}
+
+</script>
+<script>
+
+// ====== 全国比較 ======
+function buildNationalComparison(){
+  const p610 = persons.filter(p=>p.scores['610']!=null);
+  if(!p610.length) return;
+
+  // グループ平均（正答率%のまま）
+  const avgPct = Math.round(p610.reduce((s,p)=>s+p.scores['610'],0)/p610.length);
+  const avgEl = document.getElementById('natGroupAvg');
+  if(avgEl) { avgEl.textContent = avgPct+'%'; avgEl.style.color = avgPct>=74?'var(--success)':avgPct>=66?'var(--warn)':'var(--danger)'; }
+
+  // 合格ライン到達状況（74%以上）
+  const rankList = document.getElementById('natRankList');
+  if(rankList){
+    const sorted = [...p610].sort((a,b)=>b.scores['610']-a.scores['610']);
+    rankList.innerHTML = sorted.map(p=>{
+      const s = p.scores['610'];
+      const ok74 = s>=74; const ok66 = s>=66;
+      const badge = ok74?'✅ 合格圏':ok66?'🟡 圏内届く可能性':'🔴 要強化';
+      const col = ok74?'var(--success)':ok66?'var(--warn)':'var(--danger)';
+      return `<div style="padding:6px 10px;border-radius:6px;border:1px solid ${col};font-size:11px;min-width:140px;">
+        <div style="font-weight:700;color:var(--text)">${p.name}</div>
+        <div style="color:${col};font-size:10px;">${badge}（${s}%）</div>
+      </div>`;
+    }).join('');
+  }
+
+  // 科目別比較（グループ平均）
+  const subjects = [
+    {key:'civil',  elId:'natCivil',  diffId:'natCivilDiff',  target:64},
+    {key:'hourei', elId:'natHourei', diffId:'natHoureiDiff', target:63},
+    {key:'tax',    elId:'natTax',    diffId:'natTaxDiff',    target:67},
+    {key:'gyoho',  elId:'natGyoho',  diffId:'natGyhoDiff',   target:80},
+  ];
+  subjects.forEach(({key,elId,diffId,target})=>{
+    const vals = p610.map(p=>p[key]&&p[key]['610']).filter(v=>v!=null);
+    if(!vals.length) return;
+    const avg = Math.round(vals.reduce((a,b)=>a+b)/vals.length);
+    const diff = avg - target;
+    const el = document.getElementById(elId);
+    const dEl = document.getElementById(diffId);
+    if(el) { el.textContent=avg+'%'; el.style.color=avg>=target?'var(--success)':'var(--danger)'; }
+    if(dEl) {
+      dEl.textContent=(diff>=0?'▲+':'▼')+Math.abs(diff)+'%';
+      dEl.style.color=diff>=0?'var(--success)':'var(--danger)';
+      dEl.style.fontWeight='700';
+    }
+  });
+
+  // 個人別テーブル
+  const tbody = document.getElementById('natPersonTable');
+  if(!tbody) return;
+  const sorted = [...p610].sort((a,b)=>b.scores['610']-a.scores['610']);
+  tbody.innerHTML = sorted.map(p=>{
+    const pct = p.scores['610'];
+    const est = Math.round(pct/100*50*10)/10; // 50問換算推定点
+    const estInt = Math.round(est);
+    const diffR7 = estInt - 33;
+    const diffR6 = estInt - 37;
+    const judgeR7 = diffR7>=0?`<span style="color:var(--success);font-weight:700">▲+${diffR7}点</span>`:`<span style="color:var(--danger);font-weight:700">▼${Math.abs(diffR7)}点</span>`;
+    const judgeR6 = diffR6>=0?`<span style="color:var(--success);font-weight:700">▲+${diffR6}点</span>`:`<span style="color:var(--danger);font-weight:700">▼${Math.abs(diffR6)}点</span>`;
+    const verdict = estInt>=37?'🏆 R6基準クリア':estInt>=33?'✅ R7基準クリア':estInt>=30?'🟡 あと少し':'🔴 要強化';
+    return `<tr>
+      <td style="font-weight:700;cursor:pointer;color:var(--accent)" onclick="showSection('individuals',null);openModal('${p.name}')">${p.name}</td>
+      <td style="font-family:'DM Mono';font-weight:700" class="${getScoreClass(pct)}">${pct}%</td>
+      <td style="font-family:'DM Mono';font-weight:700">${estInt}点</td>
+      <td>${judgeR7}</td>
+      <td>${judgeR6}</td>
+      <td>${verdict}</td>
+    </tr>`;
+  }).join('');
+}
+
+// Initに追加
+const _origInit = window.onload;
+document.addEventListener('DOMContentLoaded', ()=>{
+  buildNationalComparison();
+  buildOverviewNational();
+  setTimeout(()=>buildSubjectRadar(null), 200);
+});
+
+function buildOverviewNational(){
+  const p610 = persons.filter(p=>p.scores['610']!=null);
+  if(!p610.length) return;
+
+  const n = p610.length;
+  const avg = Math.round(p610.reduce((s,p)=>s+p.scores['610'],0)/n);
+
+  // 合格圏人数
+  const passR7 = p610.filter(p=>p.scores['610']>=66).length;
+  const passR6 = p610.filter(p=>p.scores['610']>=74).length;
+  const passR6names = p610.filter(p=>p.scores['610']>=74).map(p=>`✅ ${p.name}（${p.scores['610']}%）`).join('<br>');
+  const passR7only = p610.filter(p=>p.scores['610']>=66&&p.scores['610']<74).map(p=>`🟡 ${p.name}（${p.scores['610']}%）`).join('<br>');
+
+  const setEl = (id, text, color) => {
+    const el = document.getElementById(id);
+    if(el){ el.textContent=text; if(color) el.style.color=color; }
+  };
+  const setDiff = (id, val, target) => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    const diff = val - target;
+    el.textContent = (diff>=0?'▲+':'▼')+Math.abs(diff)+'%';
+    el.style.color = diff>=0?'var(--success)':'var(--danger)';
+    el.style.fontWeight = '700';
+  };
+
+  // 合格率（グループ内の合格圏割合）
+  const groupPassRate = Math.round(passR6/n*100);
+  setEl('ov-nat-rate', groupPassRate+'%', groupPassRate>=18.6?'var(--success)':'var(--danger)');
+  setDiff('ov-nat-rate-diff', groupPassRate, 18.6);
+
+  // 平均正答率 vs 合格ライン74%
+  setEl('ov-nat-avg', avg+'%', avg>=74?'var(--success)':avg>=66?'var(--warn)':'var(--danger)');
+  setDiff('ov-nat-avg-diff', avg, 74);
+
+  // 科目別
+  const subjMap = [
+    {key:'gyoho', id:'ov-gyoho', diffId:'ov-gyoho-diff', target:80},
+    {key:'hourei',id:'ov-hourei',diffId:'ov-hourei-diff',target:63},
+    {key:'tax',   id:'ov-tax',   diffId:'ov-tax-diff',   target:67},
+    {key:'civil', id:'ov-civil', diffId:'ov-civil-diff', target:64},
+  ];
+  subjMap.forEach(({key,id,diffId,target})=>{
+    const vals = p610.map(p=>p[key]&&p[key]['610']).filter(v=>v!=null);
+    if(!vals.length) return;
+    const a = Math.round(vals.reduce((s,v)=>s+v)/vals.length);
+    setEl(id, a+'%', a>=target?'var(--success)':'var(--danger)');
+    setDiff(diffId, a, target);
+  });
+
+  // 合格圏人数
+  setEl('ov-pass-r7', passR7+'名');
+  setEl('ov-pass-r6', passR6+'名');
+  const namesEl = document.getElementById('ov-pass-names');
+  if(namesEl) namesEl.innerHTML = (passR6names||'（該当者なし）') + (passR7only?'<br>'+passR7only:'');
+}
+
+</script>
+<script>
+
+</script>
+<script>
+
+// ====== 個人タブ: SVG科目別正答率レーダーチャート ======
+function buildSubjectRadar(teamFilter){
+  const p610 = persons.filter(p => {
+    if(!p.scores || p.scores['610']==null) return false;
+    if(teamFilter && teamFilter!=='all') return p.team===teamFilter;
+    return true;
+  });
+
+  const avg = arr => arr.length ? Math.round(arr.reduce((a,b)=>a+b,0)/arr.length) : 0;
+  const civil  = avg(p610.map(p=>p.civil&&p.civil['610']).filter(v=>v!=null));
+  const hourei = avg(p610.map(p=>p.hourei&&p.hourei['610']).filter(v=>v!=null));
+  const tax    = avg(p610.map(p=>p.tax&&p.tax['610']).filter(v=>v!=null));
+  const gyoho  = avg(p610.map(p=>p.gyoho&&p.gyoho['610']).filter(v=>v!=null));
+
+  const labels  = ['業法','法令','税','民法'];
+  const values  = [gyoho, hourei, tax, civil];
+  const targets = [80, 63, 67, 64];
+  const colors  = ['#059669','#2563EB','#D97706','#7C3AED'];
+
+  const svg = document.getElementById('radarSVG');
+  const legend = document.getElementById('radarLegend');
+  if(!svg || !legend) return;
+
+  const cx=160, cy=140, R=110;
+  const N=4;
+  const angleOf = i => (Math.PI*2/N)*i - Math.PI/2;
+  const pt = (val, i) => {
+    const r = R * val/100;
+    return [cx + r*Math.cos(angleOf(i)), cy + r*Math.sin(angleOf(i))];
+  };
+
+  // グリッド円
+  let svgHtml = '';
+  [20,40,60,80,100].forEach(v=>{
+    const pts = Array.from({length:N},(_,i)=>pt(v,i)).map(p=>p.join(',')).join(' ');
+    svgHtml += `<polygon points="${pts}" fill="none" stroke="#d0d5e8" stroke-width="${v===80?1.5:0.7}" stroke-dasharray="${v===80?'4,2':''}"/>`;
+    svgHtml += `<text x="${cx}" y="${cy - R*v/100 - 3}" text-anchor="middle" font-size="8" fill="#5a6080">${v}%</text>`;
+  });
+
+  // 軸
+  Array.from({length:N},(_,i)=>{
+    const [x,y]=pt(100,i);
+    svgHtml += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#d0d5e8" stroke-width="0.7"/>`;
+  });
+
+  // 目標ライン
+  const tgtPts = targets.map((v,i)=>pt(v,i).join(',')).join(' ');
+  svgHtml += `<polygon points="${tgtPts}" fill="rgba(247,201,79,0.08)" stroke="#f7c94f" stroke-width="1.5" stroke-dasharray="5,3"/>`;
+
+  // 当グループ
+  const valPts = values.map((v,i)=>pt(v,i).join(',')).join(' ');
+  svgHtml += `<polygon points="${valPts}" fill="rgba(79,142,247,0.18)" stroke="#4f8ef7" stroke-width="2.5"/>`;
+
+  // ドットと値
+  values.forEach((v,i)=>{
+    const [x,y]=pt(v,i);
+    svgHtml += `<circle cx="${x}" cy="${y}" r="5" fill="${colors[i]}" stroke="#fff" stroke-width="1.5"/>`;
+    const ox=[0,12,0,-12][i], oy=[-14,0,14,0][i];
+    svgHtml += `<text x="${x+ox}" y="${y+oy}" text-anchor="middle" font-size="11" font-weight="700" fill="${colors[i]}">${v}%</text>`;
+  });
+
+  // ラベル
+  const labelOffset=20;
+  labels.forEach((lbl,i)=>{
+    const [x,y]=pt(100+labelOffset,i);
+    const anchor=['middle','start','middle','end'][i];
+    svgHtml += `<text x="${x}" y="${y+4}" text-anchor="${anchor}" font-size="12" font-weight="700" fill="${colors[i]}">${lbl}</text>`;
+  });
+
+  svg.innerHTML = svgHtml;
+
+  // 凡例
+  legend.innerHTML = labels.map((lbl,i)=>{
+    const ok = values[i]>=targets[i];
+    const diff = ok ? '✅' : '▼'+(targets[i]-values[i])+'%';
+    const diffColor = ok ? 'var(--success)' : 'var(--danger)';
+    return `<div style="display:flex;align-items:center;gap:8px;">
+      <div style="width:12px;height:12px;border-radius:50%;background:${colors[i]};flex-shrink:0;"></div>
+      <span style="color:${colors[i]};font-weight:700;">${lbl}</span>
+      <span style="color:var(--text);font-weight:900;">${values[i]}%</span>
+      <span style="color:var(--muted);font-size:10px;">/ 目標${targets[i]}%</span>
+      <span style="color:${diffColor};font-weight:700;font-size:10px;">${diff}</span>
+    </div>`;
+  }).join('');
+}
+
+
+
+</script>
+</body>
+</html>
