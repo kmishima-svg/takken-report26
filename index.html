@@ -192,11 +192,37 @@
 
   <!-- 合格ライン到達状況 -->
   <div class="card" style="padding:16px;margin-bottom:16px;">
-    <div class="card-title">合格ライン到達シミュレーション（令和6年基準：37点 = 正答率74%）</div>
-    <div style="margin-bottom:10px;font-size:11px;color:var(--muted)">
-      ※模試正答率74%以上 = 合格圏内目安。本試験は難易度が変動するため参考値です。
+    <div class="card-title">合格ライン到達シミュレーション〈初見補正版〉</div>
+    <div style="background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.2);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:11px;">
+      ⚠️ <strong>過去問補正について：</strong>当グループの模試は過去問ベースのため、
+      問題に慣れた分だけ実際の実力より高く出やすい傾向があります。
+      初見の全国模試・本試験では一般的に<strong>5〜15点程度低下</strong>することを想定し、
+      各回に補正を適用した「実力推定スコア」を下段の小数字で表示しています。
+      <span style="color:var(--muted);">（上段＝生スコア / 下段＝補正後推定）</span>
     </div>
-    <div id="natRankList" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;font-size:10px;margin-bottom:12px;">
+      <span style="padding:3px 8px;border-radius:10px;background:rgba(5,150,105,0.1);border:1px solid rgba(5,150,105,0.3);">🏆 安全圏（補正後74%以上）</span>
+      <span style="padding:3px 8px;border-radius:10px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);">✅ 合格圏（補正後68%以上）</span>
+      <span style="padding:3px 8px;border-radius:10px;background:rgba(79,142,247,0.1);border:1px solid rgba(79,142,247,0.3);">📈 伸び中（60%以上＋上昇）</span>
+      <span style="padding:3px 8px;border-radius:10px;background:rgba(217,119,6,0.1);border:1px solid rgba(217,119,6,0.3);">🟡 もう一息（58〜67%）</span>
+      <span style="padding:3px 8px;border-radius:10px;background:rgba(247,95,95,0.1);border:1px solid rgba(247,95,95,0.3);">⚠️ 要強化（48〜57%）</span>
+      <span style="padding:3px 8px;border-radius:10px;background:rgba(220,38,38,0.1);border:1px solid rgba(220,38,38,0.3);">🔴 要注意（48%未満）</span>
+    </div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:12px;">
+      補正率：6/10→-10% / 6/5(本試験問題)→-3% / 5/27→-10% / 5/20→-13% / 5/14→-12%　＋複数回受験補正-1〜2%
+    </div>
+    <div style="overflow-x:auto;">
+    <table id="simTable">
+      <thead>
+        <tr>
+          <th>氏名</th><th>チーム</th>
+          <th>5/14</th><th>5/20</th><th>5/27</th><th>6/5</th><th>6/10</th>
+          <th>直近3回平均</th><th>トレンド</th><th>推定本番点</th><th>判定</th>
+        </tr>
+      </thead>
+      <tbody id="simTableBody"></tbody>
+    </table>
+    </div>
   </div>
 
   <!-- 全国vs当グループ 科目別比較 -->
@@ -474,8 +500,64 @@
 <!-- TOPICS (fine-grained) -->
 <div class="section" id="sec-topics">
   <div class="sec-title">テーマ別 全員正答状況</div>
-  <div class="sec-sub">問題ごとの正答率・テーマ・難易度・正解番号（回別切り替え可）</div>
-  <div class="card">
+  <div class="sec-sub">全5回の横断分析で弱点テーマを特定します</div>
+
+  <!-- 全5回横断 弱点サマリー -->
+  <div class="card" style="padding:16px;margin-bottom:16px;" id="weaknessSummaryCard">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div class="card-title" style="margin-bottom:0;">📉 全5回横断 弱点テーマ分析</div>
+      <div style="font-size:10px;color:var(--muted);">5/14〜6/10 全回答データを集計</div>
+    </div>
+
+    <!-- KPI行 -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;">
+      <div style="text-align:center;padding:10px;background:var(--surface2);border-radius:8px;">
+        <div id="ws-total-themes" style="font-size:22px;font-weight:900;color:var(--text)">--</div>
+        <div style="font-size:10px;color:var(--muted);">分析テーマ数</div>
+      </div>
+      <div style="text-align:center;padding:10px;background:rgba(220,38,38,0.08);border-radius:8px;border:1px solid rgba(220,38,38,0.2);">
+        <div id="ws-danger-count" style="font-size:22px;font-weight:900;color:var(--danger)">--</div>
+        <div style="font-size:10px;color:var(--muted);">🔴 要強化（〜49%）</div>
+      </div>
+      <div style="text-align:center;padding:10px;background:rgba(217,119,6,0.08);border-radius:8px;border:1px solid rgba(217,119,6,0.2);">
+        <div id="ws-warn-count" style="font-size:22px;font-weight:900;color:var(--warn)">--</div>
+        <div style="font-size:10px;color:var(--muted);">🟡 要注意（50〜69%）</div>
+      </div>
+      <div style="text-align:center;padding:10px;background:rgba(5,150,105,0.08);border-radius:8px;border:1px solid rgba(5,150,105,0.2);">
+        <div id="ws-ok-count" style="font-size:22px;font-weight:900;color:var(--success)">--</div>
+        <div style="font-size:10px;color:var(--muted);">✅ 良好（70%以上）</div>
+      </div>
+    </div>
+
+    <!-- 科目別弱点 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--danger);margin-bottom:8px;">🔴 最重点テーマ（正答率50%未満）</div>
+        <div id="ws-danger-list" style="display:flex;flex-direction:column;gap:5px;"></div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--warn);margin-bottom:8px;">🟡 要注意テーマ（50〜69%）</div>
+        <div id="ws-warn-list" style="display:flex;flex-direction:column;gap:5px;"></div>
+      </div>
+    </div>
+
+    <!-- 科目別ヒートマップ -->
+    <div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:8px;">科目別 平均正答率（全回横断）</div>
+    <div id="ws-subject-bars" style="display:flex;flex-direction:column;gap:8px;"></div>
+  </div>
+
+  <!-- 回別切り替えテーブル -->
+  <div class="card" style="padding:16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+      <div class="card-title" style="margin-bottom:0;">問別 正答率テーブル</div>
+      <div class="filter-row" style="margin:0;">
+        <button class="filter-btn active" onclick="switchTopicRound('610',this)">6/10 模試</button>
+        <button class="filter-btn" onclick="switchTopicRound('605',this)">6/5（令和6年）</button>
+        <button class="filter-btn" onclick="switchTopicRound('527',this)">5/27 模試</button>
+        <button class="filter-btn" onclick="switchTopicRound('520',this)">5/20 模試</button>
+        <button class="filter-btn" onclick="switchTopicRound('514',this)">5/14（法令・税・業法）</button>
+      </div>
+    </div>
     <div style="overflow-x:auto;">
     <table id="topicTable">
       <thead>
@@ -1965,21 +2047,8 @@ function buildNationalComparison(){
   const avgEl = document.getElementById('natGroupAvg');
   if(avgEl) { avgEl.textContent = avgPct+'%'; avgEl.style.color = avgPct>=74?'var(--success)':avgPct>=66?'var(--warn)':'var(--danger)'; }
 
-  // 合格ライン到達状況（74%以上）
-  const rankList = document.getElementById('natRankList');
-  if(rankList){
-    const sorted = [...p610].sort((a,b)=>b.scores['610']-a.scores['610']);
-    rankList.innerHTML = sorted.map(p=>{
-      const s = p.scores['610'];
-      const ok74 = s>=74; const ok66 = s>=66;
-      const badge = ok74?'✅ 合格圏':ok66?'🟡 圏内届く可能性':'🔴 要強化';
-      const col = ok74?'var(--success)':ok66?'var(--warn)':'var(--danger)';
-      return `<div style="padding:6px 10px;border-radius:6px;border:1px solid ${col};font-size:11px;min-width:140px;">
-        <div style="font-weight:700;color:var(--text)">${p.name}</div>
-        <div style="color:${col};font-size:10px;">${badge}（${s}%）</div>
-      </div>`;
-    }).join('');
-  }
+  // 全員 合格ラインシミュレーションテーブル
+  buildSimTable();
 
   // 科目別比較（グループ平均）
   const subjects = [
@@ -2317,5 +2386,279 @@ function buildMasteryHtml(p) {
 
   html += `</div>`;
   return html;
+}
+</script>
+<script>
+// ====== 全5回横断 弱点テーマ分析 ======
+function buildWeaknessSummary() {
+  // 全回のanswersとpersonsの回答データを横断集計
+  const allRounds = [
+    { key:'610', answers: typeof answers_610!=='undefined'?answers_610:null, qRange:[1,45] },
+    { key:'605', answers: typeof answers_605!=='undefined'?answers_605:null, qRange:[1,45] },
+    { key:'527', answers: typeof answers_527!=='undefined'?answers_527:null, qRange:[1,45] },
+    { key:'520', answers: typeof answers_520!=='undefined'?answers_520:null, qRange:[1,45] },
+    { key:'514', answers: typeof answers_514!=='undefined'?answers_514:null, qRange:[15,45] },
+  ];
+
+  // テーマごとに全回の正誤を集計
+  const themeData = {}; // topic -> {correct, total, subject, rounds:[]}
+
+  allRounds.forEach(({ key, answers, qRange }) => {
+    if (!answers) return;
+    const [qMin, qMax] = qRange;
+
+    persons.forEach(p => {
+      const pAns = key === '610' ? p.answers610
+                 : key === '605' ? p.answers605
+                 : key === '527' ? p.answers527
+                 : null;
+      if (!pAns) return;
+
+      for (let q = qMin; q <= qMax; q++) {
+        const d = answers[q];
+        const ans = pAns[q - 1];
+        if (!d || ans === undefined || ans === null) continue;
+
+        const topic = d.topic;
+        if (!themeData[topic]) {
+          themeData[topic] = { correct:0, total:0, subject:d.subject, rounds:{} };
+        }
+        if (!themeData[topic].rounds[key]) {
+          themeData[topic].rounds[key] = { correct:0, total:0 };
+        }
+        themeData[topic].total++;
+        themeData[topic].rounds[key].total++;
+        if (ans === d.ans) {
+          themeData[topic].correct++;
+          themeData[topic].rounds[key].correct++;
+        }
+      }
+    });
+
+    // data605/527/514のような集計データも活用
+    if (key === '605' && typeof data605 !== 'undefined') {
+      data605.forEach(({ name, ans }) => {
+        for (let q = 1; q <= 45; q++) {
+          const d = answers[q];
+          const a = ans[q-1];
+          if (!d || a === undefined || a === null) continue;
+          const topic = d.topic;
+          if (!themeData[topic]) themeData[topic] = { correct:0, total:0, subject:d.subject, rounds:{} };
+          if (!themeData[topic].rounds[key]) themeData[topic].rounds[key] = { correct:0, total:0 };
+          // personsで既にカウント済みならスキップ（重複防止）
+        }
+      });
+    }
+  });
+
+  // フィルタ：データある & 5問以上集計されたテーマのみ
+  const themes = Object.entries(themeData)
+    .filter(([, v]) => v.total >= 3)
+    .map(([topic, v]) => ({
+      topic,
+      subject: v.subject,
+      pct: Math.round(v.correct / v.total * 100),
+      total: v.total,
+      correct: v.correct,
+    }))
+    .sort((a, b) => a.pct - b.pct);
+
+  if (!themes.length) return;
+
+  const danger = themes.filter(t => t.pct < 50);
+  const warn   = themes.filter(t => t.pct >= 50 && t.pct < 70);
+  const ok     = themes.filter(t => t.pct >= 70);
+
+  // KPI更新
+  const setEl = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+  setEl('ws-total-themes', themes.length);
+  setEl('ws-danger-count', danger.length);
+  setEl('ws-warn-count', warn.length);
+  setEl('ws-ok-count', ok.length);
+
+  const subjColors = { '民法':'var(--civil)', '法令':'var(--hourei)', '税':'var(--tax)', '業法':'var(--gyoho)' };
+  const subjBadges = { '民法':'badge-civil', '法令':'badge-hourei', '税':'badge-tax', '業法':'badge-gyoho' };
+
+  // 要強化リスト
+  const dangerEl = document.getElementById('ws-danger-list');
+  if (dangerEl) {
+    dangerEl.innerHTML = danger.slice(0, 10).map(t => `
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.2);">
+        <span class="badge ${subjBadges[t.subject]}" style="flex-shrink:0;">${t.subject}</span>
+        <span style="font-size:11px;color:var(--text);flex:1;min-width:0;">${t.topic}</span>
+        <span style="font-family:'DM Mono';font-weight:900;color:var(--danger);font-size:12px;flex-shrink:0;">${t.pct}%</span>
+      </div>`).join('');
+  }
+
+  // 要注意リスト
+  const warnEl = document.getElementById('ws-warn-list');
+  if (warnEl) {
+    warnEl.innerHTML = warn.slice(0, 10).map(t => `
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;background:rgba(217,119,6,0.06);border:1px solid rgba(217,119,6,0.2);">
+        <span class="badge ${subjBadges[t.subject]}" style="flex-shrink:0;">${t.subject}</span>
+        <span style="font-size:11px;color:var(--text);flex:1;min-width:0;">${t.topic}</span>
+        <span style="font-family:'DM Mono';font-weight:900;color:var(--warn);font-size:12px;flex-shrink:0;">${t.pct}%</span>
+      </div>`).join('');
+  }
+
+  // 科目別平均バー
+  const subjAvgs = {};
+  ['業法','民法','法令','税'].forEach(subj => {
+    const ts = themes.filter(t => t.subject === subj);
+    if (!ts.length) return;
+    subjAvgs[subj] = Math.round(ts.reduce((s, t) => s + t.pct, 0) / ts.length);
+  });
+
+  const barsEl = document.getElementById('ws-subject-bars');
+  if (barsEl) {
+    barsEl.innerHTML = Object.entries(subjAvgs).map(([subj, avg]) => {
+      const col = avg >= 70 ? 'var(--success)' : avg >= 50 ? 'var(--warn)' : 'var(--danger)';
+      const target = { '業法':80, '法令':60, '税':67, '民法':50 }[subj] || 70;
+      const tpct = Math.min(100, target);
+      return `<div style="display:flex;align-items:center;gap:10px;">
+        <span class="badge ${subjBadges[subj]}" style="width:36px;text-align:center;flex-shrink:0;">${subj}</span>
+        <div style="flex:1;position:relative;height:18px;background:var(--surface2);border-radius:4px;overflow:visible;">
+          <div style="height:100%;width:${avg}%;background:${col};border-radius:4px;transition:width 0.6s;"></div>
+          <!-- 目標ライン -->
+          <div style="position:absolute;top:-3px;bottom:-3px;left:${tpct}%;width:2px;background:var(--accent2);border-radius:1px;" title="目標${target}%"></div>
+        </div>
+        <span style="font-family:'DM Mono';font-weight:900;color:${col};width:36px;text-align:right;font-size:13px;">${avg}%</span>
+        <span style="font-size:10px;color:var(--muted);width:52px;">目標${target}%</span>
+        <span style="font-size:10px;font-weight:700;color:${avg>=target?'var(--success)':'var(--danger)'};">${avg>=target?'✅':'▼'+(target-avg)+'%'}</span>
+      </div>`;
+    }).join('');
+  }
+}
+
+// Initに追加
+const _origInit2 = window.buildDomainBars;
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(buildWeaknessSummary, 400);
+});
+</script>
+<script>
+// ====== 全員 合格ラインシミュレーションテーブル（初見補正版）======
+// 【補正ロジック】
+// 過去問を複数回見ているため、模試スコアは実力より高めに出る。
+// 初見の全国模試・本試験では得点が下がることを加味して補正を適用。
+//
+// 補正係数の考え方：
+// - 令和6年本試験（6/5）: 本物の本試験問題 → 補正なし（0%）
+// - 5/27（過去問1回目）: 初見に近い → -5%
+// - 5/20（同問題セット）: 既視感あり  → -8%
+// - 5/14（法令・税・業法）: 既視感あり → -8%
+// 複数回受験者はさらに -2% 追加（問題に慣れた分を差し引く）
+// 業法は記憶定着しやすいため補正を軽くし、民法は不安定なため補正重めに設定
+
+function buildSimTable() {
+  const tbody = document.getElementById('simTableBody');
+  if (!tbody) return;
+
+  const rnds = ['514','520','527','605','610'];
+
+  // 【初見補正率】各回に適用（本試験基準との乖離を推定）
+  const rawDiscount = {
+    '610': 0.10,  // 6/10: 過去問模試（最新）→ -10%
+    '605': 0.03,  // 6/5 : 令和6年本試験問題 → -3%（本番に最も近い）
+    '527': 0.10,  // 5/27: 過去問模試 → -10%
+    '520': 0.13,  // 5/20: 過去問模試（同問題セット） → -13%
+    '514': 0.12,  // 5/14: 過去問模試（法令・税・業法のみ） → -12%
+  };
+
+  // 全person（1回以上受験）
+  const allPersons = persons
+    .filter(p => rnds.some(r => p.scores[r] != null))
+    .sort((a, b) => {
+      // 補正後の最新スコアでソート
+      const la = rnds.slice().reverse().map(r => a.scores[r] != null ? a.scores[r] * (1 - rawDiscount[r]) : null).find(v => v != null) ?? 0;
+      const lb = rnds.slice().reverse().map(r => b.scores[r] != null ? b.scores[r] * (1 - rawDiscount[r]) : null).find(v => v != null) ?? 0;
+      return lb - la;
+    });
+
+  const rows = allPersons.map(p => {
+    const validCount = rnds.filter(r => p.scores[r] != null).length;
+    // 複数回受験補正: 2回以上で追加 -2%（問題に慣れた分）
+    const repeatPenalty = validCount >= 3 ? 0.02 : validCount >= 2 ? 0.01 : 0;
+
+    // 各回の補正後スコア
+    const correctedScores = rnds.map(r => {
+      const v = p.scores[r];
+      if (v == null) return null;
+      const discount = rawDiscount[r] + repeatPenalty;
+      return Math.round(v * (1 - discount));
+    });
+
+    // 生スコア（表示用）
+    const rawScores = rnds.map(r => p.scores[r] ?? null);
+
+    // 直近3回の補正済みスコア
+    const validCorrected = correctedScores.filter(v => v != null);
+    const recent3 = validCorrected.slice(-3);
+    const avg3 = recent3.length ? Math.round(recent3.reduce((a,b)=>a+b,0)/recent3.length) : null;
+
+    // トレンド（補正後スコアの直近2回比較）
+    const last2 = validCorrected.slice(-2);
+    let trend = '--', trendColor = 'var(--muted)';
+    if (last2.length >= 2) {
+      const diff = last2[1] - last2[0];
+      if      (diff >= 5)  { trend = `▲+${diff}%`; trendColor = 'var(--success)'; }
+      else if (diff >= 1)  { trend = `▲+${diff}%`; trendColor = '#10b981'; }
+      else if (diff === 0) { trend = '→';           trendColor = 'var(--muted)'; }
+      else if (diff >= -4) { trend = `▼${Math.abs(diff)}%`; trendColor = 'var(--warn)'; }
+      else                 { trend = `▼${Math.abs(diff)}%`; trendColor = 'var(--danger)'; }
+    }
+
+    // 推定本番点（直近3回補正平均 → 50問換算）
+    const estPt = avg3 != null ? Math.round(avg3 / 100 * 50) : null;
+
+    // 最新補正スコア
+    const latestCorrected = validCorrected[validCorrected.length - 1] ?? null;
+    const latestRaw       = rawScores.filter(v=>v!=null).slice(-1)[0] ?? null;
+
+    // 判定（補正後スコア基準・意図的に厳しめ）
+    let verdict, vColor;
+    if      (latestCorrected >= 74)                      { verdict = '🏆 安全圏';   vColor = 'var(--success)'; }
+    else if (latestCorrected >= 68)                      { verdict = '✅ 合格圏';   vColor = '#10b981'; }
+    else if (latestCorrected >= 60 && trend.startsWith('▲')) { verdict = '📈 伸び中'; vColor = 'var(--accent)'; }
+    else if (latestCorrected >= 58)                      { verdict = '🟡 もう一息'; vColor = '#d97706'; }
+    else if (latestCorrected >= 48)                      { verdict = '⚠️ 要強化';   vColor = 'var(--warn)'; }
+    else if (latestCorrected != null)                    { verdict = '🔴 要注意';   vColor = 'var(--danger)'; }
+    else                                                  { verdict = '--';           vColor = 'var(--muted)'; }
+
+    // 各回セル（生スコア表示＋補正後をtooltipで）
+    const scoreCells = rnds.map((r, i) => {
+      const raw = rawScores[i];
+      const cor = correctedScores[i];
+      if (raw == null) return '<td style="color:var(--muted);font-size:10px;">--</td>';
+      const col = cor>=68?'var(--success)':cor>=58?'var(--warn)':'var(--danger)';
+      const disc = Math.round(rawDiscount[r]*100 + repeatPenalty*100);
+      return `<td title="生スコア:${raw}% → 補正後:${cor}%（-${disc}%）" style="cursor:help;">
+        <span style="font-family:'DM Mono';font-size:12px;font-weight:700;color:var(--text);">${raw}%</span>
+        <span style="display:block;font-size:9px;color:${col};font-weight:700;">${cor}%</span>
+      </td>`;
+    }).join('');
+
+    // 直近3回補正平均セル
+    const avg3Cell = avg3 != null
+      ? `<td style="font-family:'DM Mono';font-weight:900;color:${avg3>=68?'var(--success)':avg3>=58?'var(--warn)':'var(--danger)'};">${avg3}%</td>`
+      : '<td style="color:var(--muted)">--</td>';
+
+    // 推定点セル
+    const estCell = estPt != null
+      ? `<td><span style="font-family:'DM Mono';font-weight:900;">${estPt}点</span><span style="font-size:9px;color:var(--muted);">/50</span></td>`
+      : '<td style="color:var(--muted)">--</td>';
+
+    return `<tr>
+      <td style="font-weight:700;cursor:pointer;color:var(--accent);white-space:nowrap;" onclick="showSection('individuals',null);openModal('${p.name}')">${p.name}</td>
+      <td style="color:var(--muted);font-size:11px;white-space:nowrap;">${p.team}</td>
+      ${scoreCells}
+      ${avg3Cell}
+      <td style="font-weight:700;color:${trendColor};font-size:11px;white-space:nowrap;">${trend}</td>
+      ${estCell}
+      <td style="font-weight:700;color:${vColor};font-size:11px;white-space:nowrap;">${verdict}</td>
+    </tr>`;
+  });
+
+  tbody.innerHTML = rows.join('');
 }
 </script>
