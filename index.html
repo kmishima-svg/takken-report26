@@ -397,24 +397,53 @@
 <!-- TEAMS -->
 <div class="section" id="sec-teams">
   <div class="sec-title">チーム別成績</div>
-  <div class="sec-sub">チームごとの平均スコアと推移</div>
-  <div class="grid-4" style="margin-bottom:16px;">
-    <div class="kpi"><div class="kpi-val">27.7</div><div class="kpi-label">城内チーム</div><div class="kpi-sub" style="color:var(--success)">▲最高平均（6/5時点）</div></div>
-    <div class="kpi"><div class="kpi-val">27.1</div><div class="kpi-label">生島チーム</div><div class="kpi-sub" style="color:var(--success)">直近急伸</div></div>
-    <div class="kpi"><div class="kpi-val">26.2</div><div class="kpi-label">本多チーム</div><div class="kpi-sub">安定推移</div></div>
-    <div class="kpi"><div class="kpi-val">24.7</div><div class="kpi-label">長渕チーム</div><div class="kpi-sub" style="color:var(--warn)">伸び代あり</div></div>
-  </div>
-  <div class="card">
-    <div class="card-title">チーム別 最新科目別正答率</div>
-    <table>
-      <thead><tr><th>チーム</th><th>民法</th><th>法令</th><th>税</th><th>業法</th><th>総合</th></tr></thead>
-      <tbody>
-        <tr><td><strong>城内チーム</strong></td><td class="sc-c">35%</td><td class="sc-c">55%</td><td class="sc-a">67%</td><td class="sc-a">76%</td><td class="sc-a">63%</td></tr>
-        <tr><td><strong>本多チーム</strong></td><td class="sc-c">36%</td><td class="sc-c">45%</td><td class="sc-b">44%</td><td class="sc-a">66%</td><td class="sc-c">53%</td></tr>
-        <tr><td><strong>生島チーム</strong></td><td class="sc-c">32%</td><td class="sc-a">66%</td><td class="sc-b">56%</td><td class="sc-b">64%</td><td class="sc-c">54%</td></tr>
-        <tr><td><strong>長渕チーム</strong></td><td class="sc-c">33%</td><td class="sc-c">50%</td><td class="sc-a">75%</td><td class="sc-b">64%</td><td class="sc-c">51%</td></tr>
-      </tbody>
-    </table>
+  <div class="sec-sub">チームカードをクリックするとメンバー詳細が表示されます</div>
+
+  <!-- チームカードグリッド -->
+  <div id="teamCardGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:20px;"></div>
+
+  <!-- メンバー詳細パネル -->
+  <div id="teamDetailPanel" style="display:none;">
+    <div class="card" style="padding:16px;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div>
+          <div id="teamDetailName" style="font-size:18px;font-weight:900;color:var(--text);"></div>
+          <div id="teamDetailSub" style="font-size:11px;color:var(--muted);margin-top:2px;"></div>
+        </div>
+        <button onclick="closeTeamDetail()" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 12px;color:var(--muted);cursor:pointer;font-size:12px;">✕ 閉じる</button>
+      </div>
+
+      <!-- チームKPI -->
+      <div id="teamDetailKPI" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;"></div>
+
+      <!-- 科目別バー -->
+      <div style="margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;">科目別平均（最新回）</div>
+        <div id="teamSubjectBars" style="display:flex;flex-direction:column;gap:7px;"></div>
+      </div>
+
+      <!-- メンバースコアテーブル -->
+      <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;">メンバー別スコア推移</div>
+      <div style="overflow-x:auto;">
+        <table id="teamMemberTable">
+          <thead>
+            <tr>
+              <th>氏名</th><th>5/14</th><th>5/20</th><th>5/27</th><th>6/5</th><th>6/10</th>
+              <th>最新</th><th>民法</th><th>法令</th><th>税</th><th>業法</th>
+            </tr>
+          </thead>
+          <tbody id="teamMemberBody"></tbody>
+        </table>
+      </div>
+
+      <!-- 推移グラフ（SVG折れ線） -->
+      <div style="margin-top:16px;">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;">スコア推移グラフ</div>
+        <div id="teamChartWrap" style="overflow-x:auto;">
+          <svg id="teamLineSVG" viewBox="0 0 560 200" style="width:100%;min-width:400px;"></svg>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1026,39 +1055,56 @@ function getLatest(p){
 }
 
 // ====== TOPIC TABLE (6/10) ======
-function buildTopicTable(){
-  const tbody=document.getElementById('topicBody');
-  // 各問の全員正答率計算
-  const total={}, correct={};
-  persons.forEach(p=>{
-    if(!p.answers610)return;
-    p.answers610.forEach((ans,i)=>{
-      const q=i+1;
-      if(!total[q])total[q]=0;
-      if(!correct[q])correct[q]=0;
+
+// ====== テーマ別正答率テーブル 共通生成関数 ======
+function renderTopicTable(answers, dataRows, qMin, qMax) {
+  // dataRows: [{name, ans:[...]}] 形式 または [['name', [...]] 形式
+  const total = {}, correct = {};
+  dataRows.forEach(row => {
+    // 2種類の形式に対応
+    const ansArr = Array.isArray(row) ? row[1] : row.ans;
+    if (!ansArr) return;
+    for (let q = qMin; q <= qMax; q++) {
+      const a = ansArr[q - 1];
+      if (a === undefined || a === null) continue;
+      if (!total[q]) total[q] = 0;
+      if (!correct[q]) correct[q] = 0;
       total[q]++;
-      if(ans===answers_610[q].ans)correct[q]++;
-    });
+      if (answers[q] && a === answers[q].ans) correct[q]++;
+    }
   });
-  const diffLabel={'A':'簡単','B':'やや簡単','C':'普通','D':'やや難','E':'難しい'};
-  const subjBadge={'民法':'badge-civil','法令':'badge-hourei','税':'badge-tax','業法':'badge-gyoho'};
-  let html='';
-  for(let q=1;q<=45;q++){
-    const d=answers_610[q];
-    const pct=total[q]?Math.round(correct[q]/total[q]*100):null;
-    const cls=getScoreClass(pct);
-    const status=pct===null?'--':pct>=80?'✅ 良好':pct>=60?'🟡 維持':pct>=40?'⚠️ 要注意':'🔴 要強化';
-    html+=`<tr>
+
+  const diffLabel = { A:'簡単', B:'やや簡単', C:'普通', D:'やや難', E:'難しい' };
+  const subjBadge = { '民法':'badge-civil', '法令':'badge-hourei', '税':'badge-tax', '業法':'badge-gyoho' };
+  let html = '';
+  for (let q = qMin; q <= qMax; q++) {
+    const d = answers[q];
+    if (!d) continue;
+    const n = total[q] || 0;
+    const pct = n > 0 ? Math.round(correct[q] / n * 100) : null;
+    const cls = getScoreClass(pct);
+    const status = pct === null ? '--' : pct >= 80 ? '✅ 良好' : pct >= 60 ? '🟡 維持' : pct >= 40 ? '⚠️ 要注意' : '🔴 要強化';
+    const nStr = n > 0 ? `<span style="font-size:9px;color:var(--muted);"> (${n}人)</span>` : '';
+    html += `<tr>
       <td style="font-family:'DM Mono';font-weight:700">${q}</td>
       <td><span class="badge ${subjBadge[d.subject]}">${d.subject}</span></td>
       <td style="font-size:11px">${d.topic}</td>
-      <td style="font-size:10px;color:var(--muted)">${diffLabel[d.diff]||d.diff}</td>
+      <td style="font-size:10px;color:var(--muted)">${diffLabel[d.diff] || d.diff}</td>
       <td style="font-family:'DM Mono';font-weight:700">${d.ans}</td>
-      <td class="${cls}" style="font-family:'DM Mono'">${pct!==null?pct+'%':'--'}</td>
+      <td class="${cls}" style="font-family:'DM Mono'">${pct !== null ? pct + '%' : '--'}${nStr}</td>
       <td style="font-size:10px">${status}</td>
     </tr>`;
   }
-  tbody.innerHTML=html;
+  document.getElementById('topicBody').innerHTML = html;
+}
+
+function buildTopicTable(){
+  if (typeof answers_610 === 'undefined') return;
+  // persons.answers610 から集計
+  const rows = persons
+    .filter(p => p.answers610)
+    .map(p => ({ ans: p.answers610 }));
+  renderTopicTable(answers_610, rows, 1, 45);
 }
 
 // ====== DOMAIN BARS ======
@@ -1386,14 +1432,7 @@ window.switchTopicRound = function(round, btn){
   else { const answers = round==='610' ? answers_610 : answers_605; buildTopicTableWith(answers, round); }
 };
 
-function buildTopicTableWith(answers, round){
-  const tbody=document.getElementById('topicBody');
-  // 6/5の個別回答を集計
-  const total={}, correct={};
-  
-  if(round==='605'){
-    // スプレッドシートデータから6/5の回答を再計算
-    const data605 = [
+const data605 = [
       // [name, answers array]
       ['西村匠平',[1,4,3,4,3,2,1,1,2,4,3,2,1,1,4,1,2,4,3,3,1,2,2,2,3,3,4,2,4,4,1,3,3,2,2,3,3,4,4,3,1,2,4,1,2]],
       ['梅本弥',[3,3,3,4,2,2,4,1,2,4,1,4,1,3,4,1,2,2,3,2,4,2,1,4,3,3,4,4,4,4,1,3,3,3,2,4,3,4,4,2,1,2,4,1,2]],
@@ -1425,44 +1464,9 @@ function buildTopicTableWith(answers, round){
       ['吉田剛',[1,1,3,1,1,1,1,2,2,3,1,1,2,1,2,1,4,4,3,2,1,2,2,3,3,3,4,3,4,4,1,2,2,4,2,4,3,4,4,4,1,2,4,1,2]],
       ['伊東雅晃',[2,1,4,4,3,2,1,3,2,4,1,3,1,1,2,4,3,2,1,2,3,2,4,1,2,3,3,3,2,3,4,1,3,3,3,1,4,2,2,1,2,3,4,1,2]],
     ];
-    data605.forEach(([name,ans])=>{
-      ans.forEach((a,i)=>{
-        const q=i+1;
-        if(!total[q])total[q]=0;if(!correct[q])correct[q]=0;
-        total[q]++;if(a===answers[q].ans)correct[q]++;
-      });
-    });
-  } else {
-    persons.forEach(p=>{
-      if(!p.answers610)return;
-      p.answers610.forEach((ans,i)=>{
-        const q=i+1;
-        if(!total[q])total[q]=0;if(!correct[q])correct[q]=0;
-        total[q]++;if(ans===answers[q].ans)correct[q]++;
-      });
-    });
-  }
-  
-  const diffLabel={'A':'簡単','B':'やや簡単','C':'普通','D':'やや難','E':'難しい'};
-  const subjBadge={'民法':'badge-civil','法令':'badge-hourei','税':'badge-tax','業法':'badge-gyoho'};
-  let html='';
-  for(let q=1;q<=45;q++){
-    const d=answers[q];
-    if(!d)continue;
-    const pct=total[q]?Math.round(correct[q]/total[q]*100):null;
-    const cls=getScoreClass(pct);
-    const status=pct===null?'--':pct>=80?'✅ 良好':pct>=60?'🟡 維持':pct>=40?'⚠️ 要注意':'🔴 要強化';
-    html+=`<tr>
-      <td style="font-family:'DM Mono';font-weight:700">${q}</td>
-      <td><span class="badge ${subjBadge[d.subject]}">${d.subject}</span></td>
-      <td style="font-size:11px">${d.topic}</td>
-      <td style="font-size:10px;color:var(--muted)">${diffLabel[d.diff]||d.diff}</td>
-      <td style="font-family:'DM Mono';font-weight:700">${d.ans}</td>
-      <td class="${cls}" style="font-family:'DM Mono'">${pct!==null?pct+'%':'--'}</td>
-      <td style="font-size:10px">${status}</td>
-    </tr>`;
-  }
-  tbody.innerHTML=html;
+
+function buildTopicTableWith(answers, round){
+  renderTopicTable(answers, data605, 1, 45);
 }
 
 // Also update domain bars to support switching
@@ -1550,10 +1554,7 @@ const answers_527 = {
   // switchTopicRoundは520ブロックで一元管理
 })();
 
-function build527TopicTable(){
-  const tbody = document.getElementById('topicBody');
-  // 5/27受験者の回答データ（スプレッドシートから）
-  const data527 = [
+const data527 = [
     {name:'田中湧士',    ans:[2,1,1,1,2,4,2,4,4,4,3,3,3,1,2,1,1,3,1,4,1,4,1,4,1,3,1,4,3,3,2,3,3,4,2,1,4,2,2,1,2,1,2,1,4]},
     {name:'梅本弥',      ans:[2,3,1,1,1,4,4,1,4,4,3,2,3,1,3,1,1,3,1,4,4,4,3,4,1,3,1,2,2,3,2,3,3,4,2,1,4,2,2,1,2,1,3,1,4]},
     {name:'上野大次郎',  ans:[2,2,3,4,2,3,1,4,2,4,3,4,3,1,3,1,1,3,1,4,4,2,3,1,1,3,1,3,3,3,2,3,3,4,2,1,4,2,2,1,2,1,3,4,4]},
@@ -1608,34 +1609,9 @@ function build527TopicTable(){
     {name:'坪井梓',      ans:[2,2,2,4,4,1,4,1,1,3,2,3,1,4,3,1,3,2,4,4,2,4,4,1,2,2,4,2,1,4,1,2,3,3,1,1,3,4,4,4,2,3,2,3,4]},
   ];
 
-  const total={}, correct={};
-  data527.forEach(({ans})=>{
-    ans.forEach((a,i)=>{
-      const q=i+1;
-      if(!total[q])total[q]=0;if(!correct[q])correct[q]=0;
-      total[q]++;if(a===answers_527[q].ans)correct[q]++;
-    });
-  });
-
-  const diffLabel={'A':'簡単','B':'やや簡単','C':'普通','D':'やや難','E':'難しい'};
-  const subjBadge={'民法':'badge-civil','法令':'badge-hourei','税':'badge-tax','業法':'badge-gyoho'};
-  let html='';
-  for(let q=1;q<=45;q++){
-    const d=answers_527[q];
-    const pct=total[q]?Math.round(correct[q]/total[q]*100):null;
-    const cls=getScoreClass(pct);
-    const status=pct===null?'--':pct>=80?'✅ 良好':pct>=60?'🟡 維持':pct>=40?'⚠️ 要注意':'🔴 要強化';
-    html+=`<tr>
-      <td style="font-family:'DM Mono';font-weight:700">${q}</td>
-      <td><span class="badge ${subjBadge[d.subject]}">${d.subject}</span></td>
-      <td style="font-size:11px">${d.topic}</td>
-      <td style="font-size:10px;color:var(--muted)">${diffLabel[d.diff]||d.diff}</td>
-      <td style="font-family:'DM Mono';font-weight:700">${d.ans}</td>
-      <td class="${cls}" style="font-family:'DM Mono'">${pct!==null?pct+'%':'--'}</td>
-      <td style="font-size:10px">${status}</td>
-    </tr>`;
-  }
-  document.getElementById('topicBody').innerHTML=html;
+function build527TopicTable(){
+  if (typeof answers_527 === 'undefined') return;
+  renderTopicTable(answers_527, data527, 1, 45);
 }
 
 </script>
@@ -1707,7 +1683,8 @@ const answers_520 = {
 })();
 
 function build520TopicTable(){
-  const tbody = document.getElementById('topicBody');
+  if (typeof answers_520 === 'undefined') return;
+  // 5/20は個人回答データなし → 正解・テーマ・難易度のみ表示
   const diffLabel={'A':'簡単','B':'やや簡単','C':'普通','D':'やや難','E':'難しい'};
   const subjBadge={'民法':'badge-civil','法令':'badge-hourei','税':'badge-tax','業法':'badge-gyoho'};
   let html='';
@@ -1720,10 +1697,10 @@ function build520TopicTable(){
       <td style="font-size:10px;color:var(--muted)">${diffLabel[d.diff]||d.diff}</td>
       <td style="font-family:'DM Mono';font-weight:700">${d.ans}</td>
       <td style="color:var(--muted);font-size:10px">--</td>
-      <td style="font-size:10px;color:var(--muted)">集計データなし</td>
+      <td style="font-size:10px;color:var(--muted)">回答データなし</td>
     </tr>`;
   }
-  html+=`<tr><td colspan="7" style="text-align:center;color:var(--muted);font-size:11px;padding:12px;">※5/20の個人回答データは未登録のため正答率は非表示。正解・テーマ・難易度は正式解答PDFに基づきます。</td></tr>`;
+  html+=`<tr><td colspan="7" style="text-align:center;color:var(--muted);font-size:11px;padding:12px;">※5/20の個人回答データは未登録のため正答率は非表示</td></tr>`;
   document.getElementById('topicBody').innerHTML=html;
 }
 
@@ -1779,12 +1756,7 @@ const answers_514 = {
   // switchTopicRound は605/610ブロックで一元管理済み
 })();
 
-function build514TopicTable(){
-  const tbody = document.getElementById('topicBody');
-
-  // 5/14受験者回答データ（personsのhoureiスコア等から逆算 + 既存data605の形式に準拠）
-  // スプレッドシートから: 各人のhourei/tax/gyohoスコアを持つ人のデータ
-  const data514 = [
+const data514 = [
     {name:'梅本弥',      ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,3,1,1,3,1,4,1,1,2,3,3,3,3,1,1,4,4,3,2,2,2,2,3,1,3,2,2,1,3,4,2]},
     {name:'西村匠平',    ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,3,3,2,3,4,4,3,1,3,3,4,3,3,1,1,4,4,3,3,2,2,2,3,1,3,2,2,1,3,4,2]},
     {name:'水野友太郎',  ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,4,3,2,3,4,4,1,1,3,3,3,3,3,1,1,4,4,3,3,2,2,2,3,1,3,2,2,1,1,4,2]},
@@ -1817,36 +1789,9 @@ function build514TopicTable(){
     {name:'有馬廉太郎',  ans:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,3,3,2,3,4,4,3,1,2,3,3,3,3,1,1,4,4,3,3,2,2,2,3,1,3,2,2,1,3,4,2]},
   ];
 
-  const total={}, correct={};
-  data514.forEach(({ans})=>{
-    for(let q=15;q<=45;q++){
-      const a=ans[q-1];
-      if(a===null)continue;
-      if(!total[q])total[q]=0;if(!correct[q])correct[q]=0;
-      total[q]++;if(a===answers_514[q].ans)correct[q]++;
-    }
-  });
-
-  const diffLabel={'A':'簡単','B':'やや簡単','C':'普通','D':'やや難','E':'難しい'};
-  const subjBadge={'民法':'badge-civil','法令':'badge-hourei','税':'badge-tax','業法':'badge-gyoho'};
-  let html='';
-  for(let q=15;q<=45;q++){
-    const d=answers_514[q];
-    const pct=total[q]?Math.round(correct[q]/total[q]*100):null;
-    const cls=getScoreClass(pct);
-    const status=pct===null?'--':pct>=80?'✅ 良好':pct>=60?'🟡 維持':pct>=40?'⚠️ 要注意':'🔴 要強化';
-    html+=`<tr>
-      <td style="font-family:'DM Mono';font-weight:700">${q}</td>
-      <td><span class="badge ${subjBadge[d.subject]}">${d.subject}</span></td>
-      <td style="font-size:11px">${d.topic}</td>
-      <td style="font-size:10px;color:var(--muted)">${diffLabel[d.diff]||d.diff}</td>
-      <td style="font-family:'DM Mono';font-weight:700">${d.ans}</td>
-      <td class="${cls}" style="font-family:'DM Mono'">${pct!==null?pct+'%':'--'}</td>
-      <td style="font-size:10px">${status}</td>
-    </tr>`;
-  }
-  html+=`<tr><td colspan="7" style="text-align:center;color:var(--muted);font-size:11px;padding:12px;">※5/14は法令（問15〜22）・税（問23〜25）・業法（問26〜45）のみ。民法（問1〜14）は未実施。</td></tr>`;
-  document.getElementById('topicBody').innerHTML=html;
+function build514TopicTable(){
+  if (typeof answers_514 === 'undefined') return;
+  renderTopicTable(answers_514, data514, 15, 45);
 }
 
 </script>
@@ -2391,136 +2336,116 @@ function buildMasteryHtml(p) {
 <script>
 // ====== 全5回横断 弱点テーマ分析 ======
 function buildWeaknessSummary() {
-  // 全回のanswersとpersonsの回答データを横断集計
+  // 各回のデータ配列とanswersを対応付け
+  // data_XXX は {name, ans:[]} 形式または ['name',[]] 形式
+  const normalize = (rows) => {
+    if (!rows || !rows.length) return [];
+    return rows.map(r => Array.isArray(r) ? { name: r[0], ans: r[1] } : r);
+  };
+
   const allRounds = [
-    { key:'610', answers: typeof answers_610!=='undefined'?answers_610:null, qRange:[1,45] },
-    { key:'605', answers: typeof answers_605!=='undefined'?answers_605:null, qRange:[1,45] },
-    { key:'527', answers: typeof answers_527!=='undefined'?answers_527:null, qRange:[1,45] },
-    { key:'520', answers: typeof answers_520!=='undefined'?answers_520:null, qRange:[1,45] },
-    { key:'514', answers: typeof answers_514!=='undefined'?answers_514:null, qRange:[15,45] },
+    { key:'610', answers: typeof answers_610!=='undefined'?answers_610:null,
+      rows: normalize(persons.filter(p=>p.answers610).map(p=>({name:p.name, ans:p.answers610}))),
+      qMin:1, qMax:45 },
+    { key:'605', answers: typeof answers_605!=='undefined'?answers_605:null,
+      rows: normalize(typeof data605!=='undefined'?data605:[]),
+      qMin:1, qMax:45 },
+    { key:'527', answers: typeof answers_527!=='undefined'?answers_527:null,
+      rows: normalize(typeof data527!=='undefined'?data527:[]),
+      qMin:1, qMax:45 },
+    { key:'514', answers: typeof answers_514!=='undefined'?answers_514:null,
+      rows: normalize(typeof data514!=='undefined'?data514:[]),
+      qMin:15, qMax:45 },
   ];
 
   // テーマごとに全回の正誤を集計
-  const themeData = {}; // topic -> {correct, total, subject, rounds:[]}
+  const themeData = {};
 
-  allRounds.forEach(({ key, answers, qRange }) => {
-    if (!answers) return;
-    const [qMin, qMax] = qRange;
+  allRounds.forEach(({ key, answers, rows, qMin, qMax }) => {
+    if (!answers || !rows.length) return;
 
-    persons.forEach(p => {
-      const pAns = key === '610' ? p.answers610
-                 : key === '605' ? p.answers605
-                 : key === '527' ? p.answers527
-                 : null;
-      if (!pAns) return;
-
+    rows.forEach(({ ans: ansArr }) => {
+      if (!ansArr) return;
       for (let q = qMin; q <= qMax; q++) {
         const d = answers[q];
-        const ans = pAns[q - 1];
-        if (!d || ans === undefined || ans === null) continue;
-
+        const a = ansArr[q - 1];
+        if (!d || a === undefined || a === null) continue;
         const topic = d.topic;
-        if (!themeData[topic]) {
-          themeData[topic] = { correct:0, total:0, subject:d.subject, rounds:{} };
-        }
-        if (!themeData[topic].rounds[key]) {
-          themeData[topic].rounds[key] = { correct:0, total:0 };
-        }
+        if (!themeData[topic]) themeData[topic] = { correct:0, total:0, subject:d.subject };
         themeData[topic].total++;
-        themeData[topic].rounds[key].total++;
-        if (ans === d.ans) {
-          themeData[topic].correct++;
-          themeData[topic].rounds[key].correct++;
-        }
+        if (a === d.ans) themeData[topic].correct++;
       }
     });
-
-    // data605/527/514のような集計データも活用
-    if (key === '605' && typeof data605 !== 'undefined') {
-      data605.forEach(({ name, ans }) => {
-        for (let q = 1; q <= 45; q++) {
-          const d = answers[q];
-          const a = ans[q-1];
-          if (!d || a === undefined || a === null) continue;
-          const topic = d.topic;
-          if (!themeData[topic]) themeData[topic] = { correct:0, total:0, subject:d.subject, rounds:{} };
-          if (!themeData[topic].rounds[key]) themeData[topic].rounds[key] = { correct:0, total:0 };
-          // personsで既にカウント済みならスキップ（重複防止）
-        }
-      });
-    }
   });
 
-  // フィルタ：データある & 5問以上集計されたテーマのみ
+  // 3問以上集計されたテーマのみ有効
   const themes = Object.entries(themeData)
     .filter(([, v]) => v.total >= 3)
     .map(([topic, v]) => ({
-      topic,
-      subject: v.subject,
+      topic, subject: v.subject,
       pct: Math.round(v.correct / v.total * 100),
       total: v.total,
-      correct: v.correct,
     }))
     .sort((a, b) => a.pct - b.pct);
 
-  if (!themes.length) return;
+  if (!themes.length) {
+    document.getElementById('ws-total-themes').textContent = '0';
+    return;
+  }
 
   const danger = themes.filter(t => t.pct < 50);
   const warn   = themes.filter(t => t.pct >= 50 && t.pct < 70);
   const ok     = themes.filter(t => t.pct >= 70);
 
-  // KPI更新
-  const setEl = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+  const setEl = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
   setEl('ws-total-themes', themes.length);
   setEl('ws-danger-count', danger.length);
   setEl('ws-warn-count', warn.length);
   setEl('ws-ok-count', ok.length);
 
-  const subjColors = { '民法':'var(--civil)', '法令':'var(--hourei)', '税':'var(--tax)', '業法':'var(--gyoho)' };
-  const subjBadges = { '民法':'badge-civil', '法令':'badge-hourei', '税':'badge-tax', '業法':'badge-gyoho' };
+  const subjBadges = { '民法':'badge-civil','法令':'badge-hourei','税':'badge-tax','業法':'badge-gyoho' };
 
   // 要強化リスト
   const dangerEl = document.getElementById('ws-danger-list');
   if (dangerEl) {
-    dangerEl.innerHTML = danger.slice(0, 10).map(t => `
+    dangerEl.innerHTML = danger.slice(0, 12).map(t => `
       <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.2);">
-        <span class="badge ${subjBadges[t.subject]}" style="flex-shrink:0;">${t.subject}</span>
+        <span class="badge ${subjBadges[t.subject]}" style="flex-shrink:0;font-size:9px;">${t.subject}</span>
         <span style="font-size:11px;color:var(--text);flex:1;min-width:0;">${t.topic}</span>
         <span style="font-family:'DM Mono';font-weight:900;color:var(--danger);font-size:12px;flex-shrink:0;">${t.pct}%</span>
+        <span style="font-size:9px;color:var(--muted);flex-shrink:0;">${t.total}問</span>
       </div>`).join('');
   }
 
   // 要注意リスト
   const warnEl = document.getElementById('ws-warn-list');
   if (warnEl) {
-    warnEl.innerHTML = warn.slice(0, 10).map(t => `
+    warnEl.innerHTML = warn.slice(0, 12).map(t => `
       <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;background:rgba(217,119,6,0.06);border:1px solid rgba(217,119,6,0.2);">
-        <span class="badge ${subjBadges[t.subject]}" style="flex-shrink:0;">${t.subject}</span>
+        <span class="badge ${subjBadges[t.subject]}" style="flex-shrink:0;font-size:9px;">${t.subject}</span>
         <span style="font-size:11px;color:var(--text);flex:1;min-width:0;">${t.topic}</span>
         <span style="font-family:'DM Mono';font-weight:900;color:var(--warn);font-size:12px;flex-shrink:0;">${t.pct}%</span>
+        <span style="font-size:9px;color:var(--muted);flex-shrink:0;">${t.total}問</span>
       </div>`).join('');
   }
 
   // 科目別平均バー
-  const subjAvgs = {};
-  ['業法','民法','法令','税'].forEach(subj => {
-    const ts = themes.filter(t => t.subject === subj);
-    if (!ts.length) return;
-    subjAvgs[subj] = Math.round(ts.reduce((s, t) => s + t.pct, 0) / ts.length);
-  });
+  const subjAvgTargets = { '業法':80,'民法':50,'法令':60,'税':67 };
+  const subjColors = { '業法':'var(--gyoho)','民法':'var(--civil)','法令':'var(--hourei)','税':'var(--tax)' };
 
   const barsEl = document.getElementById('ws-subject-bars');
   if (barsEl) {
-    barsEl.innerHTML = Object.entries(subjAvgs).map(([subj, avg]) => {
-      const col = avg >= 70 ? 'var(--success)' : avg >= 50 ? 'var(--warn)' : 'var(--danger)';
-      const target = { '業法':80, '法令':60, '税':67, '民法':50 }[subj] || 70;
-      const tpct = Math.min(100, target);
+    barsEl.innerHTML = Object.entries(subjAvgTargets).map(([subj, target]) => {
+      const ts = themes.filter(t => t.subject === subj);
+      if (!ts.length) return '';
+      const avg = Math.round(ts.reduce((s,t)=>s+t.pct,0)/ts.length);
+      const col = avg>=70?'var(--success)':avg>=50?'var(--warn)':'var(--danger)';
+      const subjBadge = subjBadges[subj];
       return `<div style="display:flex;align-items:center;gap:10px;">
-        <span class="badge ${subjBadges[subj]}" style="width:36px;text-align:center;flex-shrink:0;">${subj}</span>
+        <span class="badge ${subjBadge}" style="width:36px;text-align:center;flex-shrink:0;font-size:9px;">${subj}</span>
         <div style="flex:1;position:relative;height:18px;background:var(--surface2);border-radius:4px;overflow:visible;">
-          <div style="height:100%;width:${avg}%;background:${col};border-radius:4px;transition:width 0.6s;"></div>
-          <!-- 目標ライン -->
-          <div style="position:absolute;top:-3px;bottom:-3px;left:${tpct}%;width:2px;background:var(--accent2);border-radius:1px;" title="目標${target}%"></div>
+          <div style="height:100%;width:${avg}%;background:${col};border-radius:4px;"></div>
+          <div style="position:absolute;top:-3px;bottom:-3px;left:${Math.min(target,100)}%;width:2px;background:#f7c94f;border-radius:1px;" title="目標${target}%"></div>
         </div>
         <span style="font-family:'DM Mono';font-weight:900;color:${col};width:36px;text-align:right;font-size:13px;">${avg}%</span>
         <span style="font-size:10px;color:var(--muted);width:52px;">目標${target}%</span>
@@ -2661,4 +2586,252 @@ function buildSimTable() {
 
   tbody.innerHTML = rows.join('');
 }
+</script>
+<script>
+// ====== チーム別 動的ダッシュボード ======
+
+const TEAM_COLORS = {
+  '城内チーム': '#4f8ef7',
+  '本多チーム': '#4fcf94',
+  '生島チーム': '#f7c94f',
+  '長渕チーム': '#f7944f',
+  '中途オンボチーム': '#c084fc',
+  '村田チーム': '#f75f5f',
+};
+const ROUNDS = ['514','520','527','605','610'];
+const ROUND_LABELS = {'514':'5/14','520':'5/20','527':'5/27','605':'6/5','610':'6/10'};
+
+function buildTeamCards() {
+  const grid = document.getElementById('teamCardGrid');
+  if (!grid) return;
+
+  // チームごとにグループ化
+  const teamMap = {};
+  persons.forEach(p => {
+    if (!teamMap[p.team]) teamMap[p.team] = [];
+    teamMap[p.team].push(p);
+  });
+
+  const teamOrder = ['城内チーム','本多チーム','生島チーム','長渕チーム','中途オンボチーム','村田チーム'];
+  const teams = [...new Set(persons.map(p=>p.team))].sort((a,b) => {
+    const ia = teamOrder.indexOf(a), ib = teamOrder.indexOf(b);
+    return (ia===-1?99:ia) - (ib===-1?99:ib);
+  });
+
+  grid.innerHTML = teams.map(team => {
+    const members = teamMap[team] || [];
+    const p610 = members.filter(p => p.scores['610'] != null);
+    const avg = p610.length ? Math.round(p610.reduce((s,p)=>s+p.scores['610'],0)/p610.length) : null;
+    const color = TEAM_COLORS[team] || '#7b82a8';
+    const scoreColor = avg==null?'var(--muted)':avg>=70?'var(--success)':avg>=55?'var(--warn)':'var(--danger)';
+
+    // 直近トレンド（610 vs 605）
+    const avgPrev = (() => {
+      const prev = members.filter(p=>p.scores['605']!=null);
+      return prev.length ? Math.round(prev.reduce((s,p)=>s+p.scores['605'],0)/prev.length) : null;
+    })();
+    const trend = (avg!=null && avgPrev!=null)
+      ? (avg-avgPrev>0 ? `▲+${avg-avgPrev}%` : avg-avgPrev<0 ? `▼${Math.abs(avg-avgPrev)}%` : '→')
+      : '';
+    const trendColor = trend.startsWith('▲')?'var(--success)':trend.startsWith('▼')?'var(--danger)':'var(--muted)';
+
+    return `<div onclick="openTeamDetail('${team}')" style="cursor:pointer;padding:16px;border-radius:10px;border:2px solid ${color};background:white;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.06);"
+      onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(0,0,0,0.12)'"
+      onmouseout="this.style.transform='';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)'">
+      <div style="width:8px;height:8px;border-radius:50%;background:${color};margin-bottom:8px;"></div>
+      <div style="font-size:13px;font-weight:900;color:var(--text);margin-bottom:4px;">${team}</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">${members.length}名</div>
+      <div style="font-size:28px;font-weight:900;color:${scoreColor};line-height:1;">${avg!=null?avg+'%':'--'}</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px;">最新平均（6/10）</div>
+      ${trend ? `<div style="font-size:11px;font-weight:700;color:${trendColor};margin-top:6px;">${trend} vs 6/5</div>` : ''}
+      <div style="margin-top:10px;font-size:10px;color:${color};font-weight:700;">詳細を見る →</div>
+    </div>`;
+  }).join('');
+}
+
+function openTeamDetail(teamName) {
+  const members = persons.filter(p => p.team === teamName);
+  const color = TEAM_COLORS[teamName] || '#7b82a8';
+  const p610 = members.filter(p => p.scores['610'] != null);
+
+  // パネル表示
+  const panel = document.getElementById('teamDetailPanel');
+  if (panel) {
+    panel.style.display = 'block';
+    panel.scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+
+  // タイトル
+  document.getElementById('teamDetailName').textContent = teamName;
+  document.getElementById('teamDetailName').style.color = color;
+  document.getElementById('teamDetailSub').textContent = `${members.length}名 ／ 6/10受験：${p610.length}名`;
+
+  // KPI
+  const avg610 = p610.length ? Math.round(p610.reduce((s,p)=>s+p.scores['610'],0)/p610.length) : null;
+  const avgCivil  = avg(p610.map(p=>p.civil&&p.civil['610']).filter(v=>v!=null));
+  const avgHourei = avg(p610.map(p=>p.hourei&&p.hourei['610']).filter(v=>v!=null));
+  const avgTax    = avg(p610.map(p=>p.tax&&p.tax['610']).filter(v=>v!=null));
+  const avgGyoho  = avg(p610.map(p=>p.gyoho&&p.gyoho['610']).filter(v=>v!=null));
+
+  const kpiEl = document.getElementById('teamDetailKPI');
+  if (kpiEl) {
+    kpiEl.innerHTML = [
+      {label:'総合平均',  val:avg610!=null?avg610+'%':'--',  col:scoreCol(avg610)},
+      {label:'業法',      val:avgGyoho!=null?avgGyoho+'%':'--', col:'var(--gyoho)'},
+      {label:'法令',      val:avgHourei!=null?avgHourei+'%':'--', col:'var(--hourei)'},
+      {label:'民法',      val:avgCivil!=null?avgCivil+'%':'--',  col:'var(--civil)'},
+    ].map(k=>`<div style="text-align:center;padding:10px;background:var(--surface2);border-radius:8px;">
+      <div style="font-size:22px;font-weight:900;color:${k.col};">${k.val}</div>
+      <div style="font-size:10px;color:var(--muted);">${k.label}</div>
+    </div>`).join('');
+  }
+
+  // 科目別バー
+  const bars = [
+    {subj:'業法', avg:avgGyoho,  target:80, col:'var(--gyoho)',  badge:'badge-gyoho'},
+    {subj:'法令', avg:avgHourei, target:60, col:'var(--hourei)', badge:'badge-hourei'},
+    {subj:'税',   avg:avgTax,    target:67, col:'var(--tax)',    badge:'badge-tax'},
+    {subj:'民法', avg:avgCivil,  target:50, col:'var(--civil)',  badge:'badge-civil'},
+  ];
+  const barsEl = document.getElementById('teamSubjectBars');
+  if (barsEl) {
+    barsEl.innerHTML = bars.map(b => {
+      if (b.avg==null) return '';
+      const bcolor = b.avg>=b.target?'var(--success)':b.avg>=b.target*0.8?'var(--warn)':'var(--danger)';
+      return `<div style="display:flex;align-items:center;gap:8px;">
+        <span class="badge ${b.badge}" style="width:32px;text-align:center;font-size:9px;flex-shrink:0;">${b.subj}</span>
+        <div style="flex:1;position:relative;height:14px;background:var(--surface2);border-radius:3px;">
+          <div style="height:100%;width:${b.avg}%;background:${b.col};border-radius:3px;opacity:0.85;"></div>
+          <div style="position:absolute;top:-2px;bottom:-2px;left:${Math.min(b.target,100)}%;width:2px;background:#f7c94f;" title="目標${b.target}%"></div>
+        </div>
+        <span style="font-family:'DM Mono';font-weight:900;color:${bcolor};width:34px;text-align:right;font-size:12px;">${b.avg}%</span>
+        <span style="font-size:9px;color:var(--muted);width:46px;">目標${b.target}%</span>
+      </div>`;
+    }).join('');
+  }
+
+  // メンバーテーブル
+  const sorted = [...members].sort((a,b)=>{
+    const la = ROUNDS.slice().reverse().map(r=>a.scores[r]).find(v=>v!=null)??0;
+    const lb = ROUNDS.slice().reverse().map(r=>b.scores[r]).find(v=>v!=null)??0;
+    return lb-la;
+  });
+
+  const tbody = document.getElementById('teamMemberBody');
+  if (tbody) {
+    tbody.innerHTML = sorted.map(p => {
+      const latest = ROUNDS.slice().reverse().map(r=>p.scores[r]).find(v=>v!=null)??null;
+      const scoreCells = ROUNDS.map(r=>{
+        const v=p.scores[r];
+        if(v==null) return '<td style="color:var(--muted);font-size:10px;">--</td>';
+        return `<td style="font-family:'DM Mono';font-weight:700;color:${scoreCol(v)};">${v}%</td>`;
+      }).join('');
+      const c610=p.civil&&p.civil['610']!=null?`<td style="color:var(--civil);font-size:11px;">${p.civil['610']}%</td>`:'<td style="color:var(--muted)">--</td>';
+      const h610=p.hourei&&p.hourei['610']!=null?`<td style="color:var(--hourei);font-size:11px;">${p.hourei['610']}%</td>`:'<td style="color:var(--muted)">--</td>';
+      const t610=p.tax&&p.tax['610']!=null?`<td style="color:var(--tax);font-size:11px;">${p.tax['610']}%</td>`:'<td style="color:var(--muted)">--</td>';
+      const g610=p.gyoho&&p.gyoho['610']!=null?`<td style="color:var(--gyoho);font-size:11px;">${p.gyoho['610']}%</td>`:'<td style="color:var(--muted)">--</td>';
+      return `<tr>
+        <td style="font-weight:700;cursor:pointer;color:var(--accent);" onclick="showSection('individuals',null);openModal('${p.name}')">${p.name}</td>
+        ${scoreCells}
+        <td style="font-family:'DM Mono';font-weight:900;color:${scoreCol(latest)};">${latest!=null?latest+'%':'--'}</td>
+        ${c610}${h610}${t610}${g610}
+      </tr>`;
+    }).join('');
+  }
+
+  // 折れ線グラフ
+  buildTeamLineChart(sorted, color);
+}
+
+function closeTeamDetail() {
+  const panel = document.getElementById('teamDetailPanel');
+  if (panel) panel.style.display = 'none';
+}
+
+function buildTeamLineChart(members, teamColor) {
+  const svg = document.getElementById('teamLineSVG');
+  if (!svg) return;
+
+  const W=560, H=200, pad={top:20,right:20,bottom:40,left:40};
+  const chartW = W-pad.left-pad.right;
+  const chartH = H-pad.top-pad.bottom;
+  const N = ROUNDS.length;
+
+  const xOf = i => pad.left + (i/(N-1))*chartW;
+  const yOf = v => pad.top + chartH - (v/100)*chartH;
+
+  let html = '';
+
+  // グリッド
+  [0,25,50,75,100].forEach(v => {
+    const y = yOf(v);
+    html += `<line x1="${pad.left}" y1="${y}" x2="${W-pad.right}" y2="${y}" stroke="#e2e8f0" stroke-width="0.7"/>`;
+    html += `<text x="${pad.left-4}" y="${y+4}" text-anchor="end" font-size="8" fill="#94a3b8">${v}%</text>`;
+  });
+
+  // 合格ライン（74%）
+  const y74 = yOf(74);
+  html += `<line x1="${pad.left}" y1="${y74}" x2="${W-pad.right}" y2="${y74}" stroke="#f7c94f" stroke-width="1" stroke-dasharray="4,3"/>`;
+  html += `<text x="${W-pad.right+2}" y="${y74+4}" font-size="8" fill="#f7c94f">74%</text>`;
+
+  // X軸ラベル
+  ROUNDS.forEach((r,i) => {
+    html += `<text x="${xOf(i)}" y="${H-pad.bottom+14}" text-anchor="middle" font-size="9" fill="#94a3b8">${ROUND_LABELS[r]}</text>`;
+  });
+
+  // 各メンバーの折れ線
+  const memberColors = ['#4f8ef7','#4fcf94','#f7c94f','#f7944f','#c084fc','#f75f5f','#38bdf8','#a3e635','#fb923c','#e879f9'];
+  members.slice(0,10).forEach((p,pi) => {
+    const col = memberColors[pi % memberColors.length];
+    const pts = ROUNDS.map((r,i) => {
+      const v = p.scores[r];
+      return v!=null ? [xOf(i), yOf(v)] : null;
+    });
+
+    // 有効な点だけ結ぶ（null除外）
+    let d = ''; let prev = null;
+    pts.forEach((pt,i) => {
+      if (pt) {
+        if (prev) d += `L${pt[0]},${pt[1]} `;
+        else d += `M${pt[0]},${pt[1]} `;
+        prev = pt;
+      } else { prev = null; }
+    });
+    if (d) html += `<path d="${d}" fill="none" stroke="${col}" stroke-width="2" opacity="0.8"/>`;
+
+    pts.forEach(pt => {
+      if (pt) html += `<circle cx="${pt[0]}" cy="${pt[1]}" r="3.5" fill="${col}" stroke="white" stroke-width="1.5"/>`;
+    });
+  });
+
+  // 凡例
+  members.slice(0,10).forEach((p,pi) => {
+    const col = memberColors[pi % memberColors.length];
+    const lx = pad.left + (pi%5) * 108;
+    const ly = H - 8 + (pi>=5?12:0);
+    html += `<circle cx="${lx}" cy="${ly}" r="3" fill="${col}"/>`;
+    html += `<text x="${lx+6}" y="${ly+3}" font-size="8" fill="#64748b">${p.name}</text>`;
+  });
+
+  svg.setAttribute('viewBox', `0 0 ${W} ${H + (members.length>5?14:0)}`);
+  svg.innerHTML = html;
+}
+
+function avg(arr) {
+  if (!arr.length) return null;
+  return Math.round(arr.reduce((a,b)=>a+b,0)/arr.length);
+}
+
+function scoreCol(v) {
+  if (v==null) return 'var(--muted)';
+  if (v>=74) return 'var(--success)';
+  if (v>=66) return '#10b981';
+  if (v>=55) return 'var(--warn)';
+  return 'var(--danger)';
+}
+
+// Init
+document.addEventListener('DOMContentLoaded', () => {
+  buildTeamCards();
+});
 </script>
