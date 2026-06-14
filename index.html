@@ -2,6 +2,10 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<!-- Build: 20260614_035528 -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>宅建試験 学習進捗レポート v2</title>
 <style>
@@ -131,48 +135,8 @@
     <div class="kpi"><div class="kpi-val" style="color:var(--hourei)">55%</div><div class="kpi-label">法令（最新平均）</div><div class="kpi-sub">目標60% ▲+5%必要</div></div>
     <div class="kpi"><div class="kpi-val" style="color:var(--tax)">59%</div><div class="kpi-label">税（最新平均）</div><div class="kpi-sub">8月目標50% ✅達成圏</div></div>
   </div>
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-title">スコア推移（全体平均）</div>
-      <svg viewBox="0 0 420 180" width="100%" style="display:block;">
-        <line x1="50" y1="15" x2="50" y2="150" stroke="#2e3350"/>
-        <line x1="50" y1="150" x2="405" y2="150" stroke="#2e3350"/>
-        <line x1="50" y1="15" x2="405" y2="15" stroke="#2e3350" stroke-width=".5" stroke-dasharray="3,3"/>
-        <line x1="50" y1="52" x2="405" y2="52" stroke="#2e3350" stroke-width=".5" stroke-dasharray="3,3"/>
-        <line x1="50" y1="90" x2="405" y2="90" stroke="#2e3350" stroke-width=".5" stroke-dasharray="3,3"/>
-        <line x1="50" y1="127" x2="405" y2="127" stroke="#2e3350" stroke-width=".5" stroke-dasharray="3,3"/>
-        <text x="44" y="18" fill="#7b82a8" font-size="9" text-anchor="end">100%</text>
-        <text x="44" y="55" fill="#7b82a8" font-size="9" text-anchor="end">75%</text>
-        <text x="44" y="93" fill="#7b82a8" font-size="9" text-anchor="end">50%</text>
-        <text x="44" y="130" fill="#7b82a8" font-size="9" text-anchor="end">25%</text>
-        <!-- 80%目標ライン y=15+(1-0.8)*135=15+27=42 -->
-        <line x1="50" y1="42" x2="405" y2="42" stroke="#f7c94f" stroke-width="1.2" stroke-dasharray="5,3" opacity=".7"/>
-        <text x="408" y="45" fill="#f7c94f" font-size="8">80%</text>
-        <!-- x positions: 5/14=100, 5/20=170, 5/27=240, 6/5=310, 6/10=380 -->
-        <!-- y = 15 + (1 - pct/100) * 135 -->
-        <!-- 64%→y=64.4, 51%→y=79.65, 51%→y=79.65, 62%→y=67.3, 51%→y=79.65 -->
-        <polyline points="100,64 170,80 240,80 310,67 380,80" fill="none" stroke="#4f8ef7" stroke-width="2.5" stroke-linejoin="round"/>
-        <circle cx="100" cy="64" r="4" fill="#4f8ef7"/>
-        <circle cx="170" cy="80" r="4" fill="#4f8ef7"/>
-        <circle cx="240" cy="80" r="4" fill="#4f8ef7"/>
-        <circle cx="310" cy="67" r="4" fill="#4f8ef7"/>
-        <circle cx="380" cy="80" r="4" fill="#4f8ef7"/>
-        <text x="100" y="57" fill="#4f8ef7" font-size="9" text-anchor="middle">64%</text>
-        <text x="170" y="73" fill="#4f8ef7" font-size="9" text-anchor="middle">51%</text>
-        <text x="240" y="73" fill="#4f8ef7" font-size="9" text-anchor="middle">51%</text>
-        <text x="310" y="60" fill="#4f8ef7" font-size="9" text-anchor="middle">62%</text>
-        <text x="380" y="73" fill="#4f8ef7" font-size="9" text-anchor="middle">51%</text>
-        <text x="100" y="165" fill="#7b82a8" font-size="9" text-anchor="middle">5/14</text>
-        <text x="170" y="165" fill="#7b82a8" font-size="9" text-anchor="middle">5/20</text>
-        <text x="240" y="165" fill="#7b82a8" font-size="9" text-anchor="middle">5/27</text>
-        <text x="310" y="165" fill="#7b82a8" font-size="9" text-anchor="middle">6/5</text>
-        <text x="380" y="165" fill="#7b82a8" font-size="9" text-anchor="middle">6/10</text>
-        <text x="55" y="175" fill="#7b82a8" font-size="8">─ 全体平均</text>
-        <text x="130" y="175" fill="#f7c94f" font-size="8" opacity=".8">─ ─ 目標80%</text>
-      </svg>
-      <p style="font-size:10px;color:var(--muted);margin-top:6px;">※5/14は法令・税・業法のみ（31問）。5/20以降は民法含む45問形式。</p>
-    </div>
-    <div class="card">
+  <div style="margin-bottom:16px;">
+<div class="card">
       <div class="card-title">科目別 現状と目標</div>
       <div class="prog-wrap">
         <div class="prog-header"><span style="color:var(--gyoho);font-weight:600;">🏢 業法</span><span style="font-family:'DM Mono';font-size:12px;color:var(--gyoho)">68% → 目標80%</span></div>
@@ -195,16 +159,118 @@
         <div style="font-size:10px;color:var(--muted);margin-top:2px;">8月目標達成圏。10月50%（7/14問）へ</div>
       </div>
     </div>
-  </div>
+</div>
   
 
 
 </div>
 
-<!-- TARGETS -->
-<div class="section" id="sec-targets">
-  <div class="sec-title">目標と現状ギャップ</div>
-  <div class="sec-sub">8月中間目標・10月本番目標に向けた現在地</div>
+
+  <!-- KPIカード -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
+    <div class="card" style="padding:14px;text-align:center;">
+      <div style="font-size:28px;font-weight:900;color:var(--danger)">18.6%</div>
+      <div style="font-size:11px;font-weight:700;margin:4px 0;">全国合格率（令和6年）</div>
+      <div style="font-size:10px;color:var(--muted)">受験者241,436人中44,992人合格</div>
+    </div>
+    <div class="card" style="padding:14px;text-align:center;">
+      <div style="font-size:28px;font-weight:900;color:var(--warn)">37点</div>
+      <div style="font-size:11px;font-weight:700;margin:4px 0;">合格基準点（令和6年）</div>
+      <div style="font-size:10px;color:var(--muted)">50点満点中 ≒ 正答率74%</div>
+    </div>
+    <div class="card" style="padding:14px;text-align:center;">
+      <div style="font-size:28px;font-weight:900;color:var(--accent)">33.2点</div>
+      <div style="font-size:11px;font-weight:700;margin:4px 0;">全国平均点（令和6年）</div>
+      <div style="font-size:10px;color:var(--muted)">模試受験者34,402人集計値</div>
+    </div>
+    <div class="card" style="padding:14px;text-align:center;">
+      <div style="font-size:28px;font-weight:900;color:var(--success)" id="natGroupAvg">--</div>
+      <div style="font-size:11px;font-weight:700;margin:4px 0;">当グループ最新平均</div>
+      <div style="font-size:10px;color:var(--muted)">6/10模試 正答率換算</div>
+    </div>
+  </div>
+
+  <!-- 合格ライン到達状況 -->
+  <div class="card" style="padding:16px;margin-bottom:16px;">
+    <div class="card-title">合格ライン到達シミュレーション（令和6年基準：37点 = 正答率74%）</div>
+    <div style="margin-bottom:10px;font-size:11px;color:var(--muted)">
+      ※模試正答率74%以上 = 合格圏内目安。本試験は難易度が変動するため参考値です。
+    </div>
+    <div id="natRankList" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+  </div>
+
+  <!-- 全国vs当グループ 科目別比較 -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+    <div class="card" style="padding:16px;">
+      <div class="card-title">科目別 全国目標 vs 当グループ現状</div>
+      <table style="font-size:12px;width:100%;">
+        <thead><tr>
+          <th>科目</th><th>出題数</th><th>全国合格者平均目標</th><th>当グループ現状</th><th>差</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="badge badge-civil">民法</span></td>
+            <td style="text-align:center">14問</td>
+            <td style="text-align:center;color:var(--civil)">9問 (64%)</td>
+            <td style="text-align:center" id="natCivil">--</td>
+            <td id="natCivilDiff" style="text-align:center">--</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-hourei">法令</span></td>
+            <td style="text-align:center">8問</td>
+            <td style="text-align:center;color:var(--hourei)">5問 (63%)</td>
+            <td style="text-align:center" id="natHourei">--</td>
+            <td id="natHoureiDiff" style="text-align:center">--</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-tax">税</span></td>
+            <td style="text-align:center">3問</td>
+            <td style="text-align:center;color:var(--tax)">2問 (67%)</td>
+            <td style="text-align:center" id="natTax">--</td>
+            <td id="natTaxDiff" style="text-align:center">--</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-gyoho">業法</span></td>
+            <td style="text-align:center">20問</td>
+            <td style="text-align:center;color:var(--gyoho)">16問 (80%)</td>
+            <td style="text-align:center" id="natGyoho">--</td>
+            <td id="natGyhoDiff" style="text-align:center">--</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card" style="padding:16px;">
+      <div class="card-title">過去5年 合格ライン推移</div>
+      <table style="font-size:12px;width:100%;">
+        <thead><tr><th>年度</th><th>合格点</th><th>正答率</th><th>合格率</th></tr></thead>
+        <tbody>
+          <tr><td>令和7年（2025）</td><td style="font-weight:700;color:var(--accent)">33点</td><td>66%</td><td>18.7%</td></tr>
+          <tr><td>令和6年（2024）</td><td style="font-weight:700;color:var(--warn)">37点</td><td>74%</td><td>18.6%</td></tr>
+          <tr><td>令和5年（2023）</td><td style="font-weight:700;color:var(--warn)">36点</td><td>72%</td><td>17.2%</td></tr>
+          <tr><td>令和4年（2022）</td><td style="font-weight:700;color:var(--warn)">36点</td><td>72%</td><td>17.0%</td></tr>
+          <tr><td>令和3年10月（2021）</td><td style="font-weight:700;color:var(--danger)">34点</td><td>68%</td><td>17.9%</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:10px;padding:8px;background:var(--surface2);border-radius:6px;font-size:11px;color:var(--muted);">
+        ⚡ 合格点は年度で<strong style="color:var(--text)">33〜38点と大きく変動</strong>します。<br>
+        安全圏は正答率<strong style="color:var(--success)">80%以上（40問以上）</strong>を目標に設定しています。
+      </div>
+    </div>
+  </div>
+
+  <!-- 個人別 全国位置づけ -->
+  
+
+  <!-- 全国比較カード -->
+  <div class="grid-2" style="margin-top:16px;">
+    
+    
+  </div>
+
+
+  <!-- 個人別全国位置づけ + 全国比較 -->
+  
   <div class="grid-2" style="margin-bottom:16px;">
     <div class="card" style="border-color:var(--accent2);">
       <div style="font-size:11px;font-weight:700;color:var(--accent2);margin-bottom:10px;">🎯 8月末 中間目標</div>
@@ -225,6 +291,62 @@
       </div>
     </div>
   </div>
+
+
+  <!-- 個人別 全国位置づけ -->
+  <div class="card" style="padding:16px;margin-bottom:16px;">
+    <div class="card-title">個人別 全国位置づけ（6/10模試スコア → 本番換算）</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">
+      模試の正答率を本番50問に換算した推定点と、直近2年の合格ラインとの比較です。
+    </div>
+    <div style="overflow-x:auto;">
+    <table>
+      <thead><tr>
+        <th>氏名</th><th>チーム</th><th>6/10正答率</th><th>推定点(50問換算)</th>
+        <th>R7合格点(33点)比</th><th>R6合格点(37点)比</th><th>判定</th>
+      </tr></thead>
+      <tbody id="natPersonTable"></tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- 全国比較カード -->
+  <div class="grid-2" style="margin-bottom:16px;">
+    <div class="card" style="padding:16px;">
+      <div class="card-title">🗾 全国比較（令和6年本試験）</div>
+      <table style="font-size:12px;width:100%;">
+        <thead><tr><th>指標</th><th>全国</th><th>当グループ</th><th>差</th></tr></thead>
+        <tbody>
+          <tr><td>グループ合格率(R6基準)</td><td style="color:var(--muted)">18.6%</td><td id="ov-nat-rate" style="font-weight:700">--</td><td id="ov-nat-rate-diff">--</td></tr>
+          <tr><td>平均 vs 合格ライン</td><td style="color:var(--muted)">74%（37点）</td><td id="ov-nat-avg" style="font-weight:700">--</td><td id="ov-nat-avg-diff">--</td></tr>
+          <tr><td style="color:var(--gyoho)">業法</td><td style="color:var(--muted)">目標80%</td><td id="ov-gyoho" style="font-weight:700">--</td><td id="ov-gyoho-diff">--</td></tr>
+          <tr><td style="color:var(--hourei)">法令</td><td style="color:var(--muted)">目標63%</td><td id="ov-hourei" style="font-weight:700">--</td><td id="ov-hourei-diff">--</td></tr>
+          <tr><td style="color:var(--tax)">税</td><td style="color:var(--muted)">目標67%</td><td id="ov-tax" style="font-weight:700">--</td><td id="ov-tax-diff">--</td></tr>
+          <tr><td style="color:var(--civil)">民法</td><td style="color:var(--muted)">目標64%</td><td id="ov-civil" style="font-weight:700">--</td><td id="ov-civil-diff">--</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card" style="padding:16px;">
+      <div class="card-title">🎯 合格圏内 人数</div>
+      <div style="display:flex;gap:12px;margin-bottom:12px;">
+        <div style="flex:1;text-align:center;padding:10px;background:var(--surface2);border-radius:8px;">
+          <div id="ov-pass-r7" style="font-size:28px;font-weight:900;color:var(--success)">--</div>
+          <div style="font-size:10px;color:var(--muted)">R7基準（66%以上）</div>
+        </div>
+        <div style="flex:1;text-align:center;padding:10px;background:var(--surface2);border-radius:8px;">
+          <div id="ov-pass-r6" style="font-size:28px;font-weight:900;color:var(--warn)">--</div>
+          <div style="font-size:10px;color:var(--muted)">R6基準（74%以上）</div>
+        </div>
+      </div>
+      <div id="ov-pass-names" style="font-size:11px;line-height:1.8;"></div>
+    </div>
+  </div>
+
+<!-- TARGETS -->
+<div class="section" id="sec-targets">
+  <div class="sec-title">目標と現状ギャップ</div>
+  <div class="sec-sub">8月中間目標・10月本番目標に向けた現在地</div>
+  
   <div class="card">
     <div class="card-title">合格点シミュレーション</div>
     <table>
@@ -289,8 +411,15 @@
     </table>
     </div>
   </div>
-</div>
-<div class="person-grid" id="personGrid"></div>
+<div class="card" style="padding:16px;margin-bottom:16px;">
+    <div class="card-title">📊 科目別正答率グラフ（6/10）</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">チームフィルターに連動して自動更新されます</div>
+    <div id="radarWrap" style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+      <svg id="radarSVG" viewBox="0 0 320 280" width="320" style="flex-shrink:0;"></svg>
+      <div id="radarLegend" style="font-size:12px;line-height:2.2;"></div>
+    </div>
+  </div>
+  <div class="person-grid" id="personGrid"></div>
 </div>
 
 <!-- DOMAINS -->
@@ -355,30 +484,12 @@
   </div>
 </div>
 
+
 <!-- SCHEDULE -->
 <div class="section" id="sec-schedule">
   <div class="sec-title">学習スケジュール</div>
   <div class="sec-sub">残り約130日（本試験：2026年10月19日）のロードマップ</div>
-  <div class="grid-2" style="margin-bottom:16px;">
-    <div class="card" style="border-color:var(--accent2);">
-      <div style="font-size:11px;font-weight:700;color:var(--accent2);margin-bottom:8px;">🎯 8月末 中間目標</div>
-      <div style="display:flex;gap:12px;flex-wrap:wrap;">
-        <span><span class="badge badge-gyoho">業法</span> 80%</span>
-        <span><span class="badge badge-hourei">法令</span> 60%</span>
-        <span><span class="badge badge-tax">税</span> 50% ✅</span>
-        <span><span class="badge badge-civil">民法</span> 30% ✅</span>
-      </div>
-    </div>
-    <div class="card" style="border-color:var(--success);">
-      <div style="font-size:11px;font-weight:700;color:var(--success);margin-bottom:8px;">🏆 10月本番目標（32問以上）</div>
-      <div style="display:flex;gap:12px;flex-wrap:wrap;">
-        <span><span class="badge badge-gyoho">業法</span> 80%</span>
-        <span><span class="badge badge-hourei">法令</span> 70%</span>
-        <span><span class="badge badge-tax">税</span> 100%</span>
-        <span><span class="badge badge-civil">民法</span> 50%</span>
-      </div>
-    </div>
-  </div>
+  
   <div class="card">
     <div class="card-title">5フェーズ学習ロードマップ</div>
     <div class="timeline">
@@ -1065,19 +1176,7 @@ function openModal(name){
       <tbody>${histRows}</tbody></table>
     </div>
     ${q610html}
-    <div class="card" style="padding:14px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div class="card-title" style="margin-bottom:0;">個別アドバイス・重点取り組み</div>
-        <button onclick="generateAIAdvice('${p.name}')" id="aiAdviceBtn_${p.name.replace(/[^a-zA-Z0-9]/g,'_')}" style="background:linear-gradient(135deg,var(--accent),#7c6ff7);border:none;border-radius:6px;color:#fff;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Noto Sans JP',sans-serif;display:flex;align-items:center;gap:5px;">
-          ✨ AIで重点分析
-        </button>
-      </div>
-      ${adviceHtml}
-      <div id="aiAdviceResult_${p.name.replace(/[^a-zA-Z0-9]/g,'_')}" style="margin-top:10px;"></div>
-      <div style="margin-top:10px;padding:10px;background:var(--surface2);border-radius:8px;font-size:11px;color:var(--muted);">
-        📅 <strong style="color:var(--text)">今週のアクション：</strong>直近の模試で間違えた問題を科目別に仕分けし、業法→法令→税→民法の優先順で解き直し。正解した問題は来週模試前に再確認。
-      </div>
-    </div>`;
+    `;
   document.getElementById('modalOverlay').classList.add('open');
 }
 
@@ -1111,10 +1210,11 @@ buildPersonGrid();
 buildRankTable();
 buildTopicTable();
 buildDomainBars();
+setTimeout(()=>buildSubjectRadar(null), 100);
 </script>
-</body>
-</html>
+
 <script>
+
 // ====== 6/5（令和6年本試験）問題テーマデータ ======
 // 合格基準点37点 / 正解: 1,4,4,4,2,1,1,1,2,4, 3,1,1,3,4,1,2,2,3,3, 1,4,2,4,3, 3,4,2,4,3, 1,3,3,3,2, 4,3,4,4,2, 1,4,4,1,2
 const answers_605 = {
@@ -1286,8 +1386,10 @@ window.buildDomainBars605 = function(){
     });
   });
 };
+
 </script>
 <script>
+
 // ====== 5/27 問題テーマデータ ======
 // 正解（解答PDFより）: 4,1,3,1,1,2,2,2,1,3, 4,3,3,1,3,1,1,2,2,3, 1,4,2,3,2, 3,3,3,2,4, 3,3,2,4,4, 4,1,3,2,4, 1,3,2,1,2
 const answers_527 = {
@@ -1439,8 +1541,10 @@ function build527TopicTable(){
   }
   document.getElementById('topicBody').innerHTML=html;
 }
+
 </script>
 <script>
+
 // ====== 5/20 問題テーマデータ ======
 // 問題__6_.pdf（50問完全版）から抽出
 // 正解: 4,1,1,1,2,2,2,1,1,4, 4,3,2,2,1,2,1,1,2,4, 4,4,3,2,1, 3,3,3,2,4, 3,2,4,2,4, 4,1,2,3,1, 4,2,4,2,1
@@ -1526,8 +1630,10 @@ function build520TopicTable(){
   html+=`<tr><td colspan="7" style="text-align:center;color:var(--muted);font-size:11px;padding:12px;">※5/20の個人回答データは未登録のため正答率は非表示。正解・テーマ・難易度は正式解答PDFに基づきます。</td></tr>`;
   document.getElementById('topicBody').innerHTML=html;
 }
+
 </script>
 <script>
+
 // ====== 5/14 問題テーマデータ（法令・税・業法のみ 問15〜45） ======
 const answers_514 = {
   15:{ans:3,diff:'C',subject:'法令',topic:'都市計画法（開発許可・工事廃止・権利行使）'},
@@ -1646,8 +1752,10 @@ function build514TopicTable(){
   html+=`<tr><td colspan="7" style="text-align:center;color:var(--muted);font-size:11px;padding:12px;">※5/14は法令（問15〜22）・税（問23〜25）・業法（問26〜45）のみ。民法（問1〜14）は未実施。</td></tr>`;
   document.getElementById('topicBody').innerHTML=html;
 }
+
 </script>
 <script>
+
 // ====== Slack 共有機能 ======
 function openSlackModal(){
   // プレビュー生成
@@ -1829,4 +1937,241 @@ ${mistakes.length>0 ? `6/10で間違えた問題（${mistakes.length}問）: ${m
   }
   btn.textContent='✨ AIで重点分析'; btn.disabled=false;
 }
+
 </script>
+<script>
+
+// ====== 全国比較 ======
+function buildNationalComparison(){
+  const p610 = persons.filter(p=>p.scores['610']!=null);
+  if(!p610.length) return;
+
+  // グループ平均（正答率%のまま）
+  const avgPct = Math.round(p610.reduce((s,p)=>s+p.scores['610'],0)/p610.length);
+  const avgEl = document.getElementById('natGroupAvg');
+  if(avgEl) { avgEl.textContent = avgPct+'%'; avgEl.style.color = avgPct>=74?'var(--success)':avgPct>=66?'var(--warn)':'var(--danger)'; }
+
+  // 合格ライン到達状況（74%以上）
+  const rankList = document.getElementById('natRankList');
+  if(rankList){
+    const sorted = [...p610].sort((a,b)=>b.scores['610']-a.scores['610']);
+    rankList.innerHTML = sorted.map(p=>{
+      const s = p.scores['610'];
+      const ok74 = s>=74; const ok66 = s>=66;
+      const badge = ok74?'✅ 合格圏':ok66?'🟡 圏内届く可能性':'🔴 要強化';
+      const col = ok74?'var(--success)':ok66?'var(--warn)':'var(--danger)';
+      return `<div style="padding:6px 10px;border-radius:6px;border:1px solid ${col};font-size:11px;min-width:140px;">
+        <div style="font-weight:700;color:var(--text)">${p.name}</div>
+        <div style="color:${col};font-size:10px;">${badge}（${s}%）</div>
+      </div>`;
+    }).join('');
+  }
+
+  // 科目別比較（グループ平均）
+  const subjects = [
+    {key:'civil',  elId:'natCivil',  diffId:'natCivilDiff',  target:64},
+    {key:'hourei', elId:'natHourei', diffId:'natHoureiDiff', target:63},
+    {key:'tax',    elId:'natTax',    diffId:'natTaxDiff',    target:67},
+    {key:'gyoho',  elId:'natGyoho',  diffId:'natGyhoDiff',   target:80},
+  ];
+  subjects.forEach(({key,elId,diffId,target})=>{
+    const vals = p610.map(p=>p[key]&&p[key]['610']).filter(v=>v!=null);
+    if(!vals.length) return;
+    const avg = Math.round(vals.reduce((a,b)=>a+b)/vals.length);
+    const diff = avg - target;
+    const el = document.getElementById(elId);
+    const dEl = document.getElementById(diffId);
+    if(el) { el.textContent=avg+'%'; el.style.color=avg>=target?'var(--success)':'var(--danger)'; }
+    if(dEl) {
+      dEl.textContent=(diff>=0?'▲+':'▼')+Math.abs(diff)+'%';
+      dEl.style.color=diff>=0?'var(--success)':'var(--danger)';
+      dEl.style.fontWeight='700';
+    }
+  });
+
+  // 個人別テーブル
+  const tbody = document.getElementById('natPersonTable');
+  if(!tbody) return;
+  const sorted = [...p610].sort((a,b)=>b.scores['610']-a.scores['610']);
+  tbody.innerHTML = sorted.map(p=>{
+    const pct = p.scores['610'];
+    const est = Math.round(pct/100*50*10)/10; // 50問換算推定点
+    const estInt = Math.round(est);
+    const diffR7 = estInt - 33;
+    const diffR6 = estInt - 37;
+    const judgeR7 = diffR7>=0?`<span style="color:var(--success);font-weight:700">▲+${diffR7}点</span>`:`<span style="color:var(--danger);font-weight:700">▼${Math.abs(diffR7)}点</span>`;
+    const judgeR6 = diffR6>=0?`<span style="color:var(--success);font-weight:700">▲+${diffR6}点</span>`:`<span style="color:var(--danger);font-weight:700">▼${Math.abs(diffR6)}点</span>`;
+    const verdict = estInt>=37?'🏆 R6基準クリア':estInt>=33?'✅ R7基準クリア':estInt>=30?'🟡 あと少し':'🔴 要強化';
+    return `<tr>
+      <td style="font-weight:700;cursor:pointer;color:var(--accent)" onclick="showSection('individuals',null);openModal('${p.name}')">${p.name}</td>
+      <td style="font-family:'DM Mono';font-weight:700" class="${getScoreClass(pct)}">${pct}%</td>
+      <td style="font-family:'DM Mono';font-weight:700">${estInt}点</td>
+      <td>${judgeR7}</td>
+      <td>${judgeR6}</td>
+      <td>${verdict}</td>
+    </tr>`;
+  }).join('');
+}
+
+// Initに追加
+const _origInit = window.onload;
+document.addEventListener('DOMContentLoaded', ()=>{
+  buildNationalComparison();
+  buildOverviewNational();
+  setTimeout(()=>buildSubjectRadar(null), 200);
+});
+
+function buildOverviewNational(){
+  const p610 = persons.filter(p=>p.scores['610']!=null);
+  if(!p610.length) return;
+
+  const n = p610.length;
+  const avg = Math.round(p610.reduce((s,p)=>s+p.scores['610'],0)/n);
+
+  // 合格圏人数
+  const passR7 = p610.filter(p=>p.scores['610']>=66).length;
+  const passR6 = p610.filter(p=>p.scores['610']>=74).length;
+  const passR6names = p610.filter(p=>p.scores['610']>=74).map(p=>`✅ ${p.name}（${p.scores['610']}%）`).join('<br>');
+  const passR7only = p610.filter(p=>p.scores['610']>=66&&p.scores['610']<74).map(p=>`🟡 ${p.name}（${p.scores['610']}%）`).join('<br>');
+
+  const setEl = (id, text, color) => {
+    const el = document.getElementById(id);
+    if(el){ el.textContent=text; if(color) el.style.color=color; }
+  };
+  const setDiff = (id, val, target) => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    const diff = val - target;
+    el.textContent = (diff>=0?'▲+':'▼')+Math.abs(diff)+'%';
+    el.style.color = diff>=0?'var(--success)':'var(--danger)';
+    el.style.fontWeight = '700';
+  };
+
+  // 合格率（グループ内の合格圏割合）
+  const groupPassRate = Math.round(passR6/n*100);
+  setEl('ov-nat-rate', groupPassRate+'%', groupPassRate>=18.6?'var(--success)':'var(--danger)');
+  setDiff('ov-nat-rate-diff', groupPassRate, 18.6);
+
+  // 平均正答率 vs 合格ライン74%
+  setEl('ov-nat-avg', avg+'%', avg>=74?'var(--success)':avg>=66?'var(--warn)':'var(--danger)');
+  setDiff('ov-nat-avg-diff', avg, 74);
+
+  // 科目別
+  const subjMap = [
+    {key:'gyoho', id:'ov-gyoho', diffId:'ov-gyoho-diff', target:80},
+    {key:'hourei',id:'ov-hourei',diffId:'ov-hourei-diff',target:63},
+    {key:'tax',   id:'ov-tax',   diffId:'ov-tax-diff',   target:67},
+    {key:'civil', id:'ov-civil', diffId:'ov-civil-diff', target:64},
+  ];
+  subjMap.forEach(({key,id,diffId,target})=>{
+    const vals = p610.map(p=>p[key]&&p[key]['610']).filter(v=>v!=null);
+    if(!vals.length) return;
+    const a = Math.round(vals.reduce((s,v)=>s+v)/vals.length);
+    setEl(id, a+'%', a>=target?'var(--success)':'var(--danger)');
+    setDiff(diffId, a, target);
+  });
+
+  // 合格圏人数
+  setEl('ov-pass-r7', passR7+'名');
+  setEl('ov-pass-r6', passR6+'名');
+  const namesEl = document.getElementById('ov-pass-names');
+  if(namesEl) namesEl.innerHTML = (passR6names||'（該当者なし）') + (passR7only?'<br>'+passR7only:'');
+}
+
+</script>
+<script>
+
+</script>
+<script>
+
+// ====== 個人タブ: SVG科目別正答率レーダーチャート ======
+function buildSubjectRadar(teamFilter){
+  const p610 = persons.filter(p => {
+    if(!p.scores || p.scores['610']==null) return false;
+    if(teamFilter && teamFilter!=='all') return p.team===teamFilter;
+    return true;
+  });
+
+  const avg = arr => arr.length ? Math.round(arr.reduce((a,b)=>a+b,0)/arr.length) : 0;
+  const civil  = avg(p610.map(p=>p.civil&&p.civil['610']).filter(v=>v!=null));
+  const hourei = avg(p610.map(p=>p.hourei&&p.hourei['610']).filter(v=>v!=null));
+  const tax    = avg(p610.map(p=>p.tax&&p.tax['610']).filter(v=>v!=null));
+  const gyoho  = avg(p610.map(p=>p.gyoho&&p.gyoho['610']).filter(v=>v!=null));
+
+  const labels  = ['業法','法令','税','民法'];
+  const values  = [gyoho, hourei, tax, civil];
+  const targets = [80, 63, 67, 64];
+  const colors  = ['#059669','#2563EB','#D97706','#7C3AED'];
+
+  const svg = document.getElementById('radarSVG');
+  const legend = document.getElementById('radarLegend');
+  if(!svg || !legend) return;
+
+  const cx=160, cy=140, R=110;
+  const N=4;
+  const angleOf = i => (Math.PI*2/N)*i - Math.PI/2;
+  const pt = (val, i) => {
+    const r = R * val/100;
+    return [cx + r*Math.cos(angleOf(i)), cy + r*Math.sin(angleOf(i))];
+  };
+
+  // グリッド円
+  let svgHtml = '';
+  [20,40,60,80,100].forEach(v=>{
+    const pts = Array.from({length:N},(_,i)=>pt(v,i)).map(p=>p.join(',')).join(' ');
+    svgHtml += `<polygon points="${pts}" fill="none" stroke="#d0d5e8" stroke-width="${v===80?1.5:0.7}" stroke-dasharray="${v===80?'4,2':''}"/>`;
+    svgHtml += `<text x="${cx}" y="${cy - R*v/100 - 3}" text-anchor="middle" font-size="8" fill="#5a6080">${v}%</text>`;
+  });
+
+  // 軸
+  Array.from({length:N},(_,i)=>{
+    const [x,y]=pt(100,i);
+    svgHtml += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#d0d5e8" stroke-width="0.7"/>`;
+  });
+
+  // 目標ライン
+  const tgtPts = targets.map((v,i)=>pt(v,i).join(',')).join(' ');
+  svgHtml += `<polygon points="${tgtPts}" fill="rgba(247,201,79,0.08)" stroke="#f7c94f" stroke-width="1.5" stroke-dasharray="5,3"/>`;
+
+  // 当グループ
+  const valPts = values.map((v,i)=>pt(v,i).join(',')).join(' ');
+  svgHtml += `<polygon points="${valPts}" fill="rgba(79,142,247,0.18)" stroke="#4f8ef7" stroke-width="2.5"/>`;
+
+  // ドットと値
+  values.forEach((v,i)=>{
+    const [x,y]=pt(v,i);
+    svgHtml += `<circle cx="${x}" cy="${y}" r="5" fill="${colors[i]}" stroke="#fff" stroke-width="1.5"/>`;
+    const ox=[0,12,0,-12][i], oy=[-14,0,14,0][i];
+    svgHtml += `<text x="${x+ox}" y="${y+oy}" text-anchor="middle" font-size="11" font-weight="700" fill="${colors[i]}">${v}%</text>`;
+  });
+
+  // ラベル
+  const labelOffset=20;
+  labels.forEach((lbl,i)=>{
+    const [x,y]=pt(100+labelOffset,i);
+    const anchor=['middle','start','middle','end'][i];
+    svgHtml += `<text x="${x}" y="${y+4}" text-anchor="${anchor}" font-size="12" font-weight="700" fill="${colors[i]}">${lbl}</text>`;
+  });
+
+  svg.innerHTML = svgHtml;
+
+  // 凡例
+  legend.innerHTML = labels.map((lbl,i)=>{
+    const ok = values[i]>=targets[i];
+    const diff = ok ? '✅' : '▼'+(targets[i]-values[i])+'%';
+    const diffColor = ok ? 'var(--success)' : 'var(--danger)';
+    return `<div style="display:flex;align-items:center;gap:8px;">
+      <div style="width:12px;height:12px;border-radius:50%;background:${colors[i]};flex-shrink:0;"></div>
+      <span style="color:${colors[i]};font-weight:700;">${lbl}</span>
+      <span style="color:var(--text);font-weight:900;">${values[i]}%</span>
+      <span style="color:var(--muted);font-size:10px;">/ 目標${targets[i]}%</span>
+      <span style="color:${diffColor};font-weight:700;font-size:10px;">${diff}</span>
+    </div>`;
+  }).join('');
+}
+
+
+
+</script>
+</body>
+</html>
