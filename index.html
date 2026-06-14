@@ -112,13 +112,13 @@
 </div>
 
 <nav class="nav">
-  <button class="nav-btn active" onclick="showSection('overview')">📊 全体</button>
-  <button class="nav-btn" onclick="showSection('targets')">🎯 目標</button>
-  <button class="nav-btn" onclick="showSection('teams')">👥 チーム</button>
-  <button class="nav-btn" onclick="showSection('individuals')">👤 個人</button>
-  <button class="nav-btn" onclick="showSection('domains')">📚 分野別</button>
-  <button class="nav-btn" onclick="showSection('topics')">🔬 テーマ別</button>
-  <button class="nav-btn" onclick="showSection('schedule')">📅 スケジュール</button>
+  <button class="nav-btn active" onclick="showSection('overview',this)">📊 全体</button>
+  <button class="nav-btn" onclick="showSection('targets',this)">🎯 目標</button>
+  <button class="nav-btn" onclick="showSection('teams',this)">👥 チーム</button>
+  <button class="nav-btn" onclick="showSection('individuals',this)">👤 個人</button>
+  <button class="nav-btn" onclick="showSection('domains',this)">📚 分野別</button>
+  <button class="nav-btn" onclick="showSection('topics',this)">🔬 テーマ別</button>
+  <button class="nav-btn" onclick="showSection('schedule',this)">📅 スケジュール</button>
 </nav>
 
 <!-- OVERVIEW -->
@@ -196,16 +196,7 @@
       </div>
     </div>
   </div>
-  <div class="card">
-    <div class="card-title">受験者スコアランキング（最新回 6/10）</div>
-    <div style="overflow-x:auto;">
-    <table>
-      <thead><tr><th>順位</th><th>氏名</th><th>チーム</th><th>正答率</th><th>民法</th><th>法令</th><th>税</th><th>業法</th><th>前回比</th></tr></thead>
-      <tbody id="rankTable"></tbody>
-    </table>
-    </div>
-  </div>
-</div>
+  
 
 <!-- TARGETS -->
 <div class="section" id="sec-targets">
@@ -286,7 +277,17 @@
     <button class="filter-btn" onclick="filterTeam('中途オンボチーム',this)">中途オンボ</button>
     <button class="filter-btn" onclick="filterTeam('村田チーム',this)">村田</button>
   </div>
-  <div class="person-grid" id="personGrid"></div>
+  <div class="card">
+    <div class="card-title">受験者スコアランキング（最新回 6/10）</div>
+    <div style="overflow-x:auto;">
+    <table>
+      <thead><tr><th>順位</th><th>氏名</th><th>チーム</th><th>正答率</th><th>民法</th><th>法令</th><th>税</th><th>業法</th><th>前回比</th></tr></thead>
+      <tbody id="rankTable"></tbody>
+    </table>
+    </div>
+  </div>
+</div>
+<div class="person-grid" id="personGrid"></div>
 </div>
 
 <!-- DOMAINS -->
@@ -1094,11 +1095,17 @@ function filterTeam(team,btn){
   document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');buildPersonGrid(team);
 }
-function showSection(id){
+function showSection(id, btn){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('sec-'+id).classList.add('active');
-  event.target.classList.add('active');
+  const sec = document.getElementById('sec-'+id);
+  if(sec) sec.classList.add('active');
+  if(btn) btn.classList.add('active');
+  else {
+    document.querySelectorAll('.nav-btn').forEach(b=>{
+      if(b.getAttribute('onclick') && b.getAttribute('onclick').includes("'"+id+"'")) b.classList.add('active');
+    });
+  }
 }
 
 // Countdown
