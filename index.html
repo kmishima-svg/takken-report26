@@ -729,7 +729,10 @@
         <button onclick="switchLibraryRound('520',this)" class="filter-btn" style="font-size:12px;">5/20（全45問）</button>
         <button onclick="switchLibraryRound('619',this)" class="filter-btn active" style="font-size:12px;">6/19（全45問）</button>
       </div>
-      <div style="display:flex;gap:8px;">
+      <div style="display:flex;gap:8px;align-items:center;">
+        <select id="libraryUserSelect" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;color:var(--text);background:#fff;max-width:160px;">
+          <option value="">受講者を選択...</option>
+        </select>
         <button onclick="startLibraryQuizMode()" style="background:linear-gradient(135deg,var(--accent),#7c6ff7);border:none;border-radius:6px;color:#fff;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;">▶️ Web受講モード</button>
         <button onclick="printLibraryPDF()" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;">🖨️ PDF印刷</button>
       </div>
@@ -750,7 +753,10 @@
     <!-- 受講モード（印刷時は非表示） -->
     <div id="libraryQuizView" style="display:none;" class="no-print">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-        <div style="font-size:12px;color:var(--muted);" id="libraryQuizProgress">問1 / 45</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="font-size:12px;color:var(--muted);" id="libraryQuizProgress">問1 / 45</div>
+          <div style="font-size:11px;color:var(--accent);font-weight:700;" id="libraryQuizUserLabel"></div>
+        </div>
         <button onclick="exitLibraryQuizMode()" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 12px;color:var(--muted);cursor:pointer;font-size:11px;">✕ 一覧に戻る</button>
       </div>
       <div id="libraryQuizBody"></div>
@@ -1648,8 +1654,99 @@ function openModal(name){
       ${adviceHtml}
       <div id="aiAdviceResult_${p.name.replace(/[^a-zA-Z0-9]/g,'_')}" style="margin-top:10px;"></div>
     </div>
+    <div class="card" style="padding:14px;" id="libraryHistoryCard_${p.name.replace(/[^a-zA-Z0-9]/g,'_')}">
+      <div class="card-title">📚 Web受講履歴</div>
+      <div style="color:var(--muted);font-size:12px;padding:8px;">読み込み中...</div>
+    </div>
     `;
   document.getElementById('modalOverlay').classList.add('open');
+  renderLibraryHistoryForPerson(p.name);
+}
+
+// ====== 個人モーダル: Web受講履歴の表示 ======
+async function renderLibraryHistoryForPerson(name) {
+  const safeId = name.replace(/[^a-zA-Z0-9]/g, '_');
+  const cardEl = document.getElementById(`libraryHistoryCard_${safeId}`);
+  if (!cardEl) return;
+
+  const attempts = await getLibraryAttemptsForUser(name);
+
+  if (!attempts.length) {
+    cardEl.innerHTML = `<div class="card-title">📚 Web受講履歴</div>
+      <div style="color:var(--muted);font-size:12px;padding:8px;">まだ「出題データ集」のWeb受講モードを利用していません</div>`;
+    return;
+  }
+
+  // ラウンド・問題ごとに最新の回答のみ集計（同じ問題を複数回解いた場合は最新を採用）
+  const latestMap = {};
+  attempts.forEach(a => {
+    const key = `${a.round}_${a.q}`;
+    if (!latestMap[key] || new Date(a.timestamp) > new Date(latestMap[key].timestamp)) {
+      latestMap[key] = a;
+    }
+  });
+  const uniqueAttempts = Object.values(latestMap);
+
+  const total = uniqueAttempts.length;
+  const correct = uniqueAttempts.filter(a => a.correct).length;
+  const pct = total ? Math.round(correct / total * 100) : 0;
+
+  // ラウンド別集計
+  const roundMap = {};
+  uniqueAttempts.forEach(a => {
+    if (!roundMap[a.round]) roundMap[a.round] = { total: 0, correct: 0 };
+    roundMap[a.round].total++;
+    if (a.correct) roundMap[a.round].correct++;
+  });
+
+  const roundLabel = { '514':'5/14', '520':'5/20', '619':'6/19' };
+
+  // 直近10件
+  const recent = [...attempts].sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 10);
+
+  cardEl.innerHTML = `
+    <div class="card-title">📚 Web受講履歴</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
+      <div style="text-align:center;padding:10px;background:var(--surface2);border-radius:8px;">
+        <div style="font-size:22px;font-weight:900;color:var(--text);">${total}</div>
+        <div style="font-size:10px;color:var(--muted);">受講問題数</div>
+      </div>
+      <div style="text-align:center;padding:10px;background:var(--surface2);border-radius:8px;">
+        <div style="font-size:22px;font-weight:900;color:${pct>=70?'var(--success)':pct>=50?'var(--warn)':'var(--danger)'};">${pct}%</div>
+        <div style="font-size:10px;color:var(--muted);">正答率</div>
+      </div>
+      <div style="text-align:center;padding:10px;background:var(--surface2);border-radius:8px;">
+        <div style="font-size:22px;font-weight:900;color:var(--accent);">${Object.keys(roundMap).length}</div>
+        <div style="font-size:10px;color:var(--muted);">受講回数（回別）</div>
+      </div>
+    </div>
+    <div style="margin-bottom:12px;">
+      ${Object.entries(roundMap).map(([r, v]) => {
+        const rpct = Math.round(v.correct/v.total*100);
+        const col = rpct>=70?'var(--success)':rpct>=50?'var(--warn)':'var(--danger)';
+        return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+          <span style="font-size:11px;font-weight:700;color:var(--accent);width:50px;flex-shrink:0;">${roundLabel[r]||r}</span>
+          <div style="flex:1;height:8px;background:var(--surface2);border-radius:3px;">
+            <div style="height:100%;width:${rpct}%;background:${col};border-radius:3px;"></div>
+          </div>
+          <span style="font-size:11px;font-weight:700;color:${col};width:70px;text-align:right;flex-shrink:0;">${v.correct}/${v.total} (${rpct}%)</span>
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:6px;">直近の受講履歴</div>
+    <div style="display:flex;flex-direction:column;gap:4px;max-height:160px;overflow-y:auto;">
+      ${recent.map(a => {
+        const dt = new Date(a.timestamp);
+        const dtStr = `${dt.getMonth()+1}/${dt.getDate()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+        return `<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:var(--surface2);border-radius:5px;font-size:10px;">
+          <span style="color:var(--muted);width:75px;flex-shrink:0;">${dtStr}</span>
+          <span style="color:var(--accent);font-weight:700;width:42px;flex-shrink:0;">${roundLabel[a.round]||a.round}</span>
+          <span style="color:var(--text);flex-shrink:0;">問${a.q}</span>
+          <span style="margin-left:auto;font-weight:700;color:${a.correct?'var(--success)':'var(--danger)'};">${a.correct?'✅ 正解':'❌ 不正解'}</span>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
 }
 
 function closeModal(e){if(e.target===document.getElementById('modalOverlay'))closeModalDirect();}
@@ -3560,7 +3657,14 @@ function openLibraryQuestion(qNum) {
 }
 
 // ====== Web受講モード ======
+let _libCurrentUser = '';
+
 function startLibraryQuizMode() {
+  const userSelect = document.getElementById('libraryUserSelect');
+  const userName = userSelect ? userSelect.value : '';
+  if (!userName) { alert('受講者を選択してください'); return; }
+  _libCurrentUser = userName;
+
   const answers = LIBRARY_ANSWERS_MAP[_libCurrentRound]();
   const qbank = LIBRARY_QBANK_MAP[_libCurrentRound]();
   const [qMin, qMax] = LIBRARY_QRANGE[_libCurrentRound];
@@ -3575,6 +3679,8 @@ function startLibraryQuizMode() {
   _libQuizIndex = 0;
   document.getElementById('libraryListView').style.display = 'none';
   document.getElementById('libraryQuizView').style.display = 'block';
+  const label = document.getElementById('libraryQuizUserLabel');
+  if (label) label.textContent = `受講者：${userName}`;
   renderLibraryQuiz();
 }
 
@@ -3610,7 +3716,7 @@ function renderLibraryQuiz() {
   `;
 }
 
-function submitLibraryQuizAnswer(selected, correctAns) {
+async function submitLibraryQuizAnswer(selected, correctAns) {
   for (let i = 1; i <= 4; i++) {
     const btn = document.getElementById(`libQuizChoice_${i}`);
     if (!btn) continue;
@@ -3625,6 +3731,58 @@ function submitLibraryQuizAnswer(selected, correctAns) {
   resultEl.innerHTML = isCorrect
     ? `<div style="padding:10px 14px;background:rgba(5,150,105,0.1);border-radius:8px;text-align:center;font-weight:700;color:var(--success);">✅ 正解！</div>`
     : `<div style="padding:10px 14px;background:rgba(220,38,38,0.08);border-radius:8px;text-align:center;font-weight:700;color:var(--danger);">❌ 不正解（正解は${correctAns}番）</div>`;
+
+  // 受講記録を保存
+  const qNum = _libQuizQuestions[_libQuizIndex];
+  await recordLibraryAttempt(_libCurrentUser, _libCurrentRound, qNum, selected, isCorrect);
+}
+
+// ====== 受講記録の保存・取得 ======
+async function recordLibraryAttempt(userName, round, qNum, selected, isCorrect) {
+  if (!userName) return;
+  try {
+    const key = 'libraryAttempts';
+    let record = { attempts: [] };
+    try {
+      const existing = await window.storage.get(key, true);
+      if (existing && existing.value) record = JSON.parse(existing.value);
+    } catch (e) { /* キーがまだ存在しない */ }
+
+    record.attempts.push({
+      user: userName,
+      round: round,
+      q: qNum,
+      selected: selected,
+      correct: isCorrect,
+      timestamp: new Date().toISOString(),
+    });
+
+    await window.storage.set(key, JSON.stringify(record), true);
+  } catch (e) {
+    console.error('受講記録の保存に失敗:', e);
+  }
+}
+
+async function getLibraryAttemptsForUser(userName) {
+  try {
+    const result = await window.storage.get('libraryAttempts', true);
+    if (!result || !result.value) return [];
+    const record = JSON.parse(result.value);
+    return (record.attempts || []).filter(a => a.user === userName);
+  } catch (e) {
+    return [];
+  }
+}
+
+async function getAllLibraryAttempts() {
+  try {
+    const result = await window.storage.get('libraryAttempts', true);
+    if (!result || !result.value) return [];
+    const record = JSON.parse(result.value);
+    return record.attempts || [];
+  } catch (e) {
+    return [];
+  }
 }
 
 function libraryQuizNext() {
@@ -3687,8 +3845,17 @@ function printLibraryPDF() {
   }, 500);
 }
 
+function populateLibraryUserSelect() {
+  const sel = document.getElementById('libraryUserSelect');
+  if (!sel) return;
+  const sorted = [...persons].sort((a,b) => a.name.localeCompare(b.name, 'ja'));
+  sel.innerHTML = '<option value="">受講者を選択...</option>' +
+    sorted.map(p => `<option value="${p.name}">${p.name}（${p.team.replace('チーム','')}）</option>`).join('');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(buildLibraryList, 200);
+  setTimeout(populateLibraryUserSelect, 200);
 });
 </script>
 <style>
