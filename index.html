@@ -525,6 +525,77 @@
   <div class="sec-title">分野別詳細分析</div>
   <div class="sec-sub">6/19模試（問題全文確認済み）の問題テーマ別 全体正答率</div>
 
+  <!-- 科目別ランキング（4科目並列） -->
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:24px;">
+    <div class="card" style="padding:14px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <span class="badge badge-gyoho" style="font-size:11px;">業法</span>
+        <span style="font-size:12px;font-weight:700;color:var(--text);">ランキング</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:6px;">🏆 チーム</div>
+          <div id="domainTeamRank_gyoho" style="display:flex;flex-direction:column;gap:4px;"></div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:6px;">👤 個人TOP5</div>
+          <div id="domainPersonRank_gyoho" style="display:flex;flex-direction:column;gap:4px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="padding:14px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <span class="badge badge-hourei" style="font-size:11px;">法令</span>
+        <span style="font-size:12px;font-weight:700;color:var(--text);">ランキング</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:6px;">🏆 チーム</div>
+          <div id="domainTeamRank_hourei" style="display:flex;flex-direction:column;gap:4px;"></div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:6px;">👤 個人TOP5</div>
+          <div id="domainPersonRank_hourei" style="display:flex;flex-direction:column;gap:4px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="padding:14px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <span class="badge badge-tax" style="font-size:11px;">税</span>
+        <span style="font-size:12px;font-weight:700;color:var(--text);">ランキング</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:6px;">🏆 チーム</div>
+          <div id="domainTeamRank_tax" style="display:flex;flex-direction:column;gap:4px;"></div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:6px;">👤 個人TOP5</div>
+          <div id="domainPersonRank_tax" style="display:flex;flex-direction:column;gap:4px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="padding:14px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <span class="badge badge-civil" style="font-size:11px;">民法</span>
+        <span style="font-size:12px;font-weight:700;color:var(--text);">ランキング</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:6px;">🏆 チーム</div>
+          <div id="domainTeamRank_civil" style="display:flex;flex-direction:column;gap:4px;"></div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:6px;">👤 個人TOP5</div>
+          <div id="domainPersonRank_civil" style="display:flex;flex-direction:column;gap:4px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div style="margin-bottom:20px;">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
       <span class="badge badge-civil" style="font-size:12px;padding:4px 10px;">⚖️ 民法・権利関係（問1〜14）</span>
@@ -3865,3 +3936,66 @@ document.addEventListener('DOMContentLoaded', () => {
   .header, .nav, #questionReviewOverlay, .modal-overlay { display: none !important; }
 }
 </style>
+<script>
+// ====== 分野別タブ: 4科目並列ランキング ======
+function buildDomainRankings() {
+  const subjects = [
+    { subj:'業法', field:'gyoho', target:80, suffix:'gyoho' },
+    { subj:'法令', field:'hourei', target:60, suffix:'hourei' },
+    { subj:'税',   field:'tax',    target:67, suffix:'tax' },
+    { subj:'民法', field:'civil',  target:50, suffix:'civil' },
+  ];
+  const subjBadgeMap = { '業法':'badge-gyoho','法令':'badge-hourei','税':'badge-tax','民法':'badge-civil' };
+
+  subjects.forEach(({ subj, field, target, suffix }) => {
+    // チームランキング
+    const teamMap = {};
+    persons.forEach(p => {
+      const v = getLatestSubjectScore(p, field);
+      if (v == null) return;
+      if (!teamMap[p.team]) teamMap[p.team] = [];
+      teamMap[p.team].push(v);
+    });
+    const teamRanking = Object.entries(teamMap)
+      .map(([team, vals]) => ({ team, avg: Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) }))
+      .sort((a,b) => b.avg - a.avg);
+
+    const teamEl = document.getElementById(`domainTeamRank_${suffix}`);
+    if (teamEl) {
+      teamEl.innerHTML = teamRanking.map((t,i) => {
+        const col = t.avg>=target?'var(--success)':t.avg>=target*0.8?'var(--warn)':'var(--danger)';
+        const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}`;
+        return `<div onclick="showSection('teams',null);openTeamDetailFromRanking('${t.team}')" style="cursor:pointer;display:flex;align-items:center;gap:6px;padding:5px 8px;background:var(--surface2);border-radius:6px;font-size:11px;">
+          <span style="width:18px;text-align:center;flex-shrink:0;">${medal}</span>
+          <span style="flex:1;color:var(--text);font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.team.replace('チーム','')}</span>
+          <span style="font-family:'DM Mono';font-weight:900;color:${col};flex-shrink:0;">${t.avg}%</span>
+        </div>`;
+      }).join('') || `<div style="color:var(--muted);font-size:10px;">--</div>`;
+    }
+
+    // 個人ランキング（TOP5）
+    const personRanking = persons
+      .map(p => ({ name: p.name, score: getLatestSubjectScore(p, field) }))
+      .filter(p => p.score != null)
+      .sort((a,b) => b.score - a.score)
+      .slice(0, 5);
+
+    const personEl = document.getElementById(`domainPersonRank_${suffix}`);
+    if (personEl) {
+      personEl.innerHTML = personRanking.map((p,i) => {
+        const col = p.score>=target?'var(--success)':p.score>=target*0.8?'var(--warn)':'var(--danger)';
+        const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}`;
+        return `<div onclick="showSection('individuals',null);openModal('${p.name}')" style="cursor:pointer;display:flex;align-items:center;gap:6px;padding:5px 8px;background:var(--surface2);border-radius:6px;font-size:11px;">
+          <span style="width:18px;text-align:center;flex-shrink:0;">${medal}</span>
+          <span style="flex:1;color:var(--accent);font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.name}</span>
+          <span style="font-family:'DM Mono';font-weight:900;color:${col};flex-shrink:0;">${p.score}%</span>
+        </div>`;
+      }).join('') || `<div style="color:var(--muted);font-size:10px;">--</div>`;
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(buildDomainRankings, 200);
+});
+</script>
