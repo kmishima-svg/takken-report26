@@ -2876,7 +2876,10 @@ function buildWeaknessSummary() {
   };
 
   const allRounds = [
-    { key:'619', answers: typeof answers_610!=='undefined'?answers_610:null,
+    { key:'619', answers: typeof answers_619!=='undefined'?answers_619:null,
+      rows: normalize(persons.filter(p=>p.answers619).map(p=>({name:p.name, ans:p.answers619}))),
+      qMin:1, qMax:45 },
+    { key:'610', answers: typeof answers_610!=='undefined'?answers_610:null,
       rows: normalize(persons.filter(p=>p.answers610).map(p=>({name:p.name, ans:p.answers610}))),
       qMin:1, qMax:45 },
     { key:'605', answers: typeof answers_605!=='undefined'?answers_605:null,
@@ -2884,6 +2887,9 @@ function buildWeaknessSummary() {
       qMin:1, qMax:45 },
     { key:'527', answers: typeof answers_527!=='undefined'?answers_527:null,
       rows: normalize(typeof data527!=='undefined'?data527:[]),
+      qMin:1, qMax:45 },
+    { key:'520', answers: typeof answers_520!=='undefined'?answers_520:null,
+      rows: [],
       qMin:1, qMax:45 },
     { key:'514', answers: typeof answers_514!=='undefined'?answers_514:null,
       rows: normalize(typeof data514!=='undefined'?data514:[]),
@@ -2937,28 +2943,39 @@ function buildWeaknessSummary() {
 
   const subjBadges = { '民法':'badge-civil','法令':'badge-hourei','税':'badge-tax','業法':'badge-gyoho' };
 
+  // テーマ名 → 6/19の問番号を逆引き（本文データがある回でリンク化）
+  const topicToQ619 = {};
+  if (typeof answers_619 !== 'undefined') {
+    Object.entries(answers_619).forEach(([q, d]) => {
+      if (!topicToQ619[d.topic]) topicToQ619[d.topic] = Number(q);
+    });
+  }
+  const qbank619 = typeof questionBank_619 !== 'undefined' ? questionBank_619 : null;
+
+  const buildThemeRow = (t, color) => {
+    const linkedQ = topicToQ619[t.topic];
+    const hasText = linkedQ && qbank619 && qbank619[String(linkedQ)];
+    const clickAttr = hasText ? ` onclick="openTopicTableQuestion('619',${linkedQ})" style="cursor:pointer;"` : '';
+    const linkBadge = hasText ? `<span style="font-size:9px;color:var(--accent);flex-shrink:0;">問${linkedQ} 📖</span>` : '';
+    return `<div${clickAttr} style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;background:rgba(${color},0.06);border:1px solid rgba(${color},0.2);${hasText?'cursor:pointer;':''}">
+        <span class="badge ${subjBadges[t.subject]}" style="flex-shrink:0;font-size:9px;">${t.subject}</span>
+        <span style="font-size:11px;color:var(--text);flex:1;min-width:0;">${t.topic}</span>
+        ${linkBadge}
+        <span style="font-family:'DM Mono';font-weight:900;color:rgb(${color});font-size:12px;flex-shrink:0;">${t.pct}%</span>
+        <span style="font-size:9px;color:var(--muted);flex-shrink:0;">${t.total}問</span>
+      </div>`;
+  };
+
   // 要強化リスト
   const dangerEl = document.getElementById('ws-danger-list');
   if (dangerEl) {
-    dangerEl.innerHTML = danger.slice(0, 12).map(t => `
-      <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,0.2);">
-        <span class="badge ${subjBadges[t.subject]}" style="flex-shrink:0;font-size:9px;">${t.subject}</span>
-        <span style="font-size:11px;color:var(--text);flex:1;min-width:0;">${t.topic}</span>
-        <span style="font-family:'DM Mono';font-weight:900;color:var(--danger);font-size:12px;flex-shrink:0;">${t.pct}%</span>
-        <span style="font-size:9px;color:var(--muted);flex-shrink:0;">${t.total}問</span>
-      </div>`).join('');
+    dangerEl.innerHTML = danger.slice(0, 12).map(t => buildThemeRow(t, '220,38,38')).join('');
   }
 
   // 要注意リスト
   const warnEl = document.getElementById('ws-warn-list');
   if (warnEl) {
-    warnEl.innerHTML = warn.slice(0, 12).map(t => `
-      <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;background:rgba(217,119,6,0.06);border:1px solid rgba(217,119,6,0.2);">
-        <span class="badge ${subjBadges[t.subject]}" style="flex-shrink:0;font-size:9px;">${t.subject}</span>
-        <span style="font-size:11px;color:var(--text);flex:1;min-width:0;">${t.topic}</span>
-        <span style="font-family:'DM Mono';font-weight:900;color:var(--warn);font-size:12px;flex-shrink:0;">${t.pct}%</span>
-        <span style="font-size:9px;color:var(--muted);flex-shrink:0;">${t.total}問</span>
-      </div>`).join('');
+    warnEl.innerHTML = warn.slice(0, 12).map(t => buildThemeRow(t, '217,119,6')).join('');
   }
 
   // 科目別平均バー
