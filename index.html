@@ -1330,7 +1330,7 @@ function getLatest(p){
 // ====== TOPIC TABLE (6/19) ======
 
 // ====== テーマ別正答率テーブル 共通生成関数 ======
-function renderTopicTable(answers, dataRows, qMin, qMax) {
+function renderTopicTable(answers, dataRows, qMin, qMax, round) {
   // dataRows: [{name, ans:[...]}] 形式 または [['name', [...]] 形式
   const total = {}, correct = {};
   dataRows.forEach(row => {
@@ -1349,6 +1349,13 @@ function renderTopicTable(answers, dataRows, qMin, qMax) {
 
   const diffLabel = { A:'簡単', B:'やや簡単', C:'普通', D:'やや難', E:'難しい' };
   const subjBadge = { '民法':'badge-civil', '法令':'badge-hourei', '税':'badge-tax', '業法':'badge-gyoho' };
+
+  // 問題本文データの有無を確認（復習リンクの可否判定）
+  const qbankMap = { '514': typeof questionBank_514!=='undefined'?questionBank_514:null,
+                      '520': typeof questionBank_520!=='undefined'?questionBank_520:null,
+                      '619': typeof questionBank_619!=='undefined'?questionBank_619:null };
+  const qbank = round ? qbankMap[round] : null;
+
   let html = '';
   for (let q = qMin; q <= qMax; q++) {
     const d = answers[q];
@@ -1358,8 +1365,14 @@ function renderTopicTable(answers, dataRows, qMin, qMax) {
     const cls = getScoreClass(pct);
     const status = pct === null ? '--' : pct >= 80 ? '✅ 良好' : pct >= 60 ? '🟡 維持' : pct >= 40 ? '⚠️ 要注意' : '🔴 要強化';
     const nStr = n > 0 ? `<span style="font-size:9px;color:var(--muted);"> (${n}人)</span>` : '';
+
+    const hasText = qbank && qbank[String(q)];
+    const qCell = hasText
+      ? `<td style="font-family:'DM Mono';font-weight:700;cursor:pointer;color:var(--accent);text-decoration:underline;" onclick="openTopicTableQuestion('${round}',${q})" title="クリックして復習・再テスト">${q} 📖</td>`
+      : `<td style="font-family:'DM Mono';font-weight:700">${q}</td>`;
+
     html += `<tr>
-      <td style="font-family:'DM Mono';font-weight:700">${q}</td>
+      ${qCell}
       <td><span class="badge ${subjBadge[d.subject]}">${d.subject}</span></td>
       <td style="font-size:11px">${d.topic}</td>
       <td style="font-size:10px;color:var(--muted)">${diffLabel[d.diff] || d.diff}</td>
@@ -1371,13 +1384,26 @@ function renderTopicTable(answers, dataRows, qMin, qMax) {
   document.getElementById('topicBody').innerHTML = html;
 }
 
+// テーマ別タブの問題番号クリック → 復習モーダルを開く
+function openTopicTableQuestion(round, qNum) {
+  if (round === '619' && typeof openQuestionReview === 'function') {
+    openQuestionReview(qNum);
+    return;
+  }
+  // 514・520は出題データ集の簡易表示ロジックを再利用
+  if (typeof openLibraryQuestion === 'function') {
+    _libCurrentRound = round;
+    openLibraryQuestion(qNum);
+  }
+}
+
 function buildTopicTable(){
   if (typeof answers_610 === 'undefined') return;
   // persons.answers610 から集計
   const rows = persons
     .filter(p => p.answers610)
     .map(p => ({ ans: p.answers610 }));
-  renderTopicTable(answers_610, rows, 1, 45);
+  renderTopicTable(answers_610, rows, 1, 45, '610');
 }
 
 // ====== DOMAIN BARS ======
@@ -1967,7 +1993,7 @@ const data605 = [
     ];
 
 function buildTopicTableWith(answers, round){
-  renderTopicTable(answers, data605, 1, 45);
+  renderTopicTable(answers, data605, 1, 45, '605');
 }
 
 // Also update domain bars to support switching
@@ -2112,7 +2138,7 @@ const data527 = [
 
 function build527TopicTable(){
   if (typeof answers_527 === 'undefined') return;
-  renderTopicTable(answers_527, data527, 1, 45);
+  renderTopicTable(answers_527, data527, 1, 45, '527');
 }
 
 </script>
@@ -2188,11 +2214,16 @@ function build520TopicTable(){
   // 5/20は個人回答データなし → 正解・テーマ・難易度のみ表示
   const diffLabel={'A':'簡単','B':'やや簡単','C':'普通','D':'やや難','E':'難しい'};
   const subjBadge={'民法':'badge-civil','法令':'badge-hourei','税':'badge-tax','業法':'badge-gyoho'};
+  const qbank = typeof questionBank_520 !== 'undefined' ? questionBank_520 : null;
   let html='';
   for(let q=1;q<=45;q++){
     const d=answers_520[q];
+    const hasText = qbank && qbank[String(q)];
+    const qCell = hasText
+      ? `<td style="font-family:'DM Mono';font-weight:700;cursor:pointer;color:var(--accent);text-decoration:underline;" onclick="openTopicTableQuestion('520',${q})" title="クリックして復習・再テスト">${q} 📖</td>`
+      : `<td style="font-family:'DM Mono';font-weight:700">${q}</td>`;
     html+=`<tr>
-      <td style="font-family:'DM Mono';font-weight:700">${q}</td>
+      ${qCell}
       <td><span class="badge ${subjBadge[d.subject]}">${d.subject}</span></td>
       <td style="font-size:11px">${d.topic}</td>
       <td style="font-size:10px;color:var(--muted)">${diffLabel[d.diff]||d.diff}</td>
@@ -2292,7 +2323,7 @@ const data514 = [
 
 function build514TopicTable(){
   if (typeof answers_514 === 'undefined') return;
-  renderTopicTable(answers_514, data514, 15, 45);
+  renderTopicTable(answers_514, data514, 15, 45, '514');
 }
 
 </script>
@@ -3425,7 +3456,7 @@ function buildTopicTable619(){
 
   if (rows.length > 0) {
     // 個人回答データがある場合は共通関数で正答率集計
-    renderTopicTable(answers_619, rows, 1, 45);
+    renderTopicTable(answers_619, rows, 1, 45, '619');
   } else {
     // 個人回答データがまだない場合：正解・テーマ・難易度のみ表示
     const diffLabel = { A:'簡単', B:'やや簡単', C:'普通', D:'やや難', E:'難しい' };
