@@ -1692,9 +1692,10 @@ function closeQuestionReview(){
 }
 
 // ====== RANK TABLE ======
-function buildRankTable(){
+function buildRankTable(teamFilter){
   const tbody=document.getElementById('rankTable');
-  const p610=persons.filter(p=>p.scores['619']!==null&&p.scores['619']!==undefined);
+  let p610=persons.filter(p=>p.scores['619']!==null&&p.scores['619']!==undefined);
+  if(teamFilter && teamFilter!=='all'){ p610 = p610.filter(p=>p.team===teamFilter); }
   p610.sort((a,b)=>b.scores['619']-a.scores['619']);
   let html='';
   p610.forEach((p,i)=>{
@@ -1961,7 +1962,9 @@ function closeModalDirect(){document.getElementById('modalOverlay').classList.re
 
 function filterTeam(team,btn){
   document.querySelectorAll('#sec-individuals .filter-row .filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');buildPersonGrid(team);
+  btn.classList.add('active');
+  buildPersonGrid(team);
+  buildRankTable(team);
 }
 function showSection(id, btn){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
@@ -4330,7 +4333,7 @@ function buildMarathonProgress(p){
     { id:3, name:'戦略決定期', sub:'4択過去問で36点以上', threshold:36, icon:'🏃‍♂️', color:'#f7c94f',
       desc:'得意・苦手分野の分析ができている段階。配点が高い宅建業法（20点中18〜19点目標）を絶対に落とさないレベルに仕上げ、合格点クリアの戦略を立てる。' },
     { id:4, name:'最終調整期', sub:'4択過去問で38点以上', threshold:38, icon:'🏆', color:'#4fcf94',
-      desc:'合格点（35〜38点）を安定して超える成熟度。ケアレスミス防止、2時間のペース配分確認、法改正事項の最終チェックを行う段階。' },
+      desc:'合格点（35〜38点）を安定して超える成熟度。基礎は固まっているので、ここからは周辺知識の補強とミス対策が勝負。重要事項説明・37条書面など似た条文の混同や「組合せ問題」「個数問題」のような引っ掛けへの耐性をつけ、ケアレスミスを徹底的に潰す段階。2時間のペース配分・見直し時間の確保も本番同様に練習する。' },
   ];
 
   // 現在のステージ判定
@@ -4393,8 +4396,16 @@ function buildMarathonProgress(p){
           <span style="font-weight:700;color:${nextStage.color};">残り${Math.max(0,nextStage.threshold-estPoint)}点</span>
         </div>
       </div>` : `
-      <div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);text-align:center;font-size:12px;font-weight:700;color:${currentStage.color};">
-        🎉 最終段階に到達しています！この調子で本番まで維持しましょう
+      <div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);">
+        <div style="text-align:center;font-size:12px;font-weight:700;color:${currentStage.color};margin-bottom:8px;">
+          🎉 最終段階に到達しています！ここからは「落とさない」ための仕上げです
+        </div>
+        <ul style="font-size:11px;color:var(--text);line-height:1.8;margin:0;padding-left:18px;">
+          <li><strong>周辺知識の補強：</strong>似た制度・条文（重要事項説明と37条書面、営業保証金と保証協会など）の混同を防ぐ比較整理を行う</li>
+          <li><strong>引っ掛け問題への耐性：</strong>「個数問題」「組合せ問題」「正しいもの／誤っているもの」の取り違えに注意し、設問文に印をつける練習をする</li>
+          <li><strong>ケアレスミス対策：</strong>計算問題・数字の暗記事項は本番形式で何度も再現し、思い込みでの早押しを防ぐ</li>
+          <li><strong>時間配分・見直し：</strong>2時間の本試験を模した時間配分で過去問を解き、最後の10〜15分を見直しに使う練習を習慣化する</li>
+        </ul>
       </div>`}
     </div>
 
