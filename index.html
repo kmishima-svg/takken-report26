@@ -395,28 +395,7 @@
   </div>
 </div>
 
-  <!-- 科目別ランキング -->
-  <div class="card" style="padding:16px;margin-bottom:20px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
-      <div class="card-title" style="margin-bottom:0;">📊 科目別ランキング（最新有効値）</div>
-      <div class="filter-row" style="margin:0;" id="subjectRankFilter">
-        <button onclick="buildSubjectRanking('業法',this)" class="filter-btn active" style="font-size:11px;padding:4px 12px;">業法</button>
-        <button onclick="buildSubjectRanking('民法',this)" class="filter-btn" style="font-size:11px;padding:4px 12px;">民法</button>
-        <button onclick="buildSubjectRanking('法令',this)" class="filter-btn" style="font-size:11px;padding:4px 12px;">法令</button>
-        <button onclick="buildSubjectRanking('税',this)" class="filter-btn" style="font-size:11px;padding:4px 12px;">税</button>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-      <div>
-        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;">🏆 チームランキング</div>
-        <div id="subjectTeamRanking" style="display:flex;flex-direction:column;gap:6px;"></div>
-      </div>
-      <div>
-        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;">👤 個人ランキング（TOP10）</div>
-        <div id="subjectPersonRanking" style="display:flex;flex-direction:column;gap:5px;max-height:360px;overflow-y:auto;"></div>
-      </div>
-    </div>
-  </div>
+
 
 <!-- TEAMS -->
 <div class="section" id="sec-teams">
@@ -1450,8 +1429,12 @@ function buildDomainBars(){
           <span style="color:var(--muted);">${qq.pct!=null?qq.pct+'%':'--'}</span>
         </span>`;
       }).join('');
+      const topicEsc = item.topic.replace(/'/g, "\\'");
       html+=`<div class="topic-row" style="flex-wrap:wrap;align-items:flex-start;">
-        <div class="topic-name" style="flex-basis:100%;margin-bottom:4px;">${item.topic}</div>
+        <div class="topic-name" style="flex-basis:100%;margin-bottom:4px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <span>${item.topic}</span>
+          <button onclick="startTopicReviewSet('${topicEsc}')" style="flex-shrink:0;background:linear-gradient(135deg,var(--accent),#7c6ff7);border:none;border-radius:14px;color:#fff;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;">📝 復習セット</button>
+        </div>
         <div class="topic-bar-wrap"><div class="topic-bar"><div class="topic-fill" style="width:${pct}%;background:${color}"></div></div></div>
         <div class="topic-pct ${getScoreClass(pct)}">${pct}%</div>
         <div class="topic-status" style="font-size:10px">${status}</div>
@@ -1460,6 +1443,128 @@ function buildDomainBars(){
     });
     document.getElementById(containers[subj]).innerHTML=html;
   });
+}
+
+// ====== テーマ別 復習セット（3〜4問まとめて出題） ======
+let _reviewSetQuestions = [];
+let _reviewSetIndex = 0;
+let _reviewSetTopic = '';
+
+function collectTopicQuestions(topic){
+  // 全回（本文データがある回）から同テーマの問題を収集
+  const sources = [
+    { round:'619', answers: typeof answers_619!=='undefined'?answers_619:null, qbank: typeof questionBank_619!=='undefined'?questionBank_619:null, qMin:1, qMax:45 },
+    { round:'610', answers: typeof answers_610!=='undefined'?answers_610:null, qbank: typeof questionBank_610!=='undefined'?questionBank_610:null, qMin:1, qMax:45 },
+    { round:'527', answers: typeof answers_527!=='undefined'?answers_527:null, qbank: typeof questionBank_527!=='undefined'?questionBank_527:null, qMin:1, qMax:45 },
+    { round:'520', answers: typeof answers_520!=='undefined'?answers_520:null, qbank: typeof questionBank_520!=='undefined'?questionBank_520:null, qMin:1, qMax:45 },
+    { round:'514', answers: typeof answers_514!=='undefined'?answers_514:null, qbank: typeof questionBank_514!=='undefined'?questionBank_514:null, qMin:15, qMax:45 },
+  ];
+  const found = [];
+  sources.forEach(({round, answers, qbank, qMin, qMax}) => {
+    if(!answers || !qbank) return;
+    for(let q=qMin; q<=qMax; q++){
+      const d = answers[q];
+      if(d && d.topic===topic && qbank[String(q)]){
+        found.push({round, q, d, qData: qbank[String(q)]});
+      }
+    }
+  });
+  return found;
+}
+
+function startTopicReviewSet(topic){
+  const all = collectTopicQuestions(topic);
+  if(!all.length){
+    alert('このテーマには問題本文データがまだありません');
+    return;
+  }
+  // 最大4問、優先順位：6/19→6/10→5/27→5/20→5/14（新しい順）、重複なし
+  _reviewSetQuestions = all.slice(0, 4);
+  _reviewSetIndex = 0;
+  _reviewSetTopic = topic;
+  renderReviewSetQuestion();
+}
+
+function renderReviewSetQuestion(){
+  const item = _reviewSetQuestions[_reviewSetIndex];
+  if(!item) return;
+  const { round, q, d, qData } = item;
+  const roundLabel = { '514':'5/14','520':'5/20','527':'5/27','605':'6/5','610':'6/10','619':'6/19' }[round] || round;
+  const subjBadge = { '民法':'badge-civil','法令':'badge-hourei','税':'badge-tax','業法':'badge-gyoho' }[d.subject];
+  const diffLabel = { A:'簡単',B:'やや簡単',C:'普通',D:'やや難',E:'難しい' }[d.diff] || d.diff;
+
+  const overlay = document.getElementById('questionReviewOverlay');
+  const body = document.getElementById('questionReviewBody');
+  if(!overlay || !body) return;
+
+  body.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <div style="font-size:11px;font-weight:700;color:var(--accent);">📝 復習セット：${_reviewSetTopic}</div>
+      <div style="font-size:11px;color:var(--muted);">${_reviewSetIndex+1} / ${_reviewSetQuestions.length}</div>
+    </div>
+    <div style="display:flex;gap:4px;margin-bottom:12px;">
+      ${_reviewSetQuestions.map((_,i)=>`<div style="flex:1;height:4px;border-radius:2px;background:${i<=_reviewSetIndex?'var(--accent)':'var(--border)'};"></div>`).join('')}
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+      <span style="font-size:18px;font-weight:900;color:var(--text);">問${q}</span>
+      <span class="badge ${subjBadge}">${d.subject}</span>
+      <span style="font-size:11px;color:var(--muted);">難易度：${diffLabel}</span>
+      <span style="font-size:10px;color:var(--accent);margin-left:auto;">${roundLabel}</span>
+    </div>
+    <div style="padding:14px 16px;background:var(--surface2);border-radius:8px;margin-bottom:14px;white-space:pre-wrap;font-size:13px;line-height:1.7;color:var(--text);">${qData.text}</div>
+    <div id="reviewSetChoices" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+      ${qData.choices.map((c,i)=>`
+        <button onclick="submitReviewSetAnswer(${i+1},${d.ans})" id="reviewChoice_${i+1}" style="text-align:left;padding:10px 14px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:13px;color:var(--text);line-height:1.5;" onmouseover="this.style.background='var(--surface2)'" onmouseout="if(!this.classList.contains('answered'))this.style.background='#fff'">
+          <span style="font-weight:700;color:var(--accent);margin-right:8px;">${i+1}</span>${c}
+        </button>`).join('')}
+    </div>
+    <div id="reviewSetResult" style="display:none;margin-bottom:14px;"></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;">
+      <button onclick="reviewSetNext()" id="reviewSetNextBtn" style="display:none;background:var(--accent);border:none;border-radius:6px;padding:8px 18px;color:#fff;cursor:pointer;font-size:12px;font-weight:700;">
+        ${_reviewSetIndex < _reviewSetQuestions.length-1 ? '次の問題 →' : '復習セット完了 ✓'}
+      </button>
+    </div>
+  `;
+  overlay.classList.add('open');
+}
+
+function submitReviewSetAnswer(selected, correctAns){
+  for(let i=1;i<=4;i++){
+    const btn = document.getElementById(`reviewChoice_${i}`);
+    if(!btn) continue;
+    btn.classList.add('answered');
+    btn.onclick = null;
+    btn.style.cursor = 'default';
+    if(i===correctAns){ btn.style.background='rgba(5,150,105,0.12)'; btn.style.borderColor='var(--success)'; btn.style.fontWeight='700'; }
+    else if(i===selected){ btn.style.background='rgba(220,38,38,0.1)'; btn.style.borderColor='var(--danger)'; }
+  }
+  const isCorrect = selected===correctAns;
+  const resultEl = document.getElementById('reviewSetResult');
+  if(resultEl){
+    resultEl.style.display='block';
+    resultEl.innerHTML = isCorrect
+      ? `<div style="padding:10px 14px;background:rgba(5,150,105,0.1);border-radius:8px;text-align:center;font-weight:700;color:var(--success);">✅ 正解！</div>`
+      : `<div style="padding:10px 14px;background:rgba(220,38,38,0.08);border-radius:8px;text-align:center;font-weight:700;color:var(--danger);">❌ 不正解（正解は${correctAns}番）</div>`;
+  }
+  const nextBtn = document.getElementById('reviewSetNextBtn');
+  if(nextBtn) nextBtn.style.display = 'inline-block';
+}
+
+function reviewSetNext(){
+  if(_reviewSetIndex < _reviewSetQuestions.length-1){
+    _reviewSetIndex++;
+    renderReviewSetQuestion();
+  } else {
+    // セット完了
+    const body = document.getElementById('questionReviewBody');
+    if(body){
+      body.innerHTML = `<div style="text-align:center;padding:30px 16px;">
+        <div style="font-size:32px;margin-bottom:10px;">🎉</div>
+        <div style="font-size:16px;font-weight:900;color:var(--text);margin-bottom:6px;">復習セット完了！</div>
+        <div style="font-size:12px;color:var(--muted);">「${_reviewSetTopic}」の${_reviewSetQuestions.length}問に取り組みました</div>
+      </div>`;
+    }
+  }
 }
 
 // ====== 問題復習・再テストモーダル ======
@@ -1684,9 +1789,9 @@ function openModal(name){
       const q=i+1;
       const d=answers_610[q];
       const ok=ans===d.ans;
-      q610html+=`<div title="問${q}: ${d.topic}&#10;あなた:${ans} 正解:${d.ans}" style="width:32px;height:32px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;background:${ok?'rgba(79,207,148,0.2)':'rgba(247,95,95,0.2)'};color:${ok?'var(--success)':'var(--danger)'};border:1px solid ${ok?'rgba(79,207,148,0.4)':'rgba(247,95,95,0.4)'};">問${q}</div>`;
+      q610html+=`<div onclick="openTopicTableQuestion('619',${q})" title="問${q}: ${d.topic}&#10;あなた:${ans} 正解:${d.ans}&#10;クリックで復習・再テスト" style="cursor:pointer;width:32px;height:32px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;background:${ok?'rgba(79,207,148,0.2)':'rgba(247,95,95,0.2)'};color:${ok?'var(--success)':'var(--danger)'};border:1px solid ${ok?'rgba(79,207,148,0.4)':'rgba(247,95,95,0.4)'};transition:transform 0.15s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">問${q}</div>`;
     });
-    q610html+='</div><p style="font-size:10px;color:var(--muted);margin-top:8px;">ホバーで問題テーマを確認できます</p></div>';
+    q610html+='</div><p style="font-size:10px;color:var(--muted);margin-top:8px;">クリックで問題を復習・再テストできます</p></div>';
 
     // 間違い問題一覧
     const mistakes=[];
@@ -1698,12 +1803,13 @@ function openModal(name){
       const diffLabel={'A':'簡単','B':'やや簡単','C':'普通','D':'やや難','E':'難しい'};
       q610html+=`<div class="card" style="padding:14px;margin-bottom:14px;border-color:rgba(247,95,95,0.3);">
         <div class="card-title" style="color:var(--danger);">❌ 間違えた問題（${mistakes.length}問）</div>
+        <div style="font-size:9px;color:var(--muted);margin-bottom:8px;">問番号をクリックすると問題を復習・再テストできます</div>
         <table style="font-size:11px;">
           <thead><tr><th>問</th><th>科目</th><th>テーマ</th><th>難易度</th><th>あなたの答え</th><th>正解</th></tr></thead>
           <tbody>`;
       mistakes.forEach(m=>{
         q610html+=`<tr>
-          <td style="font-family:'DM Mono';font-weight:700">${m.q}</td>
+          <td style="font-family:'DM Mono';font-weight:700;cursor:pointer;color:var(--accent);text-decoration:underline;" onclick="openTopicTableQuestion('619',${m.q})" title="クリックして復習・再テスト">${m.q} 📖</td>
           <td><span class="badge ${subjBadge[m.subject]}">${m.subject}</span></td>
           <td>${m.topic}</td>
           <td style="color:var(--muted)">${diffLabel[m.diff]||m.diff}</td>
@@ -1736,6 +1842,7 @@ function openModal(name){
       <div class="kpi" style="padding:12px"><div class="kpi-val" style="font-size:22px;color:var(--hourei)">${typeof latestHourei==='number'?latestHourei+'%':'--'}</div><div class="kpi-label">法令</div></div>
       <div class="kpi" style="padding:12px"><div class="kpi-val" style="font-size:22px;color:var(--gyoho)">${typeof latestGyoho==='number'?latestGyoho+'%':'--'}</div><div class="kpi-label">業法</div></div>
     </div>
+    ${buildMarathonProgress(p)}
     <div class="card" style="padding:14px;margin-bottom:14px;">
       <div class="card-title">回別スコア推移</div>
       <table><thead><tr><th>回</th><th>総合</th><th>民法</th><th>法令</th><th>税</th><th>業法</th></tr></thead>
@@ -2443,46 +2550,101 @@ async function generateAIAdvice(personName){
   btn.textContent='⏳ 分析中...'; btn.disabled=true;
   resultDiv.innerHTML='<div style="padding:12px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--muted);">AIが重点取り組みを分析しています...</div>';
 
+  // 残り日数計算
+  const examDate = new Date('2026-10-19');
+  const today = new Date();
+  const daysLeft = Math.ceil((examDate - today) / (1000*60*60*24));
+  const weeksLeft = Math.floor(daysLeft / 7);
+
+  // 8月末までの日数
+  const aug31 = new Date('2026-08-31');
+  const daysToAug = Math.ceil((aug31 - today) / (1000*60*60*24));
+
   // 間違い問題の収集（6/19回答がある場合）
   const mistakes=[];
-  if(p.answers610){
-    p.answers610.forEach((ans,i)=>{
-      const q=i+1; const d=answers_610[q];
-      if(ans!==d.ans) mistakes.push(`問${q}(${d.subject}:${d.topic})`);
+  if(p.answers619 || p.answers610){
+    const ansArr = p.answers619 || p.answers610;
+    ansArr.forEach((ans,i)=>{
+      const q=i+1; const d=answers_619[q];
+      if(d && ans!==d.ans) mistakes.push({q, subject:d.subject, topic:d.topic, diff:d.diff});
     });
   }
+  const mistakeText = mistakes.length>0
+    ? mistakes.slice(0,12).map(m=>`問${m.q}(${m.subject}:${m.topic}/難易度${m.diff})`).join('、')
+    : 'データなし';
 
-  // スコア履歴
-  const history = ['514','520','527','605','619'].map(r=>{
-    const v=p.scores[r]; return v!==null&&v!==undefined ? `${['5/14','5/20','5/27','6/5','6/19'][['514','520','527','605','619'].indexOf(r)]}:${v}%` : null;
-  }).filter(Boolean).join(', ');
+  // スコア履歴（全回）
+  const rndKeys = ['514','520','527','605','610','619'];
+  const rndLabels = {'514':'5/14','520':'5/20','527':'5/27','605':'6/5','610':'6/10','619':'6/19'};
+  const historyArr = rndKeys.map(r => p.scores[r]!=null ? {r, label:rndLabels[r], score:p.scores[r]} : null).filter(Boolean);
+  const history = historyArr.map(h=>`${h.label}:${h.score}%`).join(', ') || 'データなし';
 
-  const latestCivil = (['619','605','527','520','514'].map(r=>p.civil&&p.civil[r]).find(v=>v!==undefined)) ?? '--';
-  const latestHourei = (['619','605','527','520','514'].map(r=>p.hourei&&p.hourei[r]).find(v=>v!==undefined)) ?? '--';
-  const latestTax = (['619','605','527','520','514'].map(r=>p.tax&&p.tax[r]).find(v=>v!==undefined)) ?? '--';
-  const latestGyoho = (['619','605','527','520','514'].map(r=>p.gyoho&&p.gyoho[r]).find(v=>v!==undefined)) ?? '--';
+  // 直近の伸び（最新2回の比較）
+  let trendText = 'データ不足';
+  if(historyArr.length >= 2){
+    const last = historyArr[historyArr.length-1];
+    const prev = historyArr[historyArr.length-2];
+    const diff = last.score - prev.score;
+    trendText = `${prev.label}(${prev.score}%) → ${last.label}(${last.score}%) ＝ ${diff>=0?'+':''}${diff}ポイント`;
+  }
 
-  const prompt = `宅建試験受験者の学習アドバイスを日本語で作成してください。
+  // 科目別の伸び（全履歴から算出）
+  const subjHistory = {};
+  ['civil','hourei','tax','gyoho'].forEach(field=>{
+    const arr = rndKeys.map(r => p[field] && p[field][r]!=null ? {r:rndLabels[r], v:p[field][r]} : null).filter(Boolean);
+    if(arr.length) subjHistory[field] = arr;
+  });
+  const subjTrendText = Object.entries({civil:'民法',hourei:'法令',tax:'税',gyoho:'業法'}).map(([field,label])=>{
+    const arr = subjHistory[field];
+    if(!arr || arr.length<2) return `${label}: データ不足`;
+    const diff = arr[arr.length-1].v - arr[0].v;
+    return `${label}: ${arr[0].v}%→${arr[arr.length-1].v}%（${diff>=0?'+':''}${diff}pt、${arr.map(a=>a.r+':'+a.v+'%').join('→')}）`;
+  }).join('\n');
 
-受験者: ${p.name}（${p.team}）
-スコア推移: ${history || 'データなし'}
-最新科目別: 民法${latestCivil}% 法令${latestHourei}% 税${latestTax}% 業法${latestGyoho}%
-${mistakes.length>0 ? `6/19で間違えた問題（${mistakes.length}問）: ${mistakes.slice(0,10).join('、')}${mistakes.length>10?'など':''}` : '6/19の回答データなし'}
+  const latestCivil = (['619','610','605','527','520','514'].map(r=>p.civil&&p.civil[r]).find(v=>v!==undefined)) ?? '--';
+  const latestHourei = (['619','610','605','527','520','514'].map(r=>p.hourei&&p.hourei[r]).find(v=>v!==undefined)) ?? '--';
+  const latestTax = (['619','610','605','527','520','514'].map(r=>p.tax&&p.tax[r]).find(v=>v!==undefined)) ?? '--';
+  const latestGyoho = (['619','610','605','527','520','514'].map(r=>p.gyoho&&p.gyoho[r]).find(v=>v!==undefined)) ?? '--';
 
-本試験まで約130日。目標: 民法50%、法令70%、税100%、業法80%。
+  const prompt = `あなたは宅建試験対策の専属コーチです。以下の受験者データを分析し、実践的な学習アドバイスを日本語で作成してください。
 
-以下の形式で、具体的で実践的な重点取り組みを3つ提示してください：
+【受験者】${p.name}（${p.team}）
+【本試験まで】${daysLeft}日（約${weeksLeft}週間）／本試験日：2026年10月19日
+【8月末まで】${daysToAug}日
 
-【重点取り組み①】タイトル
-内容（2〜3文で具体的に。何を・どのように・いつまでに）
+【スコア推移（全回）】${history}
+【直近の伸び】${trendText}
+【科目別の伸び傾向】
+${subjTrendText}
 
-【重点取り組み②】タイトル
-内容
+【最新科目別正答率】民法${latestCivil}% 法令${latestHourei}% 税${latestTax}% 業法${latestGyoho}%
 
-【重点取り組み③】タイトル
-内容
+【8月末の中間目標】業法80%・法令70%（過去問4択ベース）
+【最終目標（10月）】民法50%・法令70%・税100%・業法80%
 
-最後に1文で「今週すぐできるアクション」を追加してください。簡潔に、励ましを込めて。`;
+【直近で間違えた問題（最大12問）】
+${mistakeText}
+
+---
+
+上記を踏まえ、以下の構成でアドバイスを作成してください。
+
+【現状分析】
+残り${daysLeft}日という期限と8月末の中間目標（業法80%・法令70%）に対する現在地を、伸びている科目・停滞している科目を踏まえて2〜3文で評価してください。間違えた問題の傾向から「知識不足」と「インプット不足によるひっかけ問題への弱さ」のどちらが課題かを推測し、具体的な問題番号やテーマに触れながら指摘してください。
+
+【翌週の学習スケジュール】
+直近の伸びている分野・停滞している分野を踏まえて、来週7日間の学習内容を曜日ごとではなく「平日3日・休日2日」のような形で構成し、具体的な学習量（問題数・時間）を提示してください。8月末目標の業法80%・法令70%に向けて逆算した内容にしてください。
+
+【今週集中して復習すべき項目】
+間違えた問題のテーマから、特に優先して復習すべき項目を3つ、理由とともに箇条書きで挙げてください。インプット不足が原因と思われる項目は「暗記」、ケアレスミスや読み違いが原因と思われる項目は「演習量」を増やすよう助言してください。
+
+【覚え方のヒント（語呂合わせ）】
+復習すべき項目に関連する数字・要件（営業保証金の額、クーリングオフの期間、報酬計算の公式など）について、宅建受験で実際に使われる語呂合わせやニーモニックがあれば1〜2個紹介してください。なければ「特になし」としてください。
+
+【今週すぐできるアクション】
+1文で、今日からすぐ始められる具体的な行動を1つ提示してください。
+
+全体を通して、励ましのトーンを保ちながらも、残り日数を踏まえた緊張感のある具体的な指示にしてください。`;
 
   try {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
@@ -2490,7 +2652,7 @@ ${mistakes.length>0 ? `6/19で間違えた問題（${mistakes.length}問）: ${m
       headers:{"Content-Type":"application/json"},
       body: JSON.stringify({
         model:"claude-sonnet-4-6",
-        max_tokens:1000,
+        max_tokens:1800,
         messages:[{role:"user",content:prompt}]
       })
     });
@@ -2499,13 +2661,16 @@ ${mistakes.length>0 ? `6/19で間違えた問題（${mistakes.length}問）: ${m
 
     // テキストをHTMLに整形
     const formatted = text
-      .replace(/【重点取り組み①】(.+)/g,'<div style="margin-bottom:10px;padding:10px 12px;background:rgba(247,95,95,0.1);border-left:3px solid var(--danger);border-radius:0 6px 6px 0;"><strong style="color:var(--danger)">🎯 重点①$1</strong>')
-      .replace(/【重点取り組み②】(.+)/g,'</div><div style="margin-bottom:10px;padding:10px 12px;background:rgba(247,148,79,0.1);border-left:3px solid var(--warn);border-radius:0 6px 6px 0;"><strong style="color:var(--warn)">🎯 重点②$1</strong>')
-      .replace(/【重点取り組み③】(.+)/g,'</div><div style="margin-bottom:10px;padding:10px 12px;background:rgba(79,142,247,0.1);border-left:3px solid var(--accent);border-radius:0 6px 6px 0;"><strong style="color:var(--accent)">🎯 重点③$1</strong>')
+      .replace(/【現状分析】/g, '</div><div style="margin-bottom:12px;padding:12px 14px;background:rgba(79,142,247,0.08);border-left:3px solid var(--accent);border-radius:0 6px 6px 0;"><strong style="color:var(--accent);">📊 現状分析</strong><br>')
+      .replace(/【翌週の学習スケジュール】/g, '</div><div style="margin-bottom:12px;padding:12px 14px;background:rgba(124,111,247,0.08);border-left:3px solid #7c6ff7;border-radius:0 6px 6px 0;"><strong style="color:#7c6ff7;">📅 翌週の学習スケジュール</strong><br>')
+      .replace(/【今週集中して復習すべき項目】/g, '</div><div style="margin-bottom:12px;padding:12px 14px;background:rgba(247,95,95,0.08);border-left:3px solid var(--danger);border-radius:0 6px 6px 0;"><strong style="color:var(--danger);">🎯 今週集中して復習すべき項目</strong><br>')
+      .replace(/【覚え方のヒント（語呂合わせ）】/g, '</div><div style="margin-bottom:12px;padding:12px 14px;background:rgba(217,119,6,0.08);border-left:3px solid var(--warn);border-radius:0 6px 6px 0;"><strong style="color:var(--warn);">💡 覚え方のヒント（語呂合わせ）</strong><br>')
+      .replace(/【今週すぐできるアクション】/g, '</div><div style="margin-bottom:0;padding:12px 14px;background:rgba(5,150,105,0.08);border-left:3px solid var(--success);border-radius:0 6px 6px 0;"><strong style="color:var(--success);">✅ 今週すぐできるアクション</strong><br>')
+      .replace(/\n\n/g,'<br><br>')
       .replace(/\n/g,'<br>') + '</div>';
 
     resultDiv.innerHTML=`<div style="margin-top:4px;">
-      <div style="font-size:10px;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:4px;">✨ AI生成 重点取り組みプラン</div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:4px;">✨ AI生成 重点取り組みプラン（本試験まで${daysLeft}日）</div>
       <div style="font-size:12px;line-height:1.8;">${formatted}</div>
     </div>`;
   } catch(e) {
@@ -2736,8 +2901,8 @@ function buildSubjectRadar(teamFilter){
 
 
 </script>
-</body>
-</html><script>
+<script>
+
 // ====== テーマ別熟練度マップ ======
 function buildMasteryHtml(p) {
   // answers_610のテーマデータを使って科目別テーマ一覧を構築
@@ -2867,8 +3032,9 @@ function buildMasteryHtml(p) {
   html += `</div>`;
   return html;
 }
-</script>
-<script>
+
+
+
 // ====== 全5回横断 弱点テーマ分析 ======
 function buildWeaknessSummary() {
   // 各回のデータ配列とanswersを対応付け
@@ -3012,8 +3178,9 @@ const _origInit2 = window.buildDomainBars;
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(buildWeaknessSummary, 400);
 });
-</script>
-<script>
+
+
+
 // ====== 全員 合格ラインシミュレーションテーブル（初見補正版）======
 // 【補正ロジック】
 // 過去問を複数回見ているため、模試スコアは実力より高めに出る。
@@ -3139,8 +3306,9 @@ function buildSimTable() {
 
   tbody.innerHTML = rows.join('');
 }
-</script>
-<script>
+
+
+
 // ====== チーム別 動的ダッシュボード ======
 
 const TEAM_COLORS = {
@@ -3397,8 +3565,9 @@ function scoreCol(v) {
 document.addEventListener('DOMContentLoaded', () => {
   buildTeamCards();
 });
-</script>
-<script>
+
+
+
 // ====== チーム別 テーマ別正答率 ======
 let _currentTeamMembers = [];
 
@@ -3465,8 +3634,9 @@ function filterTeamTopics(subj, btn) {
   btn.classList.add('active');
   buildTeamTopicBars(_currentTeamMembers, subj);
 }
-</script>
-<script>
+
+
+
 // ====== 6/19 テーマ別テーブル（個人回答データ未登録時の暫定表示） ======
 function buildTopicTable619(){
   if (typeof answers_619 === 'undefined') return;
@@ -3504,8 +3674,9 @@ function buildTopicTable619(){
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => { if (typeof buildTopicTable619 === 'function') buildTopicTable619(); }, 50);
 });
-</script>
-<script>
+
+
+
 // ====== 個人カード: 継続的弱点 / 直近の弱点 分析 ======
 function buildPersonalWeaknessHtml(p) {
   const allRoundDefs = [
@@ -3588,8 +3759,9 @@ function buildPersonalWeaknessHtml(p) {
   html += `<div style="margin-top:10px;font-size:9px;color:var(--muted);text-align:center;">クリックすると問題の復習・類似問題が確認できます</div></div>`;
   return html;
 }
-</script>
-<script>
+
+
+
 // ====== 科目別ランキング（チーム・個人） ======
 const SUBJECT_FIELD_MAP = { '業法':'gyoho', '民法':'civil', '法令':'hourei', '税':'tax' };
 const SUBJECT_TARGET_MAP = { '業法':80, '民法':50, '法令':60, '税':67 };
@@ -3662,10 +3834,11 @@ function openTeamDetailFromRanking(teamName){
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => buildSubjectRanking('業法', null), 150);
+  setTimeout(() => buildSubjectRankingAll(), 150);
 });
-</script>
-<script>
+
+
+
 // ====== 出題データ集 ======
 let _libCurrentRound = '619';
 let _libCurrentSubject = 'all';
@@ -3984,15 +4157,9 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(buildLibraryList, 200);
   setTimeout(populateLibraryUserSelect, 200);
 });
-</script>
-<style>
-@media print {
-  .print-hide { display: none !important; }
-  #libraryPrintView.print-show { display: block !important; }
-  .header, .nav, #questionReviewOverlay, .modal-overlay { display: none !important; }
-}
-</style>
-<script>
+
+
+
 // ====== 分野別タブ: 4科目並列ランキング ======
 function buildDomainRankings() {
   const subjects = [
@@ -4054,4 +4221,194 @@ function buildDomainRankings() {
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(buildDomainRankings, 200);
 });
+
+
+
+// ====== 科目別ランキング（全科目同時表示） ======
+function buildSubjectRankingAll(){
+  const fields = [
+    { key:'gyoho',  target:80 },
+    { key:'civil',  target:50 },
+    { key:'hourei', target:60 },
+    { key:'tax',    target:67 },
+  ];
+
+  // --- チーム別（全科目） ---
+  const teamMap = {};
+  persons.forEach(p=>{
+    if(!teamMap[p.team]) teamMap[p.team] = { gyoho:[], civil:[], hourei:[], tax:[] };
+    fields.forEach(({key})=>{
+      const v = getLatestSubjectScore(p, key);
+      if(v!=null) teamMap[p.team][key].push(v);
+    });
+  });
+
+  const teamRows = Object.entries(teamMap).map(([team, vals])=>{
+    const avg = (arr)=> arr.length ? Math.round(arr.reduce((a,b)=>a+b,0)/arr.length) : null;
+    return {
+      team,
+      gyoho: avg(vals.gyoho), civil: avg(vals.civil), hourei: avg(vals.hourei), tax: avg(vals.tax),
+    };
+  }).sort((a,b)=>{
+    // 業法を主指標にソート（nullは最後）
+    const av=a.gyoho??-1, bv=b.gyoho??-1;
+    return bv-av;
+  });
+
+  const teamEl = document.getElementById('subjectTeamRankingAll');
+  if(teamEl){
+    const cell = (v, target) => {
+      if(v==null) return `<td style="color:var(--muted);">--</td>`;
+      const col = v>=target?'var(--success)':v>=target*0.8?'var(--warn)':'var(--danger)';
+      return `<td style="font-family:'DM Mono';font-weight:700;color:${col};">${v}%</td>`;
+    };
+    teamEl.innerHTML = teamRows.map(r=>`<tr>
+      <td style="font-weight:700;cursor:pointer;color:var(--accent);white-space:nowrap;" onclick="showSection('teams',null);openTeamDetailFromRanking('${r.team}')">${r.team.replace('チーム','')}</td>
+      ${cell(r.gyoho,80)}
+      ${cell(r.civil,50)}
+      ${cell(r.hourei,60)}
+      ${cell(r.tax,67)}
+    </tr>`).join('');
+  }
+
+  // --- 個人別（全科目・総合スコアでソートしてTOP15） ---
+  const personRows = persons.map(p=>{
+    const latest = ROUNDS.slice().reverse().map(r=>p.scores[r]).find(v=>v!=null) ?? null;
+    return {
+      name: p.name, team: p.team, latest,
+      gyoho: getLatestSubjectScore(p,'gyoho'),
+      civil: getLatestSubjectScore(p,'civil'),
+      hourei: getLatestSubjectScore(p,'hourei'),
+      tax: getLatestSubjectScore(p,'tax'),
+    };
+  }).filter(p=>p.latest!=null)
+    .sort((a,b)=>b.latest-a.latest)
+    .slice(0,15);
+
+  const personEl = document.getElementById('subjectPersonRankingAll');
+  if(personEl){
+    const cell = (v, target) => {
+      if(v==null) return `<td style="color:var(--muted);">--</td>`;
+      const col = v>=target?'var(--success)':v>=target*0.8?'var(--warn)':'var(--danger)';
+      return `<td style="font-family:'DM Mono';font-weight:700;color:${col};">${v}%</td>`;
+    };
+    personEl.innerHTML = personRows.map((p,i)=>{
+      const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}`;
+      return `<tr>
+        <td style="white-space:nowrap;">
+          <span style="font-size:10px;color:var(--muted);margin-right:4px;">${medal}</span>
+          <span onclick="showSection('individuals',null);openModal('${p.name}')" style="cursor:pointer;color:var(--accent);font-weight:700;">${p.name}</span>
+        </td>
+        ${cell(p.gyoho,80)}
+        ${cell(p.civil,50)}
+        ${cell(p.hourei,60)}
+        ${cell(p.tax,67)}
+      </tr>`;
+    }).join('');
+  }
+}
+
+
+
+// ====== マラソンランナー進捗表現 ======
+function buildMarathonProgress(p){
+  // 最新スコア（正答率%）を取得
+  const latestPct = ROUNDS.slice().reverse().map(r=>p.scores[r]).find(v=>v!=null) ?? null;
+  if(latestPct==null){
+    return `<div class="card" style="padding:14px;margin-bottom:14px;text-align:center;color:var(--muted);font-size:12px;">受験データがまだありません</div>`;
+  }
+
+  // 50問換算の推定点数（正答率%から逆算）
+  const estPoint = Math.round(latestPct/100*50);
+
+  // 4段階ステージ定義（点数ベース）
+  const stages = [
+    { id:1, name:'基礎構築期', sub:'1問1答で9割', threshold:0,  icon:'🌱', color:'#94a3b8',
+      desc:'学習を始めたばかりで、専門用語や試験の全体像に慣れている段階。宅建業法・権利関係の基礎を一通り読み込み、勉強を習慣化させることに重点を。' },
+    { id:2, name:'知識の定着期', sub:'4択過去問で32点以上', threshold:32, icon:'🏃', color:'#4f8ef7',
+      desc:'過去問で正答率が上がり始める段階。「答えを暗記している」だけで応用問題に弱い時期。なぜその答えになるか、理由を根本から理解することに重点を。' },
+    { id:3, name:'戦略決定期', sub:'4択過去問で36点以上', threshold:36, icon:'🏃‍♂️', color:'#f7c94f',
+      desc:'得意・苦手分野の分析ができている段階。配点が高い宅建業法（20点中18〜19点目標）を絶対に落とさないレベルに仕上げ、合格点クリアの戦略を立てる。' },
+    { id:4, name:'最終調整期', sub:'4択過去問で38点以上', threshold:38, icon:'🏆', color:'#4fcf94',
+      desc:'合格点（35〜38点）を安定して超える成熟度。ケアレスミス防止、2時間のペース配分確認、法改正事項の最終チェックを行う段階。' },
+  ];
+
+  // 現在のステージ判定
+  let currentStageIdx = 0;
+  for(let i=stages.length-1; i>=0; i--){
+    if(estPoint >= stages[i].threshold){ currentStageIdx = i; break; }
+  }
+  const currentStage = stages[currentStageIdx];
+  const nextStage = stages[currentStageIdx+1];
+
+  // ステージ内での進捗％（次ステージまでの距離）
+  let stageProgress = 100;
+  if(nextStage){
+    const range = nextStage.threshold - currentStage.threshold;
+    const gained = estPoint - currentStage.threshold;
+    stageProgress = range>0 ? Math.min(100, Math.max(0, Math.round(gained/range*100))) : 100;
+  }
+
+  // 全体トラック上の位置（0〜45点を0〜100%にマッピング、本試験合格ラインを35点と仮定）
+  const trackPct = Math.min(100, Math.round(estPoint/38*100));
+
+  const stageMarkers = stages.map((s,i)=>{
+    const pos = Math.min(100, Math.round(s.threshold/38*100));
+    const isPassed = estPoint >= s.threshold;
+    return `<div style="position:absolute;left:${pos}%;top:50%;transform:translate(-50%,-50%);text-align:center;">
+      <div style="width:${i===currentStageIdx?'30px':'20px'};height:${i===currentStageIdx?'30px':'20px'};border-radius:50%;background:${isPassed?s.color:'var(--surface2)'};border:2px solid ${isPassed?s.color:'var(--border)'};display:flex;align-items:center;justify-content:center;font-size:${i===currentStageIdx?'16px':'11px'};box-shadow:${i===currentStageIdx?'0 0 0 4px '+s.color+'33':'none'};">${isPassed?'✓':i+1}</div>
+    </div>`;
+  }).join('');
+
+  return `<div class="card" style="padding:18px;margin-bottom:14px;background:linear-gradient(135deg,#fafbff,#f0f4ff);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div class="card-title" style="margin-bottom:0;">🏃 学習マラソン進捗</div>
+      <div style="font-size:11px;color:var(--muted);">最新推定点：<strong style="color:${currentStage.color};font-size:14px;">${estPoint}点</strong> / 50点</div>
+    </div>
+
+    <!-- トラック -->
+    <div style="position:relative;height:50px;margin:10px 0 24px;">
+      <div style="position:absolute;top:50%;left:0;right:0;height:6px;background:var(--surface2);border-radius:3px;transform:translateY(-50%);"></div>
+      <div style="position:absolute;top:50%;left:0;height:6px;width:${trackPct}%;background:linear-gradient(90deg,#94a3b8,${currentStage.color});border-radius:3px;transform:translateY(-50%);transition:width 0.6s;"></div>
+      ${stageMarkers}
+      <!-- ランナーアイコン -->
+      <div style="position:absolute;left:${trackPct}%;top:-22px;transform:translateX(-50%);font-size:24px;transition:left 0.6s;">${currentStage.icon}</div>
+    </div>
+
+    <!-- 現在ステージの詳細 -->
+    <div style="padding:14px 16px;background:white;border-radius:10px;border:1px solid ${currentStage.color}55;margin-bottom:10px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <span style="font-size:20px;">${currentStage.icon}</span>
+        <span style="font-size:15px;font-weight:900;color:${currentStage.color};">第${currentStage.id}段階：${currentStage.name}</span>
+        <span style="font-size:11px;color:var(--muted);margin-left:auto;">（${currentStage.sub}）</span>
+      </div>
+      <div style="font-size:12px;color:var(--text);line-height:1.7;">${currentStage.desc}</div>
+      ${nextStage ? `
+      <div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);">
+        <div style="display:flex;align-items:center;gap:8px;font-size:11px;">
+          <span style="color:var(--muted);">次の「${nextStage.name}」まで</span>
+          <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;">
+            <div style="height:100%;width:${stageProgress}%;background:${nextStage.color};border-radius:3px;"></div>
+          </div>
+          <span style="font-weight:700;color:${nextStage.color};">残り${Math.max(0,nextStage.threshold-estPoint)}点</span>
+        </div>
+      </div>` : `
+      <div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);text-align:center;font-size:12px;font-weight:700;color:${currentStage.color};">
+        🎉 最終段階に到達しています！この調子で本番まで維持しましょう
+      </div>`}
+    </div>
+
+    <!-- 4段階の凡例 -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
+      ${stages.map((s,i)=>`<div style="text-align:center;padding:6px 4px;border-radius:6px;background:${i===currentStageIdx?s.color+'18':'transparent'};border:1px solid ${i===currentStageIdx?s.color+'55':'transparent'};">
+        <div style="font-size:14px;">${s.icon}</div>
+        <div style="font-size:9px;font-weight:700;color:${i<=currentStageIdx?s.color:'var(--muted)'};margin-top:2px;">${s.name}</div>
+        <div style="font-size:8px;color:var(--muted);">${s.threshold}点〜</div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
 </script>
+</body>
+</html>
