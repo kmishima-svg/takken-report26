@@ -393,6 +393,29 @@
       💡 宅建試験の合格ライン目安は例年<strong style="color:var(--accent2);">32〜38点</strong>。目標通り進めれば<strong style="color:var(--success);">32点達成で合格圏内</strong>に。民法の底上げが上振れの鍵。
     </div>
   </div>
+
+  <!-- 最後の一押しシミュレーション -->
+  <div class="card" style="padding:16px;margin-top:16px;">
+    <div class="card-title">💪 全体の「最後の一押し」シミュレーション</div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:12px;">グループ全体の現在の習熟度から、どの科目を1問伸ばすのが最も効率的かを示します。</div>
+    <div id="lastPushSimulation" style="display:flex;flex-direction:column;gap:8px;"></div>
+  </div>
+
+  <!-- 伸び率ランキング -->
+  <div class="card" style="padding:16px;margin-top:16px;">
+    <div class="card-title">📈 直近の伸び率ランキング（6/5→6/19）</div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:12px;">スコアの絶対値ではなく、直近2回の伸び幅でランキング。頑張りが見える化されます。</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--success);margin-bottom:8px;">🚀 伸びている人 TOP10</div>
+        <div id="growthRankingUp" style="display:flex;flex-direction:column;gap:5px;"></div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--danger);margin-bottom:8px;">⚠️ 直近で下がった人</div>
+        <div id="growthRankingDown" style="display:flex;flex-direction:column;gap:5px;"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 
@@ -771,6 +794,23 @@
 <div class="section" id="sec-library">
   <div class="sec-title">出題データ集</div>
   <div class="sec-sub">過去に出題された全問題をWeb受講・印刷PDFの両方で確認できます</div>
+
+  <!-- 未受講者リスト -->
+  <div class="card" style="padding:16px;margin-bottom:16px;">
+    <div class="card-title">📋 Web受講モード 利用状況</div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:12px;">まだ一度もWeb受講モードを利用していない受験者です。チームでの声かけにご活用ください。</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+      <div style="text-align:center;padding:10px;background:rgba(79,207,148,0.08);border-radius:8px;">
+        <div id="libUsageUsedCount" style="font-size:22px;font-weight:900;color:var(--success);">--</div>
+        <div style="font-size:10px;color:var(--muted);">利用したことがある人</div>
+      </div>
+      <div style="text-align:center;padding:10px;background:rgba(247,95,95,0.08);border-radius:8px;">
+        <div id="libUsageUnusedCount" style="font-size:22px;font-weight:900;color:var(--danger);">--</div>
+        <div style="font-size:10px;color:var(--muted);">未利用の人</div>
+      </div>
+    </div>
+    <div id="libUsageUnusedList" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;"></div>
+  </div>
 
   <div class="card" style="padding:16px;margin-bottom:16px;">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
@@ -1450,8 +1490,31 @@ let _reviewSetQuestions = [];
 let _reviewSetIndex = 0;
 let _reviewSetTopic = '';
 
+// テーマ名から「キーワード」を抽出（最初の括弧前の部分、または先頭の主要語）
+function extractTopicKeywords(topic){
+  // 括弧の前の部分をメインキーワードとして抽出
+  const mainPart = topic.split(/[（(]/)[0].trim();
+  // 「・」で分割した各語もキーワード候補に
+  const subParts = mainPart.split(/[・]/).map(s=>s.trim()).filter(s=>s.length>=2);
+  return [mainPart, ...subParts].filter(s=>s.length>=2);
+}
+
+function topicsMatch(topicA, topicB){
+  if(topicA === topicB) return true;
+  const kwA = extractTopicKeywords(topicA);
+  const kwB = extractTopicKeywords(topicB);
+  // どちらかのメインキーワードが他方に含まれていればマッチ
+  const mainA = kwA[0], mainB = kwB[0];
+  if(mainA && mainB){
+    if(mainA.includes(mainB) || mainB.includes(mainA)) return true;
+  }
+  // サブキーワードの共通要素が1つ以上あればマッチ
+  const overlap = kwA.filter(a => kwB.some(b => a===b || a.includes(b) || b.includes(a)));
+  return overlap.length > 0;
+}
+
 function collectTopicQuestions(topic){
-  // 全回（本文データがある回）から同テーマの問題を収集
+  // 全回（本文データがある回）から類似テーマの問題を収集
   const sources = [
     { round:'619', answers: typeof answers_619!=='undefined'?answers_619:null, qbank: typeof questionBank_619!=='undefined'?questionBank_619:null, qMin:1, qMax:45 },
     { round:'610', answers: typeof answers_610!=='undefined'?answers_610:null, qbank: typeof questionBank_610!=='undefined'?questionBank_610:null, qMin:1, qMax:45 },
@@ -1459,17 +1522,30 @@ function collectTopicQuestions(topic){
     { round:'520', answers: typeof answers_520!=='undefined'?answers_520:null, qbank: typeof questionBank_520!=='undefined'?questionBank_520:null, qMin:1, qMax:45 },
     { round:'514', answers: typeof answers_514!=='undefined'?answers_514:null, qbank: typeof questionBank_514!=='undefined'?questionBank_514:null, qMin:15, qMax:45 },
   ];
-  const found = [];
+  // 完全一致を優先、その後キーワード一致で補完
+  const exact = [];
+  const fuzzy = [];
   sources.forEach(({round, answers, qbank, qMin, qMax}) => {
     if(!answers || !qbank) return;
     for(let q=qMin; q<=qMax; q++){
       const d = answers[q];
-      if(d && d.topic===topic && qbank[String(q)]){
-        found.push({round, q, d, qData: qbank[String(q)]});
+      if(!d || !qbank[String(q)]) continue;
+      if(d.topic === topic){
+        exact.push({round, q, d, qData: qbank[String(q)]});
+      } else if(topicsMatch(d.topic, topic)){
+        fuzzy.push({round, q, d, qData: qbank[String(q)]});
       }
     }
   });
-  return found;
+  // 完全一致を先頭に、その後キーワード一致を続ける（重複round+q除去）
+  const seen = new Set();
+  const combined = [...exact, ...fuzzy].filter(item=>{
+    const key = item.round+'_'+item.q;
+    if(seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  return combined;
 }
 
 function startTopicReviewSet(topic){
@@ -1844,12 +1920,15 @@ function openModal(name){
       <div class="kpi" style="padding:12px"><div class="kpi-val" style="font-size:22px;color:var(--gyoho)">${typeof latestGyoho==='number'?latestGyoho+'%':'--'}</div><div class="kpi-label">業法</div></div>
     </div>
     ${buildMarathonProgress(p)}
+    ${buildPercentileCard(p)}
+    ${buildGapToGoal(p)}
     <div class="card" style="padding:14px;margin-bottom:14px;">
       <div class="card-title">回別スコア推移</div>
       <table><thead><tr><th>回</th><th>総合</th><th>民法</th><th>法令</th><th>税</th><th>業法</th></tr></thead>
       <tbody>${histRows}</tbody></table>
     </div>
     ${q610html}
+    <div id="forgettingCurveCard_${p.name.replace(/[^a-zA-Z0-9]/g,'_')}"></div>
     ${buildPersonalWeaknessHtml(p)}
     ${buildMasteryHtml(p)}
     <div class="card" style="padding:14px;">
@@ -1869,6 +1948,7 @@ function openModal(name){
     `;
   document.getElementById('modalOverlay').classList.add('open');
   renderLibraryHistoryForPerson(p.name);
+  renderForgettingCurveAlert(p);
 }
 
 // ====== 個人モーダル: Web受講履歴の表示 ======
@@ -4423,3 +4503,240 @@ function buildMarathonProgress(p){
 </script>
 </body>
 </html>
+<script>
+// ====== ① あと何問で合格ラインかの逆算表示 ======
+function buildGapToGoal(p){
+  const latestPct = ROUNDS.slice().reverse().map(r=>p.scores[r]).find(v=>v!=null) ?? null;
+  if(latestPct==null) return '';
+
+  const estPoint = Math.round(latestPct/100*50);
+  const examDate = new Date('2026-10-19');
+  const today = new Date();
+  const daysLeft = Math.max(1, Math.ceil((examDate - today) / (1000*60*60*24)));
+
+  const goals = [
+    { label:'R7基準（合格圏）', point:33, color:'#4f8ef7' },
+    { label:'R6基準（安全圏）', point:37, color:'#4fcf94' },
+  ];
+
+  const rows = goals.map(g=>{
+    const gap = g.point - estPoint;
+    if(gap<=0){
+      return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(79,207,148,0.08);border:1px solid rgba(79,207,148,0.3);border-radius:8px;">
+        <span style="font-size:18px;">✅</span>
+        <div style="flex:1;">
+          <div style="font-size:12px;font-weight:700;color:${g.color};">${g.label}（${g.point}点）クリア済み</div>
+          <div style="font-size:10px;color:var(--muted);">現在の推定点 ${estPoint}点で既に到達しています</div>
+        </div>
+      </div>`;
+    }
+    const perDay = (gap / daysLeft * 30).toFixed(2); // 1ヶ月あたりの伸び目安
+    const perWeek = Math.max(0.1, gap / (daysLeft/7));
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:8px;">
+      <span style="font-size:18px;">🎯</span>
+      <div style="flex:1;">
+        <div style="font-size:12px;font-weight:700;color:${g.color};">${g.label}（${g.point}点）まで残り<span style="font-size:15px;">${gap}点</span></div>
+        <div style="font-size:10px;color:var(--muted);">残り${daysLeft}日 → 1週間あたり約<strong style="color:${g.color};">${perWeek.toFixed(1)}点</strong>ずつ伸ばせば到達ペース</div>
+      </div>
+    </div>`;
+  }).join('<div style="height:8px;"></div>');
+
+  return `<div class="card" style="padding:14px;margin-bottom:14px;">
+    <div class="card-title">🎯 合格ラインまでの逆算</div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:10px;">現在の推定点：<strong style="color:var(--text);">${estPoint}点</strong>／50点（本試験まで${daysLeft}日）</div>
+    ${rows}
+  </div>`;
+}
+</script>
+<script>
+// ====== ② 忘却曲線アラート（間違えたまま未復習の問題） ======
+async function renderForgettingCurveAlert(p){
+  const safeId = p.name.replace(/[^a-zA-Z0-9]/g, '_');
+  const cardEl = document.getElementById(`forgettingCurveCard_${safeId}`);
+  if(!cardEl) return;
+
+  // 6/19の間違い一覧（answers619から）
+  const mistakes = [];
+  if(p.answers619){
+    p.answers619.forEach((ans,i)=>{
+      const q=i+1; const d=answers_619[q];
+      if(d && ans!==d.ans) mistakes.push({q, subject:d.subject, topic:d.topic});
+    });
+  }
+  if(!mistakes.length){ cardEl.innerHTML=''; return; }
+
+  // Web受講履歴から「619の該当問題を後から正解した」記録を確認
+  const attempts = await getLibraryAttemptsForUser(p.name);
+  const reviewedQSet = new Set(
+    attempts.filter(a=>a.round==='619' && a.correct).map(a=>a.q)
+  );
+
+  // 1週間以上前の判定基準日（6/19から7日後）
+  const sevenDaysAfter = new Date('2026-06-19');
+  sevenDaysAfter.setDate(sevenDaysAfter.getDate()+7);
+  const isOverWeek = new Date() >= sevenDaysAfter;
+
+  const unreviewed = mistakes.filter(m => !reviewedQSet.has(m.q));
+
+  if(!unreviewed.length){
+    cardEl.innerHTML = `<div class="card" style="padding:12px 14px;margin-bottom:14px;background:rgba(79,207,148,0.06);border-color:rgba(79,207,148,0.3);">
+      <div style="font-size:12px;font-weight:700;color:var(--success);">✅ 間違えた問題はすべて復習済みです</div>
+    </div>`;
+    return;
+  }
+
+  const subjBadge = { '民法':'badge-civil','法令':'badge-hourei','税':'badge-tax','業法':'badge-gyoho' };
+
+  cardEl.innerHTML = `<div class="card" style="padding:14px;margin-bottom:14px;border-color:rgba(217,119,6,0.35);background:rgba(217,119,6,0.04);">
+    <div class="card-title" style="color:var(--warn);">⏰ 忘却曲線アラート（未復習${unreviewed.length}問）</div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:10px;">
+      ${isOverWeek ? '6/19から1週間以上経過しています。記憶が薄れる前に復習しましょう。' : 'まだ復習していない間違い問題です。早めの復習が効果的です。'}
+    </div>
+    <div style="display:flex;flex-direction:column;gap:5px;">
+      ${unreviewed.slice(0,6).map(m=>`
+        <div onclick="openTopicTableQuestion('619',${m.q})" style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;background:#fff;border:1px solid rgba(217,119,6,0.25);border-radius:6px;">
+          <span class="badge ${subjBadge[m.subject]}" style="flex-shrink:0;font-size:9px;">${m.subject}</span>
+          <span style="font-size:11px;color:var(--text);flex:1;min-width:0;">${m.topic}</span>
+          <span style="font-size:9px;color:var(--accent);flex-shrink:0;">問${m.q} 📖 →</span>
+        </div>`).join('')}
+      ${unreviewed.length>6 ? `<div style="font-size:9px;color:var(--muted);text-align:center;">他${unreviewed.length-6}問あり</div>` : ''}
+    </div>
+  </div>`;
+}
+</script>
+<script>
+// ====== ③ チーム内・全体パーセンタイル表示 ======
+function buildPercentileCard(p){
+  const latestPct = ROUNDS.slice().reverse().map(r=>p.scores[r]).find(v=>v!=null) ?? null;
+  if(latestPct==null) return '';
+
+  // 全体での順位・パーセンタイル
+  const allScores = persons
+    .map(x => ROUNDS.slice().reverse().map(r=>x.scores[r]).find(v=>v!=null))
+    .filter(v => v!=null);
+  const allRank = allScores.filter(v => v > latestPct).length + 1;
+  const allPercentile = Math.round((1 - (allRank-1)/allScores.length) * 100);
+
+  // チーム内での順位・パーセンタイル
+  const teamScores = persons
+    .filter(x => x.team === p.team)
+    .map(x => ROUNDS.slice().reverse().map(r=>x.scores[r]).find(v=>v!=null))
+    .filter(v => v!=null);
+  const teamRank = teamScores.filter(v => v > latestPct).length + 1;
+  const teamPercentile = Math.round((1 - (teamRank-1)/teamScores.length) * 100);
+
+  const badge = (pct) => pct>=80?'var(--success)':pct>=50?'var(--warn)':'var(--danger)';
+
+  return `<div class="card" style="padding:14px;margin-bottom:14px;">
+    <div class="card-title">📍 相対的な位置づけ（最新回）</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div style="text-align:center;padding:12px;background:var(--surface2);border-radius:8px;">
+        <div style="font-size:20px;font-weight:900;color:${badge(teamPercentile)};">上位${100-teamPercentile}%</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px;">${p.team}内（${teamRank}/${teamScores.length}位）</div>
+      </div>
+      <div style="text-align:center;padding:12px;background:var(--surface2);border-radius:8px;">
+        <div style="font-size:20px;font-weight:900;color:${badge(allPercentile)};">上位${100-allPercentile}%</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px;">全体内（${allRank}/${allScores.length}位）</div>
+      </div>
+    </div>
+  </div>`;
+}
+</script>
+<script>
+// ====== ④ 伸び率ランキング（6/5→6/19） ======
+function buildGrowthRanking(){
+  const growthList = persons
+    .filter(p => p.scores['605']!=null && p.scores['619']!=null)
+    .map(p => ({ name:p.name, team:p.team, from:p.scores['605'], to:p.scores['619'], diff: p.scores['619']-p.scores['605'] }))
+    .sort((a,b)=>b.diff-a.diff);
+
+  const upEl = document.getElementById('growthRankingUp');
+  if(upEl){
+    const ups = growthList.filter(g=>g.diff>0).slice(0,10);
+    upEl.innerHTML = ups.map((g,i)=>`
+      <div onclick="showSection('individuals',null);openModal('${g.name}')" style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;background:rgba(79,207,148,0.06);border:1px solid rgba(79,207,148,0.2);border-radius:6px;">
+        <span style="font-size:10px;color:var(--muted);width:16px;">${i+1}</span>
+        <span style="font-size:12px;font-weight:700;color:var(--accent);flex:1;min-width:0;">${g.name}</span>
+        <span style="font-size:9px;color:var(--muted);">${g.from}%→${g.to}%</span>
+        <span style="font-family:'DM Mono';font-weight:900;color:var(--success);">+${g.diff}%</span>
+      </div>`).join('') || `<div style="color:var(--muted);font-size:11px;">データ不足</div>`;
+  }
+
+  const downEl = document.getElementById('growthRankingDown');
+  if(downEl){
+    const downs = growthList.filter(g=>g.diff<0).sort((a,b)=>a.diff-b.diff).slice(0,10);
+    downEl.innerHTML = downs.map((g,i)=>`
+      <div onclick="showSection('individuals',null);openModal('${g.name}')" style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;background:rgba(247,95,95,0.06);border:1px solid rgba(247,95,95,0.2);border-radius:6px;">
+        <span style="font-size:10px;color:var(--muted);width:16px;">${i+1}</span>
+        <span style="font-size:12px;font-weight:700;color:var(--accent);flex:1;min-width:0;">${g.name}</span>
+        <span style="font-size:9px;color:var(--muted);">${g.from}%→${g.to}%</span>
+        <span style="font-family:'DM Mono';font-weight:900;color:var(--danger);">${g.diff}%</span>
+      </div>`).join('') || `<div style="color:var(--muted);font-size:11px;">下降している人はいません ✅</div>`;
+  }
+}
+
+// ====== ⑤ Web受講モード 未利用者リスト ======
+async function buildLibraryUsageStatus(){
+  const attempts = await getAllLibraryAttempts();
+  const usedNames = new Set(attempts.map(a=>a.user));
+
+  const usedCount = persons.filter(p=>usedNames.has(p.name)).length;
+  const unusedList = persons.filter(p=>!usedNames.has(p.name));
+
+  const setEl = (id,val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
+  setEl('libUsageUsedCount', usedCount+'名');
+  setEl('libUsageUnusedCount', unusedList.length+'名');
+
+  const listEl = document.getElementById('libUsageUnusedList');
+  if(listEl){
+    listEl.innerHTML = unusedList.map(p=>`
+      <span onclick="showSection('individuals',null);openModal('${p.name}')" style="cursor:pointer;padding:4px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;font-size:11px;color:var(--text);">
+        ${p.name}<span style="color:var(--muted);font-size:9px;"> (${p.team.replace('チーム','')})</span>
+      </span>`).join('') || `<div style="color:var(--success);font-size:11px;">🎉 全員が利用済みです！</div>`;
+  }
+}
+
+// ====== ⑥ 最後の一押しシミュレーション ======
+function buildLastPushSimulation(){
+  const subjects = [
+    { key:'civil',  label:'民法', target:50, totalQ:14, badge:'badge-civil' },
+    { key:'hourei', label:'法令', target:60, totalQ:8,  badge:'badge-hourei' },
+    { key:'tax',    label:'税',   target:67, totalQ:3,  badge:'badge-tax' },
+    { key:'gyoho',  label:'業法', target:80, totalQ:20, badge:'badge-gyoho' },
+  ];
+
+  const results = subjects.map(s=>{
+    const vals = persons.map(p=>getLatestSubjectScore(p,s.key)).filter(v=>v!=null);
+    const avg = vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : 0;
+    const gap = s.target - avg;
+    // 1問あたりのインパクト（その科目の問題数が少ないほど1問の重みが大きい）
+    const pointsPerQuestion = Math.round(100/s.totalQ);
+    // 効率指標：ギャップが大きく、かつ1問の重みが大きいほど優先度高
+    const priority = gap * pointsPerQuestion;
+    return { ...s, avg, gap, pointsPerQuestion, priority };
+  }).sort((a,b)=>b.priority-a.priority);
+
+  const el = document.getElementById('lastPushSimulation');
+  if(!el) return;
+
+  el.innerHTML = results.map((r,i)=>{
+    const col = r.gap<=0 ? 'var(--success)' : 'var(--warn)';
+    const statusText = r.gap<=0 ? '✅ 目標達成済み' : `1問の重み：約${r.pointsPerQuestion}% / 残り${r.gap}%`;
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:${i===0&&r.gap>0?'rgba(79,142,247,0.08)':'var(--surface2)'};border:1px solid ${i===0&&r.gap>0?'rgba(79,142,247,0.3)':'var(--border)'};border-radius:8px;">
+      ${i===0 && r.gap>0 ? '<span style="font-size:16px;">⭐</span>' : '<span style="width:16px;"></span>'}
+      <span class="badge ${r.badge}" style="flex-shrink:0;">${r.label}</span>
+      <div style="flex:1;">
+        <div style="font-size:12px;font-weight:700;color:var(--text);">現状平均 ${r.avg}% / 目標${r.target}%</div>
+        <div style="font-size:10px;color:${col};">${statusText}</div>
+      </div>
+      ${i===0 && r.gap>0 ? '<span style="font-size:10px;font-weight:700;color:var(--accent);white-space:nowrap;">最優先で取り組むべき科目</span>' : ''}
+    </div>`;
+  }).join('');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(buildGrowthRanking, 250);
+  setTimeout(buildLibraryUsageStatus, 250);
+  setTimeout(buildLastPushSimulation, 250);
+});
+</script>
