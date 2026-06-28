@@ -822,7 +822,7 @@
         <button onclick="switchLibraryRound('619',this)" class="filter-btn active" style="font-size:12px;">6/19（全45問）</button>
       </div>
       <div style="display:flex;gap:8px;align-items:center;">
-        <select id="libraryUserSelect" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;color:var(--text);background:#fff;max-width:160px;">
+        <select id="libraryUserSelect" onchange="if(this.value) window._currentTrackedUser=this.value;" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;color:var(--text);background:#fff;max-width:160px;">
           <option value="">受講者を選択...</option>
         </select>
         <button onclick="startLibraryQuizMode()" style="background:linear-gradient(135deg,var(--accent),#7c6ff7);border:none;border-radius:6px;color:#fff;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;">▶️ Web受講モード</button>
@@ -1604,7 +1604,7 @@ function renderReviewSetQuestion(){
   overlay.classList.add('open');
 }
 
-function submitReviewSetAnswer(selected, correctAns){
+async function submitReviewSetAnswer(selected, correctAns){
   for(let i=1;i<=4;i++){
     const btn = document.getElementById(`reviewChoice_${i}`);
     if(!btn) continue;
@@ -1624,6 +1624,12 @@ function submitReviewSetAnswer(selected, correctAns){
   }
   const nextBtn = document.getElementById('reviewSetNextBtn');
   if(nextBtn) nextBtn.style.display = 'inline-block';
+
+  // 現在追跡中のユーザーで受講記録を保存
+  const current = _reviewSetQuestions[_reviewSetIndex];
+  if(window._currentTrackedUser && current){
+    await recordLibraryAttempt(window._currentTrackedUser, current.round, current.q, selected, isCorrect);
+  }
 }
 
 function reviewSetNext(){
@@ -1734,7 +1740,7 @@ function openQuestionReview(qNum){
 }
 
 // ====== クイズ採点 ======
-function submitQuizAnswer(qNum, selected, correctAns){
+async function submitQuizAnswer(qNum, selected, correctAns){
   // 全選択肢を無効化＆正解・選択を色付け
   for(let i=1;i<=4;i++){
     const btn = document.getElementById(`quizChoice_${i}`);
@@ -1756,9 +1762,15 @@ function submitQuizAnswer(qNum, selected, correctAns){
   const resultEl = document.getElementById('quizResult');
   if(resultEl){
     resultEl.style.display = 'block';
-    resultEl.innerHTML = isCorrect
+    const userTag = window._currentTrackedUser ? `<div style="font-size:10px;color:var(--muted);margin-top:6px;">受講者：${window._currentTrackedUser} として記録しました</div>` : `<div style="font-size:10px;color:var(--muted);margin-top:6px;">※個人ページを開いてから解くと、記録が紐づきます</div>`;
+    resultEl.innerHTML = (isCorrect
       ? `<div style="padding:12px 16px;background:rgba(5,150,105,0.1);border:1px solid rgba(5,150,105,0.3);border-radius:8px;text-align:center;font-size:14px;font-weight:700;color:var(--success);">✅ 正解！</div>`
-      : `<div style="padding:12px 16px;background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.25);border-radius:8px;text-align:center;font-size:14px;font-weight:700;color:var(--danger);">❌ 不正解（正解は ${correctAns} 番）</div>`;
+      : `<div style="padding:12px 16px;background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.25);border-radius:8px;text-align:center;font-size:14px;font-weight:700;color:var(--danger);">❌ 不正解（正解は ${correctAns} 番）</div>`) + userTag;
+  }
+
+  // 現在追跡中のユーザーで受講記録を保存（6/19のみ対応）
+  if(window._currentTrackedUser){
+    await recordLibraryAttempt(window._currentTrackedUser, '619', qNum, selected, isCorrect);
   }
 }
 
@@ -1831,6 +1843,7 @@ function buildPersonGrid(teamFilter='all'){
 // ====== MODAL ======
 function openModal(name){
   const p=persons.find(x=>x.name===name);if(!p)return;
+  window._currentTrackedUser = name;
   const latest=getLatest(p);
   let latestCivil='--',latestHourei='--',latestTax='--',latestGyoho='--';
   for(let r of['619','605','527','520','514']){
@@ -1927,6 +1940,7 @@ function openModal(name){
       <table><thead><tr><th>回</th><th>総合</th><th>民法</th><th>法令</th><th>税</th><th>業法</th></tr></thead>
       <tbody>${histRows}</tbody></table>
     </div>
+    ${buildExamAnswerHistory(p)}
     ${q610html}
     <div id="forgettingCurveCard_${p.name.replace(/[^a-zA-Z0-9]/g,'_')}"></div>
     ${buildPersonalWeaknessHtml(p)}
@@ -1960,8 +1974,8 @@ async function renderLibraryHistoryForPerson(name) {
   const attempts = await getLibraryAttemptsForUser(name);
 
   if (!attempts.length) {
-    cardEl.innerHTML = `<div class="card-title">📚 Web受講履歴</div>
-      <div style="color:var(--muted);font-size:12px;padding:8px;">まだ「出題データ集」のWeb受講モードを利用していません</div>`;
+    cardEl.innerHTML = `<div class="card-title">📚 復習・出題データ集 利用履歴</div>
+      <div style="color:var(--muted);font-size:12px;padding:8px;">まだ復習問題（テーマ別・分野別・出題データ集）に取り組んでいません</div>`;
     return;
   }
 
@@ -1987,13 +2001,14 @@ async function renderLibraryHistoryForPerson(name) {
     if (a.correct) roundMap[a.round].correct++;
   });
 
-  const roundLabel = { '514':'5/14', '520':'5/20', '619':'6/19' };
+  const roundLabel = { '514':'5/14', '520':'5/20', '527':'5/27', '605':'6/5', '610':'6/10', '619':'6/19' };
 
   // 直近10件
   const recent = [...attempts].sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 10);
 
   cardEl.innerHTML = `
-    <div class="card-title">📚 Web受講履歴</div>
+    <div class="card-title">📚 復習・出題データ集 利用履歴</div>
+    <div style="font-size:9px;color:var(--muted);margin-bottom:10px;">テーマ別・分野別・出題データ集など、復習として取り組んだ問題の記録です</div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
       <div style="text-align:center;padding:10px;background:var(--surface2);border-radius:8px;">
         <div style="font-size:22px;font-weight:900;color:var(--text);">${total}</div>
@@ -2029,7 +2044,7 @@ async function renderLibraryHistoryForPerson(name) {
         return `<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:var(--surface2);border-radius:5px;font-size:10px;">
           <span style="color:var(--muted);width:75px;flex-shrink:0;">${dtStr}</span>
           <span style="color:var(--accent);font-weight:700;width:42px;flex-shrink:0;">${roundLabel[a.round]||a.round}</span>
-          <span style="color:var(--text);flex-shrink:0;">問${a.q}</span>
+          <span onclick="openTopicTableQuestion('${a.round}',${a.q})" style="color:var(--accent);font-weight:700;cursor:pointer;text-decoration:underline;flex-shrink:0;">問${a.q}</span>
           <span style="margin-left:auto;font-weight:700;color:${a.correct?'var(--success)':'var(--danger)'};">${a.correct?'✅ 正解':'❌ 不正解'}</span>
         </div>`;
       }).join('')}
@@ -4739,4 +4754,102 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(buildLibraryUsageStatus, 250);
   setTimeout(buildLastPushSimulation, 250);
 });
+</script>
+<script>
+// ====== 📝 模試 解答履歴（全5回・問別正解マス目） ======
+function getPersonExamAnswers(personName, round){
+  // round別に異なる形式から個人回答配列を取得
+  if(round === '619' || round === '610'){
+    const p = persons.find(x=>x.name===personName);
+    if(!p) return null;
+    return round==='619' ? p.answers619 : p.answers610;
+  }
+  // data514, data527 は {name, ans} 配列形式
+  const dataMap = {
+    '514': typeof data514!=='undefined' ? data514 : null,
+    '527': typeof data527!=='undefined' ? data527 : null,
+  };
+  const rows = dataMap[round];
+  if(!rows) return null;
+  const found = rows.find(r => r.name===personName);
+  return found ? found.ans : null;
+}
+
+function buildExamAnswerHistory(p){
+  const rounds = [
+    { key:'514', label:'5/14', qMin:15, qMax:45, answers: typeof answers_514!=='undefined'?answers_514:null },
+    { key:'520', label:'5/20', qMin:1,  qMax:45, answers: typeof answers_520!=='undefined'?answers_520:null },
+    { key:'527', label:'5/27', qMin:1,  qMax:45, answers: typeof answers_527!=='undefined'?answers_527:null },
+    { key:'610', label:'6/10', qMin:1,  qMax:45, answers: typeof answers_610!=='undefined'?answers_610:null },
+    { key:'619', label:'6/19', qMin:1,  qMax:45, answers: typeof answers_619!=='undefined'?answers_619:null },
+  ];
+
+  const available = rounds.map(r => {
+    const personAns = getPersonExamAnswers(p.name, r.key);
+    return { ...r, personAns };
+  }).filter(r => r.personAns && r.answers);
+
+  if(!available.length) return '';
+
+  window._examHistoryData = window._examHistoryData || {};
+  window._examHistoryData[p.name] = available.map(r=>({key:r.key,label:r.label,qMin:r.qMin,qMax:r.qMax}));
+
+  const tabs = available.map((r,i) => `<button onclick="switchExamHistoryTab('${r.key}',this)" class="filter-btn${i===available.length-1?' active':''}" style="font-size:11px;padding:4px 12px;">${r.label}</button>`).join('');
+
+  const safeId = p.name.replace(/[^a-zA-Z0-9]/g,'_');
+
+  setTimeout(()=>renderExamHistoryGrid(p.name, available[available.length-1].key), 50);
+
+  return `<div class="card" style="padding:14px;margin-bottom:14px;">
+    <div class="card-title">📝 模試 解答履歴（全${available.length}回）</div>
+    <div class="filter-row" style="margin-bottom:10px;" id="examHistoryTabs_${safeId}" data-person="${p.name}">
+      ${tabs}
+    </div>
+    <div id="examHistoryGrid_${safeId}"></div>
+  </div>`;
+}
+
+function switchExamHistoryTab(round, btn){
+  const tabsContainer = btn.closest('[data-person]');
+  const personName = tabsContainer ? tabsContainer.getAttribute('data-person') : null;
+  if(!personName) return;
+  tabsContainer.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderExamHistoryGrid(personName, round);
+}
+
+function renderExamHistoryGrid(personName, round){
+  const safeId = personName.replace(/[^a-zA-Z0-9]/g,'_');
+  const gridEl = document.getElementById(`examHistoryGrid_${safeId}`);
+  if(!gridEl) return;
+
+  const roundsMap = {
+    '514': { qMin:15, qMax:45, answers: typeof answers_514!=='undefined'?answers_514:null },
+    '520': { qMin:1,  qMax:45, answers: typeof answers_520!=='undefined'?answers_520:null },
+    '527': { qMin:1,  qMax:45, answers: typeof answers_527!=='undefined'?answers_527:null },
+    '610': { qMin:1,  qMax:45, answers: typeof answers_610!=='undefined'?answers_610:null },
+    '619': { qMin:1,  qMax:45, answers: typeof answers_619!=='undefined'?answers_619:null },
+  };
+  const { qMin, qMax, answers } = roundsMap[round] || {};
+  const personAns = getPersonExamAnswers(personName, round);
+  if(!personAns || !answers){ gridEl.innerHTML = '<div style="color:var(--muted);font-size:11px;">データなし</div>'; return; }
+
+  let correctCount = 0, totalCount = 0;
+  let html = '<div style="display:flex;flex-wrap:wrap;gap:4px;">';
+  for(let q=qMin; q<=qMax; q++){
+    const d = answers[q];
+    const ans = personAns[q-1];
+    if(!d || ans==null) continue;
+    totalCount++;
+    const ok = ans === d.ans;
+    if(ok) correctCount++;
+    html += `<div onclick="openTopicTableQuestion('${round}',${q})" title="問${q}: ${d.topic}&#10;あなた:${ans} 正解:${d.ans}&#10;クリックで復習" style="cursor:pointer;width:30px;height:30px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;background:${ok?'rgba(79,207,148,0.2)':'rgba(247,95,95,0.2)'};color:${ok?'var(--success)':'var(--danger)'};border:1px solid ${ok?'rgba(79,207,148,0.4)':'rgba(247,95,95,0.4)'};transition:transform 0.15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'">${q}</div>`;
+  }
+  html += '</div>';
+
+  const pct = totalCount ? Math.round(correctCount/totalCount*100) : 0;
+  html = `<div style="font-size:11px;color:var(--muted);margin-bottom:8px;">正答率 <strong style="color:${pct>=70?'var(--success)':pct>=50?'var(--warn)':'var(--danger)'};font-size:13px;">${pct}%</strong>（${correctCount}/${totalCount}問）</div>` + html;
+
+  gridEl.innerHTML = html;
+}
 </script>
