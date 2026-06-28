@@ -97,6 +97,20 @@
 </head>
 <body>
 
+<!-- 起動時の名前選択モーダル -->
+<div id="loginGateOverlay" class="modal-overlay" style="display:none;z-index:3000;background:rgba(10,12,30,.92);">
+  <div class="modal" style="max-width:420px;text-align:center;">
+    <div style="font-size:28px;margin-bottom:10px;">👋</div>
+    <div style="font-size:17px;font-weight:900;color:var(--text);margin-bottom:6px;">お名前を選択してください</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:18px;">どなたがレポートを見ているか記録するために使用します</div>
+    <select id="loginGateSelect" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text);background:#fff;margin-bottom:12px;">
+      <option value="">受験者を選択...</option>
+    </select>
+    <button onclick="confirmLoginGate()" style="width:100%;background:linear-gradient(135deg,var(--accent),#7c6ff7);border:none;border-radius:8px;color:#fff;padding:11px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px;">この名前で開く</button>
+    <button onclick="confirmLoginGate(true)" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:9px;font-size:12px;font-weight:700;cursor:pointer;">👥 サポートスタッフとして入る</button>
+  </div>
+</div>
+
 <div class="header">
   <div>
     <div class="header-title">宅建試験 <span>学習進捗レポート</span></div>
@@ -369,6 +383,41 @@
     </div>
   </div>
 
+  <!-- アクセス状況 -->
+  <div class="card" style="padding:16px;margin-top:16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div class="card-title" style="margin-bottom:0;">📊 アクセス状況</div>
+      <div style="font-size:10px;color:var(--muted);">サポートスタッフのアクセスは1件として集計</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;">
+      <div style="text-align:center;padding:10px;background:var(--surface2);border-radius:8px;">
+        <div id="accessTotalCount" style="font-size:22px;font-weight:900;color:var(--text);">--</div>
+        <div style="font-size:10px;color:var(--muted);">総アクセス数</div>
+      </div>
+      <div style="text-align:center;padding:10px;background:rgba(79,142,247,0.08);border-radius:8px;">
+        <div id="accessUniqueCount" style="font-size:22px;font-weight:900;color:var(--accent);">--</div>
+        <div style="font-size:10px;color:var(--muted);">アクセスした人数</div>
+      </div>
+      <div style="text-align:center;padding:10px;background:rgba(79,207,148,0.08);border-radius:8px;">
+        <div id="accessStudentCount" style="font-size:22px;font-weight:900;color:var(--success);">--</div>
+        <div style="font-size:10px;color:var(--muted);">受験生</div>
+      </div>
+      <div style="text-align:center;padding:10px;background:rgba(124,111,247,0.08);border-radius:8px;">
+        <div id="accessSupportCount" style="font-size:22px;font-weight:900;color:#7c6ff7;">--</div>
+        <div style="font-size:10px;color:var(--muted);">サポートスタッフ</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--success);margin-bottom:8px;">✅ アクセスした受験生</div>
+        <div id="accessedStudentsList" style="display:flex;flex-wrap:wrap;gap:6px;max-height:200px;overflow-y:auto;"></div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--danger);margin-bottom:8px;">⚠️ 未アクセスの受験生</div>
+        <div id="unaccessedStudentsList" style="display:flex;flex-wrap:wrap;gap:6px;max-height:200px;overflow-y:auto;"></div>
+      </div>
+    </div>
+  </div>
 
 </div>
 
@@ -4852,4 +4901,135 @@ function renderExamHistoryGrid(personName, round){
 
   gridEl.innerHTML = html;
 }
+</script>
+<script>
+// ====== 起動時の名前選択ゲート + アクセスログ ======
+const LOGIN_GATE_KEY = 'takkenReportViewerName';
+
+function populateLoginGateSelect(){
+  const sel = document.getElementById('loginGateSelect');
+  if(!sel) return;
+  const sorted = [...persons].sort((a,b)=>a.name.localeCompare(b.name,'ja'));
+  sel.innerHTML = '<option value="">受験者を選択...</option>' +
+    sorted.map(p=>`<option value="${p.name}">${p.name}（${p.team.replace('チーム','')}）</option>`).join('');
+}
+
+function checkLoginGate(){
+  const saved = localStorage.getItem(LOGIN_GATE_KEY);
+  if(saved){
+    window._currentTrackedUser = saved;
+    recordAccessLog(saved);
+    return;
+  }
+  populateLoginGateSelect();
+  const overlay = document.getElementById('loginGateOverlay');
+  if(overlay) overlay.style.display = 'flex';
+}
+
+function confirmLoginGate(isSupport){
+  let name;
+  if(isSupport){
+    name = 'サポートスタッフ';
+  } else {
+    const sel = document.getElementById('loginGateSelect');
+    name = sel ? sel.value : '';
+    if(!name){ alert('名前を選択してください'); return; }
+  }
+  localStorage.setItem(LOGIN_GATE_KEY, name);
+  window._currentTrackedUser = name;
+  const overlay = document.getElementById('loginGateOverlay');
+  if(overlay) overlay.style.display = 'none';
+  recordAccessLog(name);
+}
+
+// アクセスログを記録（全員共有ストレージ）
+async function recordAccessLog(name){
+  try{
+    const key = 'accessLogs';
+    let record = { logs: [] };
+    try{
+      const existing = await window.storage.get(key, true);
+      if(existing && existing.value) record = JSON.parse(existing.value);
+    } catch(e) { /* キー未作成 */ }
+
+    record.logs.push({ name, timestamp: new Date().toISOString() });
+    // 直近1000件まで保持（肥大化防止）
+    if(record.logs.length > 1000) record.logs = record.logs.slice(-1000);
+
+    await window.storage.set(key, JSON.stringify(record), true);
+  } catch(e){
+    console.error('アクセスログ記録失敗:', e);
+  }
+}
+
+async function getAllAccessLogs(){
+  try{
+    const result = await window.storage.get('accessLogs', true);
+    if(!result || !result.value) return [];
+    const record = JSON.parse(result.value);
+    return record.logs || [];
+  } catch(e){
+    return [];
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(checkLoginGate, 100);
+});
+</script>
+<script>
+// ====== アクセス状況の集計 ======
+async function buildAccessStatus(){
+  const logs = await getAllAccessLogs();
+  if(!logs.length) return;
+
+  // ユニークな名前を抽出（サポートスタッフは1グループとして扱う）
+  const uniqueNames = new Set(logs.map(l => l.name));
+  const studentAccessed = [...uniqueNames].filter(n => n !== 'サポートスタッフ');
+  const hasSupport = uniqueNames.has('サポートスタッフ');
+
+  const setEl = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
+  setEl('accessTotalCount', logs.length + '回');
+  setEl('accessUniqueCount', (studentAccessed.length + (hasSupport?1:0)) + '名');
+  setEl('accessStudentCount', studentAccessed.length + '名');
+  setEl('accessSupportCount', hasSupport ? 'あり' : 'なし');
+
+  // 各受験生の最終アクセス日時
+  const lastAccessMap = {};
+  logs.forEach(l => {
+    if(l.name === 'サポートスタッフ') return;
+    if(!lastAccessMap[l.name] || new Date(l.timestamp) > new Date(lastAccessMap[l.name])){
+      lastAccessMap[l.name] = l.timestamp;
+    }
+  });
+
+  const accessedEl = document.getElementById('accessedStudentsList');
+  const unaccessedEl = document.getElementById('unaccessedStudentsList');
+
+  const accessedNames = persons.filter(p => lastAccessMap[p.name]);
+  const unaccessedNames = persons.filter(p => !lastAccessMap[p.name]);
+
+  if(accessedEl){
+    accessedEl.innerHTML = accessedNames
+      .sort((a,b) => new Date(lastAccessMap[b.name]) - new Date(lastAccessMap[a.name]))
+      .map(p => {
+        const dt = new Date(lastAccessMap[p.name]);
+        const dtStr = `${dt.getMonth()+1}/${dt.getDate()}`;
+        return `<span onclick="showSection('individuals',null);openModal('${p.name}')" style="cursor:pointer;padding:4px 10px;background:rgba(79,207,148,0.08);border:1px solid rgba(79,207,148,0.3);border-radius:12px;font-size:11px;color:var(--text);">
+          ${p.name}<span style="color:var(--muted);font-size:9px;"> (${dtStr})</span>
+        </span>`;
+      }).join('') || `<div style="color:var(--muted);font-size:11px;">まだいません</div>`;
+  }
+
+  if(unaccessedEl){
+    unaccessedEl.innerHTML = unaccessedNames.map(p => `
+      <span onclick="showSection('individuals',null);openModal('${p.name}')" style="cursor:pointer;padding:4px 10px;background:rgba(247,95,95,0.06);border:1px solid rgba(247,95,95,0.25);border-radius:12px;font-size:11px;color:var(--text);">
+        ${p.name}<span style="color:var(--muted);font-size:9px;"> (${p.team.replace('チーム','')})</span>
+      </span>`).join('') || `<div style="color:var(--success);font-size:11px;">🎉 全員アクセス済みです！</div>`;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(buildAccessStatus, 300);
+});
 </script>
