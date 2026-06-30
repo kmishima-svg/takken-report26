@@ -144,6 +144,16 @@
 <div class="section active" id="sec-overview">
   <div class="sec-title">全体サマリー</div>
   <div class="sec-sub">5回分の模試データ（5/14〜6/19）を分析しました</div>
+
+  <!-- リーダー向けダッシュボード -->
+  <div class="card" style="padding:18px;margin-bottom:20px;background:linear-gradient(135deg,#fff9f0,#fff5e8);border-color:rgba(217,119,6,0.3);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div class="card-title" style="margin-bottom:0;">📌 リーダーが今日見るべきポイント</div>
+      <button onclick="openLeaderSlackReport()" style="background:#4A154B;border:none;border-radius:6px;color:#fff;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;">💬 チーム状況をSlack報告</button>
+    </div>
+    <div id="leaderDashboard" style="display:flex;flex-direction:column;gap:10px;"></div>
+  </div>
+
   <div class="grid-4" style="margin-bottom:16px;">
     <div class="kpi"><div class="kpi-val" style="color:var(--accent)">51%</div><div class="kpi-label">最新平均正答率(6/19)</div><div class="kpi-sub">目標：80%（36問）</div></div>
     <div class="kpi"><div class="kpi-val" style="color:var(--gyoho)">68%</div><div class="kpi-label">業法（最新平均）</div><div class="kpi-sub">目標80% ▲+12%必要</div></div>
@@ -1973,15 +1983,23 @@ function openModal(name){
       <span style="color:var(--muted)">${i.advice}</span></div>`).join('');
 
   document.getElementById('modalBody').innerHTML=`
-    <div class="modal-name">${p.name}</div>
-    <div class="modal-team">${p.team}</div>
-    <div class="grid-4" style="margin-bottom:16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <div>
+        <div class="modal-name">${p.name}</div>
+        <div class="modal-team">${p.team}</div>
+      </div>
+      <button onclick="openPersonalSlackReport('${p.name}')" style="background:#4A154B;border:none;border-radius:6px;color:#fff;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;">
+        💬 Slackに進捗報告
+      </button>
+    </div>
+    <div class="grid-4" style="margin-bottom:16px;margin-top:12px;">
       <div class="kpi" style="padding:12px"><div class="kpi-val" style="font-size:22px;color:${getScoreColor(latest)}">${latest!==null?latest+'%':'--'}</div><div class="kpi-label">最新総合</div></div>
       <div class="kpi" style="padding:12px"><div class="kpi-val" style="font-size:22px;color:var(--civil)">${typeof latestCivil==='number'?latestCivil+'%':'--'}</div><div class="kpi-label">民法</div></div>
       <div class="kpi" style="padding:12px"><div class="kpi-val" style="font-size:22px;color:var(--hourei)">${typeof latestHourei==='number'?latestHourei+'%':'--'}</div><div class="kpi-label">法令</div></div>
       <div class="kpi" style="padding:12px"><div class="kpi-val" style="font-size:22px;color:var(--gyoho)">${typeof latestGyoho==='number'?latestGyoho+'%':'--'}</div><div class="kpi-label">業法</div></div>
     </div>
     ${buildMarathonProgress(p)}
+    ${buildGrowthHighlight(p)}
     ${buildPercentileCard(p)}
     ${buildGapToGoal(p)}
     <div class="card" style="padding:14px;margin-bottom:14px;">
@@ -5036,4 +5054,257 @@ document.addEventListener('DOMContentLoaded', () => {
   // 30秒ごとに最新のアクセス状況へ自動更新
   setInterval(buildAccessStatus, 30000);
 });
+</script>
+<script>
+// ====== 個人版 Slack進捗報告 ======
+function openPersonalSlackReport(personName){
+  const text = buildPersonalSlackText(personName);
+  const previewEl = document.getElementById('slackPreview');
+  if(previewEl) previewEl.textContent = text;
+  const overlay = document.getElementById('slackModalOverlay');
+  if(overlay) overlay.style.display = 'flex';
+}
+
+function buildPersonalSlackText(personName){
+  const p = persons.find(x=>x.name===personName);
+  if(!p) return '';
+
+  const today = new Date().toLocaleDateString('ja-JP',{month:'long',day:'numeric'});
+  const exam = new Date('2026-10-19');
+  const daysLeft = Math.ceil((exam - new Date())/(1000*60*60*24));
+
+  const latest = ROUNDS.slice().reverse().map(r=>p.scores[r]).find(v=>v!=null) ?? null;
+  const latestRound = ROUNDS.slice().reverse().find(r=>p.scores[r]!=null);
+  const roundLabel = { '514':'5/14','520':'5/20','527':'5/27','605':'6/5','610':'6/10','619':'6/19' }[latestRound] || latestRound;
+
+  // 前回比
+  const idx = ROUNDS.indexOf(latestRound);
+  const prevRound = ROUNDS.slice(0, idx).reverse().find(r=>p.scores[r]!=null);
+  const prevScore = prevRound ? p.scores[prevRound] : null;
+  const diff = prevScore!=null ? latest - prevScore : null;
+  const trendText = diff==null ? '' : diff>0 ? `（前回比 ▲+${diff}%）` : diff<0 ? `（前回比 ▼${Math.abs(diff)}%）` : '（前回と同じ）';
+
+  // 科目別
+  const civil = getLatestSubjectScore(p,'civil');
+  const hourei = getLatestSubjectScore(p,'hourei');
+  const tax = getLatestSubjectScore(p,'tax');
+  const gyoho = getLatestSubjectScore(p,'gyoho');
+
+  // 推定点・ステージ
+  const estPoint = latest!=null ? Math.round(latest/100*50) : null;
+  const stageLabel = estPoint==null ? '' : estPoint>=38 ? '🏆最終調整期' : estPoint>=36 ? '🏃‍♂️戦略決定期' : estPoint>=32 ? '🏃知識の定着期' : '🌱基礎構築期';
+
+  // 弱点トップ1（継続して間違えている分野）
+  let weakTopic = '';
+  if(p.answers619){
+    const wrongTopics = {};
+    p.answers619.forEach((ans,i)=>{
+      const q=i+1; const d=answers_619[q];
+      if(d && ans!==d.ans){
+        wrongTopics[d.topic] = (wrongTopics[d.topic]||0)+1;
+      }
+    });
+    const sorted = Object.entries(wrongTopics).sort((a,b)=>b[1]-a[1]);
+    if(sorted.length) weakTopic = sorted[0][0];
+  }
+
+  return `【宅建学習進捗報告】${today}
+本人：${p.name}（${p.team}）
+本試験まで：${daysLeft}日
+
+📊 最新模試（${roundLabel}）：${latest}%${trendText}
+　推定点：${estPoint}点/50点　${stageLabel}
+
+科目別：民法${civil??'--'}% / 法令${hourei??'--'}% / 税${tax??'--'}% / 業法${gyoho??'--'}%
+
+${weakTopic ? `⚠️ 重点復習中：${weakTopic}` : ''}
+
+レポート詳細：宅建学習進捗レポートの個人ページをご確認ください`;
+}
+</script>
+<script>
+// ====== リーダー向けダッシュボード ======
+async function buildLeaderDashboard(){
+  const el = document.getElementById('leaderDashboard');
+  if(!el) return;
+
+  const items = [];
+
+  // ① 直近で下がった人（要フォロー）
+  const declining = persons
+    .filter(p => p.scores['605']!=null && p.scores['619']!=null)
+    .map(p => ({ name:p.name, team:p.team, diff: p.scores['619']-p.scores['605'] }))
+    .filter(p => p.diff <= -10)
+    .sort((a,b)=>a.diff-b.diff);
+
+  if(declining.length){
+    items.push({
+      icon:'⚠️', color:'var(--danger)',
+      title:`直近で大きく下がった人（${declining.length}名）`,
+      body: declining.slice(0,5).map(p=>`<span onclick="showSection('individuals',null);openModal('${p.name}')" style="cursor:pointer;color:var(--accent);font-weight:700;">${p.name}</span>（${p.diff}%）`).join('、 ')
+    });
+  }
+
+  // ② 停滞しているチーム
+  const teamMap = {};
+  persons.forEach(p=>{
+    if(!teamMap[p.team]) teamMap[p.team]=[];
+    const v = p.scores['619'];
+    if(v!=null) teamMap[p.team].push(v);
+  });
+  const teamAvgs = Object.entries(teamMap).map(([team,vals])=>({
+    team, avg: vals.length?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length):null
+  })).filter(t=>t.avg!=null).sort((a,b)=>a.avg-b.avg);
+
+  if(teamAvgs.length){
+    const lowest = teamAvgs[0];
+    items.push({
+      icon:'📉', color:'var(--warn)',
+      title:`最も平均が低いチーム`,
+      body:`<span onclick="showSection('teams',null);openTeamDetailFromRanking('${lowest.team}')" style="cursor:pointer;color:var(--accent);font-weight:700;">${lowest.team}</span>（平均${lowest.avg}%）`
+    });
+  }
+
+  // ③ 未アクセス者数
+  try{
+    const logs = await getAllAccessLogs();
+    const uniqueNames = new Set(logs.map(l=>l.name).filter(n=>n!=='サポートスタッフ'));
+    const unaccessed = persons.filter(p=>!uniqueNames.has(p.name));
+    if(unaccessed.length){
+      items.push({
+        icon:'👀', color:'var(--accent)',
+        title:`レポート未アクセスの人（${unaccessed.length}名）`,
+        body: unaccessed.length<=8
+          ? unaccessed.map(p=>`<span onclick="showSection('individuals',null);openModal('${p.name}')" style="cursor:pointer;color:var(--accent);font-weight:700;">${p.name}</span>`).join('、 ')
+          : `${unaccessed.slice(0,8).map(p=>p.name).join('、 ')} 他${unaccessed.length-8}名`
+      });
+    }
+  } catch(e){ /* storage未対応環境 */ }
+
+  // ④ 直近で大きく伸びた人（称賛ポイント）
+  const improving = persons
+    .filter(p => p.scores['605']!=null && p.scores['619']!=null)
+    .map(p => ({ name:p.name, team:p.team, diff: p.scores['619']-p.scores['605'] }))
+    .filter(p => p.diff >= 10)
+    .sort((a,b)=>b.diff-a.diff);
+
+  if(improving.length){
+    items.push({
+      icon:'🎉', color:'var(--success)',
+      title:`直近で大きく伸びた人（${improving.length}名）— 称賛しましょう！`,
+      body: improving.slice(0,5).map(p=>`<span onclick="showSection('individuals',null);openModal('${p.name}')" style="cursor:pointer;color:var(--accent);font-weight:700;">${p.name}</span>（+${p.diff}%）`).join('、 ')
+    });
+  }
+
+  // ⑤ 全体未利用（Web受講モード）
+  try{
+    const attempts = await getAllLibraryAttempts();
+    const usedCount = new Set(attempts.map(a=>a.user)).size;
+    if(usedCount===0){
+      items.push({
+        icon:'📚', color:'var(--accent)',
+        title:'Web受講モードがまだ誰にも使われていません',
+        body:'「出題データ集」タブから復習問題に取り組むよう、チームに案内してみましょう'
+      });
+    }
+  } catch(e){}
+
+  if(!items.length){
+    el.innerHTML = `<div style="color:var(--muted);font-size:12px;padding:10px;">特に緊急の対応事項はありません ✅</div>`;
+    return;
+  }
+
+  el.innerHTML = items.map(item=>`
+    <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:#fff;border-radius:8px;border:1px solid ${item.color}33;">
+      <span style="font-size:18px;flex-shrink:0;">${item.icon}</span>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:${item.color};margin-bottom:3px;">${item.title}</div>
+        <div style="font-size:11px;color:var(--text);line-height:1.6;">${item.body}</div>
+      </div>
+    </div>`).join('');
+}
+
+// リーダー用Slack報告
+async function openLeaderSlackReport(){
+  const overlay = document.getElementById('slackModalOverlay');
+  if(overlay) overlay.style.display = 'flex';
+  const previewEl = document.getElementById('slackPreview');
+  if(previewEl) previewEl.textContent = '読み込み中...';
+  await buildLeaderSlackText();
+}
+
+async function buildLeaderSlackText(){
+  const today = new Date().toLocaleDateString('ja-JP',{month:'long',day:'numeric'});
+  const exam = new Date('2026-10-19');
+  const daysLeft = Math.ceil((exam - new Date())/(1000*60*60*24));
+
+  const p619 = persons.filter(p=>p.scores['619']!=null);
+  const avg = p619.length ? Math.round(p619.reduce((s,p)=>s+p.scores['619'],0)/p619.length) : '--';
+
+  const declining = persons
+    .filter(p => p.scores['605']!=null && p.scores['619']!=null)
+    .map(p => ({ name:p.name, diff: p.scores['619']-p.scores['605'] }))
+    .filter(p => p.diff <= -10);
+
+  const improving = persons
+    .filter(p => p.scores['605']!=null && p.scores['619']!=null)
+    .map(p => ({ name:p.name, diff: p.scores['619']-p.scores['605'] }))
+    .filter(p => p.diff >= 10);
+
+  let unaccessedCount = '--';
+  try{
+    const logs = await getAllAccessLogs();
+    const uniqueNames = new Set(logs.map(l=>l.name).filter(n=>n!=='サポートスタッフ'));
+    unaccessedCount = persons.filter(p=>!uniqueNames.has(p.name)).length;
+  } catch(e){}
+
+  const text = `【チーム全体 進捗報告】${today}
+本試験まで：${daysLeft}日
+全体平均（6/19）：${avg}%（受験者${p619.length}名）
+
+${improving.length ? `🎉 伸びている人：${improving.map(p=>p.name+'(+'+p.diff+'%)').join('、')}` : ''}
+${declining.length ? `⚠️ フォローが必要な人：${declining.map(p=>p.name+'('+p.diff+'%)').join('、')}` : ''}
+${unaccessedCount!=='--' ? `👀 レポート未アクセス：${unaccessedCount}名` : ''}
+
+詳細は学習進捗レポートをご確認ください`;
+
+  const previewEl = document.getElementById('slackPreview');
+  if(previewEl) previewEl.textContent = text;
+  return text;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(buildLeaderDashboard, 350);
+});
+</script>
+<script>
+// ====== 成長ハイライト（直感的な一言サマリー） ======
+function buildGrowthHighlight(p){
+  const subjects = [
+    { key:'civil', label:'民法', icon:'⚖️' },
+    { key:'hourei', label:'法令', icon:'🏛️' },
+    { key:'tax', label:'税', icon:'💰' },
+    { key:'gyoho', label:'業法', icon:'📋' },
+  ];
+
+  // 各科目の最初と最新の値を比較
+  const growthData = subjects.map(s=>{
+    const history = ROUNDS.map(r => p[s.key] && p[s.key][r]).filter(v=>v!=null);
+    if(history.length<2) return null;
+    return { ...s, from: history[0], to: history[history.length-1], diff: history[history.length-1]-history[0] };
+  }).filter(Boolean);
+
+  if(!growthData.length) return '';
+
+  const best = growthData.sort((a,b)=>b.diff-a.diff)[0];
+  if(best.diff <= 0) return '';
+
+  return `<div style="display:flex;align-items:center;gap:12px;padding:14px 18px;margin-bottom:14px;background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border:1px solid rgba(5,150,105,0.3);border-radius:10px;">
+    <span style="font-size:28px;">${best.icon}</span>
+    <div>
+      <div style="font-size:13px;font-weight:900;color:var(--success);">いちばん伸びたのは「${best.label}」！</div>
+      <div style="font-size:11px;color:var(--text);margin-top:2px;">${best.from}% → ${best.to}%（<strong style="color:var(--success);">+${best.diff}%</strong>）この調子で続けましょう 🎉</div>
+    </div>
+  </div>`;
+}
 </script>
