@@ -4914,11 +4914,12 @@ function populateLoginGateSelect(){
     sorted.map(p=>`<option value="${p.name}">${p.name}（${p.team.replace('チーム','')}）</option>`).join('');
 }
 
-function checkLoginGate(){
+async function checkLoginGate(){
   const saved = localStorage.getItem(LOGIN_GATE_KEY);
   if(saved){
     window._currentTrackedUser = saved;
-    recordAccessLog(saved);
+    await recordAccessLog(saved);
+    buildAccessStatus();
     return;
   }
   populateLoginGateSelect();
@@ -4926,7 +4927,7 @@ function checkLoginGate(){
   if(overlay) overlay.style.display = 'flex';
 }
 
-function confirmLoginGate(isSupport){
+async function confirmLoginGate(isSupport){
   let name;
   if(isSupport){
     name = 'サポートスタッフ';
@@ -4939,7 +4940,8 @@ function confirmLoginGate(isSupport){
   window._currentTrackedUser = name;
   const overlay = document.getElementById('loginGateOverlay');
   if(overlay) overlay.style.display = 'none';
-  recordAccessLog(name);
+  await recordAccessLog(name);
+  buildAccessStatus();
 }
 
 // アクセスログを記録（全員共有ストレージ）
@@ -5031,5 +5033,7 @@ async function buildAccessStatus(){
 
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(buildAccessStatus, 300);
+  // 30秒ごとに最新のアクセス状況へ自動更新
+  setInterval(buildAccessStatus, 30000);
 });
 </script>
