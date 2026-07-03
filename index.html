@@ -564,6 +564,16 @@
 <div class="section" id="sec-individuals">
   <div class="sec-title">個人別成績</div>
   <div class="sec-sub">カードをクリックすると詳細レポートと個別アドバイスが表示されます</div>
+
+  <!-- 合格圏内の人数推移 -->
+  <div class="card" style="padding:16px;margin-bottom:16px;">
+    <div class="card-title">🏆 合格圏内（74%以上）の人数推移</div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:12px;">各回で正答率74%以上（合格ライン目安）を獲得した人数です。全7回・5/14〜7/2。</div>
+    <div id="passCountWrap" style="overflow-x:auto;">
+      <svg id="passCountSVG" viewBox="0 0 700 260" style="width:100%;min-width:480px;"></svg>
+    </div>
+  </div>
+
   <div class="filter-row">
     <button class="filter-btn active" onclick="filterTeam('all',this)">全員</button>
     <button class="filter-btn" onclick="filterTeam('城内チーム',this)">城内</button>
@@ -1969,6 +1979,54 @@ function closeQuestionReview(){
 }
 
 // ====== RANK TABLE ======
+// ====== 合格圏内（74%以上）人数推移グラフ ======
+function buildPassCountChart(teamFilter){
+  const svg = document.getElementById('passCountSVG');
+  if(!svg) return;
+
+  let base = persons;
+  if(teamFilter && teamFilter!=='all'){ base = base.filter(p=>p.team===teamFilter); }
+
+  const series = rounds.map(r => {
+    const p = base.filter(x=>x.scores[r]!=null);
+    const pass = p.filter(x=>x.scores[r]>=74).length;
+    return { round:r, label: roundLabels[r]||r, n:p.length, pass };
+  });
+
+  const W=700, H=260, pad={top:20,right:16,bottom:40,left:34};
+  const chartW = W-pad.left-pad.right;
+  const chartH = H-pad.top-pad.bottom;
+  const N = series.length;
+  const maxCount = Math.max(3, ...series.map(s=>s.pass));
+  const yOf = v => pad.top + chartH - (v/maxCount)*chartH;
+  const bw = chartW/N*0.5;
+  const xOf = i => pad.left + (i+0.5)*(chartW/N);
+
+  let html = '';
+
+  // グリッド（整数目盛り）
+  const step = maxCount<=5 ? 1 : Math.ceil(maxCount/5);
+  for(let v=0; v<=maxCount; v+=step){
+    const y = yOf(v);
+    html += `<line x1="${pad.left}" y1="${y}" x2="${W-pad.right}" y2="${y}" stroke="#e2e8f0" stroke-width="0.7"/>`;
+    html += `<text x="${pad.left-6}" y="${y+4}" text-anchor="end" font-size="9" fill="#94a3b8">${v}人</text>`;
+  }
+
+  // 棒グラフ
+  series.forEach((s,i)=>{
+    const x = xOf(i) - bw/2;
+    const y = yOf(s.pass);
+    const h = (pad.top+chartH) - y;
+    const color = s.pass>0 ? '#4fcf94' : '#cbd5e1';
+    html += `<rect x="${x}" y="${y}" width="${bw}" height="${Math.max(h,0)}" rx="3" fill="${color}"><title>${s.label}：${s.pass}人／${s.n}人が合格圏</title></rect>`;
+    html += `<text x="${xOf(i)}" y="${y-6}" text-anchor="middle" font-size="12" font-weight="900" fill="#2b3556">${s.pass}</text>`;
+    html += `<text x="${xOf(i)}" y="${H-pad.bottom+16}" text-anchor="middle" font-size="10" fill="#64748b">${s.label}</text>`;
+    html += `<text x="${xOf(i)}" y="${H-pad.bottom+28}" text-anchor="middle" font-size="8" fill="#c0c6d9">(${s.n}名中)</text>`;
+  });
+
+  svg.innerHTML = html;
+}
+
 function buildRankTable(teamFilter){
   const tbody=document.getElementById('rankTable');
   let p610=persons.filter(p=>p.scores['702']!==null&&p.scores['702']!==undefined);
@@ -2249,6 +2307,7 @@ function filterTeam(team,btn){
   btn.classList.add('active');
   buildPersonGrid(team);
   buildRankTable(team);
+  buildPassCountChart(team);
 }
 function showSection(id, btn){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
@@ -2271,6 +2330,7 @@ document.getElementById('daysLeft').textContent=Math.ceil((exam-now)/(1000*60*60
 // Init
 buildPersonGrid();
 buildRankTable();
+buildPassCountChart('all');
 setTimeout(()=>{ if(typeof buildTopicTable702==='function') buildTopicTable702(); }, 50);
 buildDomainBars();
 setTimeout(()=>buildSubjectRadar(null), 100);
