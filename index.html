@@ -425,17 +425,30 @@
 <div class="section" id="sec-targets">
   <div class="sec-title">目標と現状ギャップ</div>
   <div class="sec-sub">8月中間目標・10月本番目標に向けた現在地</div>
+
+  <!-- 正答率推移グラフ -->
+  <div class="card" style="padding:16px;margin-bottom:16px;">
+    <div class="card-title">📈 正答率の推移（全体・科目別）</div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:6px;">5/20〜7/2の全6回、グループ平均正答率の推移です（5/14は民法の出題がなく比較対象がずれるため除外）。これまでの頑張りの成果を確認しましょう。</div>
+    <div style="font-size:10px;color:var(--warn);background:rgba(217,119,6,0.08);border-radius:6px;padding:8px 10px;margin-bottom:12px;">
+      ⚠️ <strong>7/2の見方について：</strong>7/2は過去問の使い回しではないオリジナル問題のため、既視感による下駄がなく、他の回より素点が下がりやすい回です。破線の「難易度補正後（実力推定）」ラインは、過去問模試の下駄を差し引いた推定実力を表示しており、こちらの方が実際の成長度合いに近い指標です。
+    </div>
+    <div id="targetsTrendWrap" style="overflow-x:auto;">
+      <svg id="targetsTrendSVG" viewBox="0 0 700 320" style="width:100%;min-width:480px;"></svg>
+    </div>
+    <div id="targetsTrendLegend" style="display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:11px;"></div>
+  </div>
   
   <div class="card">
     <div class="card-title">合格点シミュレーション</div>
     <table>
       <thead><tr><th>科目</th><th>問題数</th><th>現状</th><th>8月目標</th><th>10月目標</th><th>必要正解数</th></tr></thead>
       <tbody>
-        <tr><td><span class="badge badge-civil">民法</span></td><td>14問</td><td class="sc-d">30%（4問）</td><td>30%（4問）</td><td class="sc-b">50%（7問）</td><td>7問</td></tr>
-        <tr><td><span class="badge badge-hourei">法令</span></td><td>8問</td><td class="sc-c">55%（4問）</td><td>60%（5問）</td><td class="sc-a">70%（6問）</td><td>6問</td></tr>
-        <tr><td><span class="badge badge-tax">税</span></td><td>3問</td><td class="sc-b">59%（2問）</td><td>67%（2問）</td><td class="sc-s">100%（3問）</td><td>3問</td></tr>
-        <tr><td><span class="badge badge-gyoho">業法</span></td><td>20問</td><td class="sc-a">68%（14問）</td><td>80%（16問）</td><td class="sc-s">80%（16問）</td><td>16問</td></tr>
-        <tr style="background:rgba(79,142,247,.06)"><td><strong>合計</strong></td><td><strong>45問</strong></td><td class="sc-c"><strong>24問（53%）</strong></td><td><strong>27問（60%）</strong></td><td class="sc-a"><strong>32問（71%）</strong></td><td><strong>32問</strong></td></tr>
+        <tr><td><span class="badge badge-civil">民法</span></td><td>14問</td><td class="sc-d">37%（5問）</td><td>30%（4問）</td><td class="sc-b">50%（7問）</td><td>7問</td></tr>
+        <tr><td><span class="badge badge-hourei">法令</span></td><td>8問</td><td class="sc-d">48%（4問）</td><td>60%（5問）</td><td class="sc-a">70%（6問）</td><td>6問</td></tr>
+        <tr><td><span class="badge badge-tax">税</span></td><td>3問</td><td class="sc-d">46%（1問）</td><td>67%（2問）</td><td class="sc-s">100%（3問）</td><td>3問</td></tr>
+        <tr><td><span class="badge badge-gyoho">業法</span></td><td>20問</td><td class="sc-b">65%（13問）</td><td>80%（16問）</td><td class="sc-s">80%（16問）</td><td>16問</td></tr>
+        <tr style="background:rgba(79,142,247,.06)"><td><strong>合計</strong></td><td><strong>45問</strong></td><td class="sc-c"><strong>23問（51%）</strong></td><td><strong>27問（60%）</strong></td><td class="sc-a"><strong>32問（71%）</strong></td><td><strong>32問</strong></td></tr>
       </tbody>
     </table>
     <div style="margin-top:10px;padding:10px;background:var(--surface2);border-radius:8px;font-size:11px;color:var(--muted);">
@@ -498,6 +511,15 @@
       <div style="margin-bottom:16px;">
         <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;">科目別平均（最新回）</div>
         <div id="teamSubjectBars" style="display:flex;flex-direction:column;gap:7px;"></div>
+      </div>
+
+      <!-- チーム平均 正答率推移（全体・科目別） -->
+      <div style="margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;">チーム平均 正答率推移（全体・科目別）</div>
+        <div id="teamTrendWrap" style="overflow-x:auto;">
+          <svg id="teamTrendSVG" viewBox="0 0 700 320" style="width:100%;min-width:480px;"></svg>
+        </div>
+        <div id="teamTrendLegend" style="display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:11px;"></div>
       </div>
 
       <!-- メンバースコアテーブル -->
@@ -3482,7 +3504,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // 初見の全国模試・本試験では得点が下がることを加味して補正を適用。
 //
 // 補正係数の考え方：
-// - 令和6年本試験（6/5）: 本物の本試験問題 → 補正なし（0%）
+// - 令和6年本試験（6/5）: 本物の本試験問題 → 補正なし近似（-3%、本番に最も近い）
+// - 7/2: オリジナル問題（過去問の使い回しではない）→ 補正なし（0%）。既視感による下駄がなく、素点がそのまま実力に近い
 // - 5/27（過去問1回目）: 初見に近い → -5%
 // - 5/20（同問題セット）: 既視感あり  → -8%
 // - 5/14（法令・税・業法）: 既視感あり → -8%
@@ -3497,7 +3520,7 @@ function buildSimTable() {
 
   // 【初見補正率】各回に適用（本試験基準との乖離を推定）
   const rawDiscount = {
-    '702': 0.10,  // 7/2: 過去問模試（最新）→ -10%
+    '702': 0.00,  // 7/2: オリジナル問題（過去問の使い回しではない）→ 補正なし。既視感による下駄がない代わりに素点も低く出やすい回
     '619': 0.10,  // 6/19: 過去問模試 → -10%
     '610': 0.10,  // 6/10: 過去問模試 → -10%
     '605': 0.03,  // 6/5 : 令和6年本試験問題 → -3%（本番に最も近い）
@@ -3765,6 +3788,7 @@ function openTeamDetail(teamName) {
 
   // 折れ線グラフ
   buildTeamLineChart(sorted, color);
+  renderAvgTrendChart(members, 'teamTrendSVG', 'teamTrendLegend');
 
   // テーマ別正答率（チームメンバーの7/2回答データから集計）
   buildTeamTopicBars(members, 'all');
@@ -4981,7 +5005,121 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(buildGrowthRanking, 250);
   setTimeout(buildLibraryUsageStatus, 250);
   setTimeout(buildLastPushSimulation, 250);
+  setTimeout(buildTargetsTrendChart, 250);
 });
+
+// ====== 正答率推移グラフ（全体・科目別、5/20〜7/2）汎用関数 ======
+function renderAvgTrendChart(memberList, svgId, legendId){
+  const svg = document.getElementById(svgId);
+  const legendEl = document.getElementById(legendId);
+  if(!svg) return;
+
+  const avg = arr => arr.length ? Math.round(arr.reduce((a,b)=>a+b,0)/arr.length) : null;
+
+  // 5/14は民法の出題がなく（法令・税・業法のみ）、全体推移としては比較対象がずれるため除外
+  const trendRounds = ROUNDS.filter(r => r !== '514');
+
+  // 難易度補正率（合格点シミュレーションと同じ考え方：過去問の使い回しで下駄がかかっている回を割り引く）
+  // 7/2はオリジナル問題のため補正なし＝素点がそのまま実力に近い
+  const rawDiscount = { '702':0.00, '619':0.10, '610':0.10, '605':0.03, '527':0.10, '520':0.13 };
+
+  // 各回・各科目のグループ平均正答率を算出
+  const series = trendRounds.map(r => {
+    const p = memberList.filter(x=>x.scores[r]!=null);
+    const overall = avg(p.map(x=>x.scores[r]));
+    return {
+      round: r,
+      label: ROUND_LABELS[r] || r,
+      n: p.length,
+      overall,
+      adjusted: overall!=null ? Math.round(overall * (1 - (rawDiscount[r]||0))) : null,
+      civil:  avg(p.map(x=>x.civil  && x.civil[r]).filter(v=>v!=null)),
+      hourei: avg(p.map(x=>x.hourei && x.hourei[r]).filter(v=>v!=null)),
+      tax:    avg(p.map(x=>x.tax    && x.tax[r]).filter(v=>v!=null)),
+      gyoho:  avg(p.map(x=>x.gyoho  && x.gyoho[r]).filter(v=>v!=null)),
+    };
+  });
+
+  const lines = [
+    { key:'overall',  label:'全体（素点）',        color:'#2b3556', width:3.5, dash:null },
+    { key:'adjusted', label:'全体（難易度補正後＝実力推定）', color:'#2b3556', width:2, dash:'5,4' },
+    { key:'civil',   label:'⚖️ 民法', color:'var(--civil)',  width:2, dash:null },
+    { key:'hourei',  label:'🏗️ 法令', color:'var(--hourei)', width:2, dash:null },
+    { key:'tax',     label:'💴 税',   color:'var(--tax)',    width:2, dash:null },
+    { key:'gyoho',   label:'🏢 業法', color:'var(--gyoho)',  width:2, dash:null },
+  ];
+  // CSS変数はSVG属性に直接使えないため解決しておく
+  const resolveColor = c => {
+    if(!c.startsWith('var(')) return c;
+    const varName = c.slice(4,-1).trim();
+    return getComputedStyle(document.documentElement).getPropertyValue(varName).trim() || '#7b82a8';
+  };
+  lines.forEach(l => l.resolvedColor = resolveColor(l.color));
+
+  const W=700, H=320, pad={top:20,right:16,bottom:36,left:38};
+  const chartW = W-pad.left-pad.right;
+  const chartH = H-pad.top-pad.bottom;
+  const N = series.length;
+  const YMIN=20, YMAX=85;
+  const xOf = i => pad.left + (N>1 ? (i/(N-1))*chartW : chartW/2);
+  const yOf = v => pad.top + chartH - ((v-YMIN)/(YMAX-YMIN))*chartH;
+
+  let html = '';
+
+  // グリッド（20%〜85%）
+  [20,30,40,50,60,70,80].forEach(v=>{
+    const y = yOf(v);
+    html += `<line x1="${pad.left}" y1="${y}" x2="${W-pad.right}" y2="${y}" stroke="#e2e8f0" stroke-width="0.7"/>`;
+    html += `<text x="${pad.left-6}" y="${y+4}" text-anchor="end" font-size="9" fill="#94a3b8">${v}%</text>`;
+  });
+
+  // 合格ライン74%
+  const y74 = yOf(74);
+  html += `<line x1="${pad.left}" y1="${y74}" x2="${W-pad.right}" y2="${y74}" stroke="#f7c94f" stroke-width="1.2" stroke-dasharray="4,3"/>`;
+  html += `<text x="${W-pad.right+2}" y="${y74+4}" font-size="9" fill="#d97706" font-weight="700">合格圏74%</text>`;
+
+  // X軸ラベル
+  series.forEach((s,i)=>{
+    html += `<text x="${xOf(i)}" y="${H-pad.bottom+16}" text-anchor="middle" font-size="10" fill="#64748b">${s.label}</text>`;
+    html += `<text x="${xOf(i)}" y="${H-pad.bottom+28}" text-anchor="middle" font-size="8" fill="#c0c6d9">(${s.n}名)</text>`;
+  });
+
+  // 各系列の折れ線（YMIN〜YMAXの範囲外の値はクリップして描画）
+  const clip = v => v==null ? null : Math.max(YMIN, Math.min(YMAX, v));
+  lines.forEach(line=>{
+    const pts = series.map((s,i)=> s[line.key]!=null ? [xOf(i), yOf(clip(s[line.key])), s[line.key]] : null);
+    let d=''; let prev=null;
+    pts.forEach(pt=>{
+      if(pt){ d += (prev ? 'L' : 'M') + pt[0] + ',' + pt[1] + ' '; prev = pt; }
+      else { prev = null; }
+    });
+    const dashAttr = line.dash ? ` stroke-dasharray="${line.dash}"` : '';
+    if(d) html += `<path d="${d}" fill="none" stroke="${line.resolvedColor}" stroke-width="${line.width}"${dashAttr} opacity="${line.key.startsWith('overall')||line.key==='adjusted'?1:0.85}" stroke-linecap="round" stroke-linejoin="round"/>`;
+    pts.forEach(pt=>{
+      if(!pt) return;
+      const r = (line.key==='overall'||line.key==='adjusted') ? 4 : 3.5;
+      html += `<circle cx="${pt[0]}" cy="${pt[1]}" r="${r}" fill="${line.resolvedColor}" stroke="white" stroke-width="1.5"><title>${line.label} ${pt[2]}%</title></circle>`;
+      if(line.key==='overall'){
+        html += `<text x="${pt[0]}" y="${pt[1]-9}" text-anchor="middle" font-size="9" font-weight="900" fill="${line.resolvedColor}">${pt[2]}%</text>`;
+      }
+    });
+  });
+
+  svg.innerHTML = html;
+
+  // 凡例
+  if(legendEl){
+    legendEl.innerHTML = lines.map(l=>`
+      <span style="display:inline-flex;align-items:center;gap:5px;">
+        <span style="display:inline-block;width:16px;height:${l.width>2?3:2}px;background:${l.resolvedColor};${l.dash?'background-image:repeating-linear-gradient(90deg,'+l.resolvedColor+' 0 4px,transparent 4px 7px);background-color:transparent;':''}border-radius:2px;"></span>
+        <span style="color:var(--text);font-weight:${l.width>2?700:500};">${l.label}</span>
+      </span>`).join('');
+  }
+}
+
+function buildTargetsTrendChart(){
+  renderAvgTrendChart(persons, 'targetsTrendSVG', 'targetsTrendLegend');
+}
 </script>
 <script>
 // ====== 📝 模試 解答履歴（全7回・問別正解マス目） ======
