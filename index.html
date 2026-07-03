@@ -567,8 +567,8 @@
 
   <!-- 合格圏内の人数推移 -->
   <div class="card" style="padding:16px;margin-bottom:16px;">
-    <div class="card-title">🏆 合格圏内（74%以上）の人数推移</div>
-    <div style="font-size:10px;color:var(--muted);margin-bottom:12px;">各回で正答率74%以上（合格ライン目安）を獲得した人数です。全7回・5/14〜7/2。</div>
+    <div class="card-title">🏆 合格圏内の人数推移</div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:12px;">各回で合格圏に入った人数です（5/20〜7/2の6回）。基準は正答率74%以上。7/2はオリジナル問題のため31問／45問以上（69%相当）を基準にしています。</div>
     <div id="passCountWrap" style="overflow-x:auto;">
       <svg id="passCountSVG" viewBox="0 0 700 260" style="width:100%;min-width:480px;"></svg>
     </div>
@@ -1987,9 +1987,14 @@ function buildPassCountChart(teamFilter){
   let base = persons;
   if(teamFilter && teamFilter!=='all'){ base = base.filter(p=>p.team===teamFilter); }
 
-  const series = rounds.map(r => {
+  // 5/14は法令・税・業法のみの出題で全体正答率の基準が異なるため除外
+  const passRounds = rounds.filter(r => r !== '514');
+  // 合格圏の基準：通常は74%。7/2はオリジナル問題で難易度が異なるため31問／45問（69%相当）を基準に
+  const threshold = r => r === '702' ? 69 : 74;
+
+  const series = passRounds.map(r => {
     const p = base.filter(x=>x.scores[r]!=null);
-    const pass = p.filter(x=>x.scores[r]>=74).length;
+    const pass = p.filter(x=>x.scores[r]>=threshold(r)).length;
     return { round:r, label: roundLabels[r]||r, n:p.length, pass };
   });
 
@@ -2018,9 +2023,10 @@ function buildPassCountChart(teamFilter){
     const y = yOf(s.pass);
     const h = (pad.top+chartH) - y;
     const color = s.pass>0 ? '#4fcf94' : '#cbd5e1';
-    html += `<rect x="${x}" y="${y}" width="${bw}" height="${Math.max(h,0)}" rx="3" fill="${color}"><title>${s.label}：${s.pass}人／${s.n}人が合格圏</title></rect>`;
+    const critLabel = s.round==='702' ? '31問／45問以上' : '74%以上';
+    html += `<rect x="${x}" y="${y}" width="${bw}" height="${Math.max(h,0)}" rx="3" fill="${color}"><title>${s.label}：${s.pass}人／${s.n}人が合格圏（基準：${critLabel}）</title></rect>`;
     html += `<text x="${xOf(i)}" y="${y-6}" text-anchor="middle" font-size="12" font-weight="900" fill="#2b3556">${s.pass}</text>`;
-    html += `<text x="${xOf(i)}" y="${H-pad.bottom+16}" text-anchor="middle" font-size="10" fill="#64748b">${s.label}</text>`;
+    html += `<text x="${xOf(i)}" y="${H-pad.bottom+16}" text-anchor="middle" font-size="10" fill="#64748b">${s.label}${s.round==='702'?' ※':''}</text>`;
     html += `<text x="${xOf(i)}" y="${H-pad.bottom+28}" text-anchor="middle" font-size="8" fill="#c0c6d9">(${s.n}名中)</text>`;
   });
 
